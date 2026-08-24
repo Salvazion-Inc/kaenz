@@ -8,10 +8,21 @@ const outfit = Outfit({
   display: "swap",
 });
 
+export const viewport = {
+  themeColor: "#00a1d6",
+  viewportFit: "cover" as const,
+};
+
 export const metadata: Metadata = {
   title: "Kaenz: Leave the Car and travel by Yacht!!",
   description:
     "Kaenz: “We believe that water is the smartest, most beautiful, and most fun way to get around South Florida.”",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    title: "Kaenz",
+    statusBarStyle: "black-translucent",
+  },
   icons: {
     icon: [
       { url: "/favicon.png" },

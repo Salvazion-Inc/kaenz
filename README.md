@@ -30,6 +30,16 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000). Spanish: `/es`.
 
+The Uber-style app (web + installable mobile PWA) lives at `/app` with five tabs:
+
+1. **Places** — marinas, ports, and places in Florida
+2. **Yachts** — verified captains near you
+3. **Request** — commute, tour, or special occasion
+4. **Your Trip** — verify request and payment
+5. **Crew** — social feed for the water
+
+Add to Home Screen on iOS/Android for the standalone mobile shell.
+
 ## Environment
 
 | Variable | Purpose |

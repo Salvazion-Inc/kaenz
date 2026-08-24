@@ -16,6 +16,7 @@ export function Footer({ locale }: { locale: Locale }) {
           </div>
         </div>
         <div className="flex flex-wrap gap-5 text-sm font-semibold text-white/80">
+          <Link href={pathFor(locale, "/app")}>{c.nav.app}</Link>
           <Link href={pathFor(locale, "/fleet")}>{c.nav.fleet}</Link>
           <Link href={pathFor(locale, "/book")}>{c.nav.book}</Link>
           <Link href={pathFor(locale, "/concierge")}>{c.nav.concierge}</Link>

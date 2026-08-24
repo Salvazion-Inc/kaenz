@@ -34,3 +34,7 @@ textarea {
   letter-spacing: 0.03em;
   text-shadow: 1px 1px 1.2px rgba(5, 10, 48, 0.4);
 }
+
+.app-shell {
+  padding-top: env(safe-area-inset-top);
+}

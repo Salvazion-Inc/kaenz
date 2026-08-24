@@ -35,7 +35,7 @@ export function HomePage({ locale }: { locale: Locale }) {
           </h1>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Link
-              href="https://app.kaenz.com"
+              href={pathFor(locale, "/app")}
               className="rounded-md bg-kaenz px-10 py-3 text-lg font-bold text-foam shadow-lg shadow-navy/40 transition hover:bg-kaenz-deep"
             >
               {c.heroCta}

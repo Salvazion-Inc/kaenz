@@ -7,6 +7,7 @@ export const copy = {
       "Kaenz: “We believe that water is the smartest, most beautiful, and most fun way to get around South Florida.”",
     brand: "Kaenz",
     nav: {
+      app: "App",
       fleet: "Fleet",
       book: "Book",
       concierge: "Concierge",
@@ -14,7 +15,7 @@ export const copy = {
       terms: "Terms",
     },
     heroTitle: "Skip the traffic. Cruise Miami by Yacht!",
-    heroCta: "Download",
+    heroCta: "Open app",
     heroSecondary: "Book a yacht",
     solveEyebrow: "What Do We Solve?",
     solveLead:
@@ -113,6 +114,7 @@ export const copy = {
       "Kaenz: “Creemos que el agua es la forma más inteligente, bella y divertida de moverse por South Florida.”",
     brand: "Kaenz",
     nav: {
+      app: "App",
       fleet: "Flota",
       book: "Reservar",
       concierge: "Concierge",
@@ -120,7 +122,7 @@ export const copy = {
       terms: "Términos",
     },
     heroTitle: "¡Salta el tráfico. Navega Miami en Yate!",
-    heroCta: "Descargar",
+    heroCta: "Abrir app",
     heroSecondary: "Reservar un yate",
     solveEyebrow: "¿Qué Resolvemos?",
     solveLead:

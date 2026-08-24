@@ -40,8 +40,30 @@ create table if not exists public.bookings (
   notes text,
   status text not null default 'requested',
   locale text default 'en',
+  amount numeric,
+  payment_method text,
+  trip_kind text,
   created_at timestamptz not null default now()
 );
+
+create table if not exists public.crew_posts (
+  id uuid primary key default gen_random_uuid(),
+  author_name text not null,
+  body text not null,
+  place text,
+  locale text default 'en',
+  created_at timestamptz not null default now()
+);
+
+alter table public.crew_posts enable row level security;
+
+create policy "public read crew posts"
+  on public.crew_posts for select
+  using (true);
+
+create policy "public insert crew posts"
+  on public.crew_posts for insert
+  with check (true);
 
 create table if not exists public.applications (
   id uuid primary key default gen_random_uuid(),

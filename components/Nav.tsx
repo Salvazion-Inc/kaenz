@@ -6,6 +6,7 @@ import { pathFor, type Locale } from "@/lib/locale";
 export function Nav({ locale }: { locale: Locale }) {
   const c = t(locale);
   const links = [
+    { href: "/app", label: c.nav.app },
     { href: "/fleet", label: c.nav.fleet },
     { href: "/book", label: c.nav.book },
     { href: "/concierge", label: c.nav.concierge },
@@ -47,10 +48,10 @@ export function Nav({ locale }: { locale: Locale }) {
         </div>
         <div className="flex items-center gap-3 md:hidden">
           <Link
-            href={pathFor(locale, "/book")}
+            href={pathFor(locale, "/app")}
             className="rounded-full bg-kaenz px-4 py-2 text-xs font-bold text-white"
           >
-            {c.bookNow}
+            {c.nav.app}
           </Link>
           <Link href={other} className="text-xs font-bold tracking-widest">
             {otherLabel}

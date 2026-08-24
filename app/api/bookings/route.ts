@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     guests: Number(body.guests) || 1,
     notes: String(body.notes || ""),
     locale: body.locale === "es" ? "es" : "en",
-    status: "requested",
+    status: String(body.status || "requested"),
   };
 
   const supabase = getSupabase();

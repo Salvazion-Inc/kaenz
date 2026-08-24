@@ -1,0 +1,24 @@
+{
+  "name": "Kaenz",
+  "short_name": "Kaenz",
+  "description": "Leave the car and travel by yacht. Places, yachts, request, your trip, and crew.",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#050a30",
+  "theme_color": "#00a1d6",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
