@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { at, type AppTab } from "@/lib/app-copy";
 import { pathFor, type Locale } from "@/lib/locale";
+import { HtmlLang } from "../HtmlLang";
 import {
   IconCrew,
   IconPin,
@@ -43,6 +44,7 @@ export function AppShell({
 
   return (
     <div className="app-shell min-h-dvh bg-navy text-foam">
+      <HtmlLang locale={locale} />
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[4.5rem] flex-col items-center border-r border-white/10 bg-navy-2 py-4 md:flex">
         <Link href={pathFor(locale, "/app")} className="mb-6">
           <Image src="/brand/logo.png" alt="Kaenz" width={44} height={44} />

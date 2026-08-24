@@ -14,9 +14,17 @@ export const viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://kaenz.com"),
   title: "Kaenz: Leave the Car and travel by Yacht!!",
   description:
     "Kaenz: “We believe that water is the smartest, most beautiful, and most fun way to get around South Florida.”",
+  alternates: {
+    canonical: "https://kaenz.com",
+    languages: {
+      en: "https://kaenz.com",
+      es: "https://kaenz.com/es",
+    },
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Footer } from "./Footer";
+import { HtmlLang } from "./HtmlLang";
 import { Logo } from "./Logo";
 import { Nav } from "./Nav";
 import { t } from "@/lib/copy";
@@ -16,6 +17,7 @@ export function HomePage({ locale }: { locale: Locale }) {
 
   return (
     <div className="bg-navy text-foam">
+      <HtmlLang locale={locale} />
       <section className="relative min-h-screen overflow-hidden">
         <video
           className="absolute inset-0 h-full w-full object-cover"
