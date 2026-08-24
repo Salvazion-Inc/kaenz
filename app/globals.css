@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  --color-kaenz: #00a1d6;
+  --color-kaenz-deep: #0189b8;
+  --color-navy: #050a30;
+  --color-navy-2: #0a1450;
+  --color-foam: #f4f6fc;
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #050a30;
+  color: #f4f6fc;
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: #00a1d6;
+  color: #050a30;
+}
+
+input,
+select,
+textarea {
+  color: #050a30;
+}
+
+.hero-title {
+  letter-spacing: 0.03em;
+  text-shadow: 1px 1px 1.2px rgba(5, 10, 48, 0.4);
+}
