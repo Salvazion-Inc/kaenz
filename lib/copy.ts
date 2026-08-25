@@ -115,6 +115,8 @@ export const copy = {
     legendMarina: "Marina",
     legendPort: "Port",
     hubsLabel: "marinas and ports for yacht arrivals and departures",
+    mapZoomIn: "Zoom in",
+    mapZoomOut: "Zoom out",
     role: "Role",
     joinFee: "Kaenz fee: 30% of the booking. Owner 40%. Captain 30%.",
     joinCaptains:
@@ -259,6 +261,8 @@ export const copy = {
     legendMarina: "Marina",
     legendPort: "Puerto",
     hubsLabel: "marinas y puertos para llegadas y salidas en yate",
+    mapZoomIn: "Acercar",
+    mapZoomOut: "Alejar",
     role: "Rol",
     joinFee: "Tarifa Kaenz: 30% del booking. Dueño 40%. Capitán 30%.",
     joinCaptains:
@@ -404,6 +408,8 @@ export const copy = {
     legendMarina: "Marina",
     legendPort: "Port",
     hubsLabel: "marinas et ports pour arrivées et départs en yacht",
+    mapZoomIn: "Zoom avant",
+    mapZoomOut: "Zoom arrière",
     role: "Rôle",
     joinFee: "Commission Kaenz : 30 % de la réservation. Propriétaire 40 %. Capitaine 30 %.",
     joinCaptains:
@@ -549,6 +555,8 @@ export const copy = {
     legendMarina: "Marina",
     legendPort: "Porto",
     hubsLabel: "marine e porti per arrivi e partenze in yacht",
+    mapZoomIn: "Ingrandisci",
+    mapZoomOut: "Riduci",
     role: "Ruolo",
     joinFee: "Commissione Kaenz: 30% della prenotazione. Proprietario 40%. Capitano 30%.",
     joinCaptains:

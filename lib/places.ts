@@ -1,4 +1,5 @@
-import type { Localized } from "./locale";
+import { countryName } from "./countries";
+import type { Locale, Localized } from "./locale";
 import { worldHubs } from "./world-hubs";
 
 export type PlaceKind = "marina" | "port" | "place";
@@ -17,8 +18,8 @@ export type Place = {
   blurb: Localized;
 };
 
-export function placeCountry(place: Place) {
-  return place.country || "United States";
+export function placeCountry(place: Place, locale: Locale = "en") {
+  return countryName(place.country || "United States", locale);
 }
 
 const southFlorida: Place[] = [

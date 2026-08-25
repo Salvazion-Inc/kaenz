@@ -1,3 +1,4 @@
+import { countryName } from "./countries";
 import type { Place } from "./places";
 
 type HubRow = [
@@ -492,19 +493,23 @@ const rows: HubRow[] = [
 ];
 
 function blurbFor(kind: "marina" | "port", name: string, city: string, country: string) {
+  const enC = countryName(country, "en");
+  const esC = countryName(country, "es");
+  const frC = countryName(country, "fr");
+  const itC = countryName(country, "it");
   if (kind === "port") {
     return {
-      en: `${name} in ${city}, ${country}. Port for yacht arrivals and departures.`,
-      es: `${name} en ${city}, ${country}. Puerto para llegadas y salidas en yate.`,
-      fr: `${name} à ${city}, ${country}. Port pour arrivées et départs en yacht.`,
-      it: `${name} a ${city}, ${country}. Porto per arrivi e partenze in yacht.`,
+      en: `${name} in ${city}, ${enC}. Port for yacht arrivals and departures.`,
+      es: `${name} en ${city}, ${esC}. Puerto para llegadas y salidas en yate.`,
+      fr: `${name} à ${city}, ${frC}. Port pour arrivées et départs en yacht.`,
+      it: `${name} a ${city}, ${itC}. Porto per arrivi e partenze in yacht.`,
     };
   }
   return {
-    en: `${name} in ${city}, ${country}. Marina for yacht arrivals and departures.`,
-    es: `${name} en ${city}, ${country}. Marina para llegadas y salidas en yate.`,
-    fr: `${name} à ${city}, ${country}. Marina pour arrivées et départs en yacht.`,
-    it: `${name} a ${city}, ${country}. Marina per arrivi e partenze in yacht.`,
+    en: `${name} in ${city}, ${enC}. Marina for yacht arrivals and departures.`,
+    es: `${name} en ${city}, ${esC}. Marina para llegadas y salidas en yate.`,
+    fr: `${name} à ${city}, ${frC}. Marina pour arrivées et départs en yacht.`,
+    it: `${name} a ${city}, ${itC}. Marina per arrivi e partenze in yacht.`,
   };
 }
 

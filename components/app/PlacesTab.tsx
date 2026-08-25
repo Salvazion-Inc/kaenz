@@ -20,7 +20,7 @@ export function PlacesTab({ locale }: { locale: Locale }) {
     return places.filter((p) => {
       const okKind = kind === "all" || p.kind === kind;
       const hay =
-        `${p.name} ${p.city} ${placeCountry(p)} ${p.blurb[locale]}`.toLowerCase();
+        `${p.name} ${p.city} ${placeCountry(p, locale)} ${p.blurb[locale]}`.toLowerCase();
       return okKind && hay.includes(q.toLowerCase());
     });
   }, [q, kind, locale]);
@@ -79,7 +79,9 @@ export function PlacesTab({ locale }: { locale: Locale }) {
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-kaenz">
                   {c.kinds[p.kind]} · {p.city}
-                  {placeCountry(p) !== p.city ? ` · ${placeCountry(p)}` : ""}
+                  {placeCountry(p, locale) !== p.city
+                    ? ` · ${placeCountry(p, locale)}`
+                    : ""}
                 </p>
                 <h2 className="truncate text-base font-bold">{p.name}</h2>
                 <p className="mt-1 line-clamp-2 text-xs text-white/70">

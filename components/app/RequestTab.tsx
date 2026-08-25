@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { at } from "@/lib/app-copy";
 import { pathFor, type Locale } from "@/lib/locale";
-import { places } from "@/lib/places";
+import { placeCountry, places } from "@/lib/places";
 import { formatUsd, yachts } from "@/lib/yachts";
 import { useTrip, type TripKind } from "@/lib/trip-store";
 
@@ -55,8 +55,7 @@ export function RequestTab({ locale }: { locale: Locale }) {
           >
             {places.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name} — {p.city}
-                {p.country ? `, ${p.country}` : ""}
+                {p.name} — {p.city}, {placeCountry(p, locale)}
               </option>
             ))}
           </select>
@@ -70,8 +69,7 @@ export function RequestTab({ locale }: { locale: Locale }) {
           >
             {places.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name} — {p.city}
-                {p.country ? `, ${p.country}` : ""}
+                {p.name} — {p.city}, {placeCountry(p, locale)}
               </option>
             ))}
           </select>

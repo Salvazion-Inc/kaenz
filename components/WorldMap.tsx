@@ -10,6 +10,12 @@ import { mapHubs, placeCountry, type Place } from "@/lib/places";
 const FLORIDA: [number, number] = [26.05, -80.14];
 const WORLD: [number, number] = [22, 8];
 
+function tooltipFor(place: Place, locale: Locale) {
+  const c = t(locale);
+  const kind = place.kind === "port" ? c.legendPort : c.legendMarina;
+  return `${kind} · ${place.name} · ${place.city}, ${placeCountry(place, locale)}`;
+}
+
 export function WorldMap({
   locale,
   variant = "site",
@@ -25,6 +31,13 @@ export function WorldMap({
   const a = at(locale);
   const host = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
+  const leafletRef = useRef<typeof import("leaflet") | null>(null);
+  const markersRef = useRef<
+    { place: Place; marker: import("leaflet").Marker }[]
+  >([]);
+  const zoomRef = useRef<import("leaflet").Control.Zoom | null>(null);
+  const localeRef = useRef(locale);
+  localeRef.current = locale;
   const [selected, setSelected] = useState<Place | null>(null);
 
   useEffect(() => {
@@ -34,9 +47,10 @@ export function WorldMap({
     async function mount() {
       const L = await import("leaflet");
       if (cancelled || !host.current) return;
+      leafletRef.current = L;
 
       map = L.map(host.current, {
-        zoomControl: true,
+        zoomControl: false,
         attributionControl: true,
         minZoom: 2,
         maxZoom: 12,
@@ -53,6 +67,15 @@ export function WorldMap({
         },
       ).addTo(map);
 
+      const zoom = L.control.zoom({
+        position: "topleft",
+        zoomInTitle: t(locale).mapZoomIn,
+        zoomOutTitle: t(locale).mapZoomOut,
+      });
+      zoom.addTo(map);
+      zoomRef.current = zoom;
+
+      const placed: { place: Place; marker: import("leaflet").Marker }[] = [];
       for (const place of mapHubs) {
         const pin = L.divIcon({
           className: `kaenz-pin ${place.kind === "port" ? "kaenz-pin-port" : "kaenz-pin-marina"}`,
@@ -60,10 +83,10 @@ export function WorldMap({
           iconAnchor: [7, 7],
         });
         const marker = L.marker([place.lat, place.lng], { icon: pin });
-        marker.bindTooltip(
-          `${place.name} · ${place.city}`,
-          { direction: "top", offset: [0, -8] },
-        );
+        marker.bindTooltip(tooltipFor(place, localeRef.current), {
+          direction: "top",
+          offset: [0, -8],
+        });
         marker.on("click", () => {
           setSelected(place);
           map?.flyTo([place.lat, place.lng], Math.max(map.getZoom(), 7), {
@@ -71,7 +94,9 @@ export function WorldMap({
           });
         });
         marker.addTo(map);
+        placed.push({ place, marker });
       }
+      markersRef.current = placed;
     }
 
     void mount();
@@ -79,8 +104,33 @@ export function WorldMap({
       cancelled = true;
       map?.remove();
       mapRef.current = null;
+      markersRef.current = [];
+      zoomRef.current = null;
     };
+    // Map instance is created once; locale chrome updates in the next effect.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const L = leafletRef.current;
+    const map = mapRef.current;
+    if (!L || !map) return;
+
+    for (const { place, marker } of markersRef.current) {
+      marker.setTooltipContent(tooltipFor(place, locale));
+    }
+
+    if (zoomRef.current) {
+      map.removeControl(zoomRef.current);
+    }
+    const zoom = L.control.zoom({
+      position: "topleft",
+      zoomInTitle: t(locale).mapZoomIn,
+      zoomOutTitle: t(locale).mapZoomOut,
+    });
+    zoom.addTo(map);
+    zoomRef.current = zoom;
+  }, [locale]);
 
   function fly(center: [number, number], zoom: number) {
     mapRef.current?.flyTo(center, zoom, { duration: 0.9 });
@@ -132,11 +182,11 @@ export function WorldMap({
         <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4">
           <p className="text-[10px] font-bold uppercase tracking-widest text-kaenz">
             {selected.kind === "port" ? c.legendPort : c.legendMarina} ·{" "}
-            {placeCountry(selected)}
+            {placeCountry(selected, locale)}
           </p>
           <h3 className="mt-1 text-lg font-bold">{selected.name}</h3>
           <p className="text-sm text-white/70">
-            {selected.city}, {placeCountry(selected)}
+            {selected.city}, {placeCountry(selected, locale)}
           </p>
           <p className="mt-2 text-sm text-white/80">{selected.blurb[locale]}</p>
           {variant === "app" && (onPickup || onDropoff) ? (

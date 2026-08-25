@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { t } from "@/lib/copy";
 import type { Locale } from "@/lib/locale";
-import { mapHubs } from "@/lib/places";
+import { mapHubs, placeCountry } from "@/lib/places";
 import { yachts } from "@/lib/yachts";
 
 export function BookForm({
@@ -85,7 +85,7 @@ export function BookForm({
           >
             {mapHubs.map((m) => (
               <option key={m.id} value={m.name}>
-                {m.name} — {m.city}
+                {m.name} — {m.city}, {placeCountry(m, locale)}
               </option>
             ))}
           </select>
@@ -99,7 +99,7 @@ export function BookForm({
           >
             {mapHubs.map((m) => (
               <option key={m.id} value={m.name}>
-                {m.name} — {m.city}
+                {m.name} — {m.city}, {placeCountry(m, locale)}
               </option>
             ))}
           </select>
