@@ -149,6 +149,9 @@ export const copy = {
     passwordShort: "Use at least 8 characters.",
     sessionNeeded: "Log in to open the Kaenz platform.",
     nameRequired: "Full name is required.",
+    googleCta: "Continue with Gmail",
+    orContinue: "or",
+    googleError: "Could not sign in with Gmail. Try again.",
   },
   es: {
     metaTitle: "Kaenz: ¡Deja el Auto y viaja en Yate!",
@@ -298,6 +301,9 @@ export const copy = {
     passwordShort: "Usa al menos 8 caracteres.",
     sessionNeeded: "Entra para abrir la plataforma Kaenz.",
     nameRequired: "El nombre completo es obligatorio.",
+    googleCta: "Continuar con Gmail",
+    orContinue: "o",
+    googleError: "No se pudo entrar con Gmail. Inténtalo de nuevo.",
   },
   fr: {
     metaTitle: "Kaenz : Laissez la voiture, voyagez en yacht !",
@@ -448,6 +454,9 @@ export const copy = {
     passwordShort: "Utilisez au moins 8 caractères.",
     sessionNeeded: "Connectez-vous pour ouvrir la plateforme Kaenz.",
     nameRequired: "Le nom complet est obligatoire.",
+    googleCta: "Continuer avec Gmail",
+    orContinue: "ou",
+    googleError: "Connexion Gmail impossible. Réessayez.",
   },
   it: {
     metaTitle: "Kaenz: Lascia l’auto e viaggia in yacht!",
@@ -598,6 +607,9 @@ export const copy = {
     passwordShort: "Usa almeno 8 caratteri.",
     sessionNeeded: "Accedi per aprire la piattaforma Kaenz.",
     nameRequired: "Il nome completo è obbligatorio.",
+    googleCta: "Continua con Gmail",
+    orContinue: "oppure",
+    googleError: "Accesso con Gmail non riuscito. Riprova.",
   },
   pt: {
     metaTitle: "Kaenz: Deixe o carro e viaje de iate!",
@@ -747,6 +759,9 @@ export const copy = {
     passwordShort: "Use pelo menos 8 caracteres.",
     sessionNeeded: "Entre para abrir a plataforma Kaenz.",
     nameRequired: "O nome completo é obrigatório.",
+    googleCta: "Continuar com Gmail",
+    orContinue: "ou",
+    googleError: "Não foi possível entrar com Gmail. Tente de novo.",
   },
 } as const;
 
