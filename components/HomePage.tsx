@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Footer } from "./Footer";
 import { HtmlLang } from "./HtmlLang";
-import { Logo } from "./Logo";
 import { Nav } from "./Nav";
 import { t } from "@/lib/copy";
 import { pathFor, type Locale } from "@/lib/locale";
@@ -49,9 +48,6 @@ export function HomePage({ locale }: { locale: Locale }) {
               {c.heroSecondary}
             </Link>
           </div>
-        </div>
-        <div className="absolute bottom-6 left-6 z-10 hidden md:block">
-          <Logo size={96} />
         </div>
       </section>
 
