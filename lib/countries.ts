@@ -85,6 +85,13 @@ const names: Record<string, Record<Locale, string>> = {
   Greece: { en: "Greece", es: "Grecia", fr: "Grèce", it: "Grecia" },
   Croatia: { en: "Croatia", es: "Croacia", fr: "Croatie", it: "Croazia" },
   Montenegro: { en: "Montenegro", es: "Montenegro", fr: "Monténégro", it: "Montenegro" },
+  Albania: { en: "Albania", es: "Albania", fr: "Albanie", it: "Albania" },
+  "Bosnia and Herzegovina": {
+    en: "Bosnia and Herzegovina",
+    es: "Bosnia y Herzegovina",
+    fr: "Bosnie-Herzégovine",
+    it: "Bosnia ed Erzegovina",
+  },
   Slovenia: { en: "Slovenia", es: "Eslovenia", fr: "Slovénie", it: "Slovenia" },
   Gibraltar: { en: "Gibraltar", es: "Gibraltar", fr: "Gibraltar", it: "Gibilterra" },
   Malta: { en: "Malta", es: "Malta", fr: "Malte", it: "Malta" },
