@@ -18,7 +18,7 @@ import {
   readOauthState,
   safeNext,
 } from "@/lib/google-oauth";
-import { getSupabase } from "@/lib/supabase";
+import { ensureSupabaseUser } from "@/lib/supabase";
 import {
   applyCookies,
   createRouteSupabase,
@@ -65,6 +65,11 @@ async function finishLogin(
   } else if (!account.name || account.name === account.email) {
     account.name = user.name;
   }
+  const saved = await ensureSupabaseUser(account.email, account.name);
+  if (saved) {
+    account.id = saved.id;
+    account.name = saved.name || account.name;
+  }
   const session = await createSessionToken({
     id: account.id,
     email: account.email,
@@ -74,18 +79,6 @@ async function finishLogin(
   res.headers.append("Set-Cookie", sessionCookie(session));
   res.headers.append("Set-Cookie", accountsCookie(vault));
   res.headers.append("Set-Cookie", clearOauthStateCookie());
-  const admin = getSupabase();
-  if (admin) {
-    try {
-      await admin.from("profiles").upsert({
-        id: account.id,
-        full_name: account.name,
-        role: "client",
-      });
-    } catch {
-      /* schema may not be applied yet */
-    }
-  }
   return res;
 }
 
@@ -111,7 +104,6 @@ export async function GET(req: Request) {
         return finishLogin(req, res, { id: data.user.id, email, name });
       }
     }
-    return fail(req, next);
   }
 
   const nonce = url.searchParams.get("state");

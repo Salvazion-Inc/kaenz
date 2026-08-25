@@ -3,7 +3,6 @@ import {
   createOauthStart,
   googleAuthUrl,
   googleCallbackUrl,
-  googleConfigured,
   oauthStateCookie,
   safeNext,
 } from "@/lib/google-oauth";
@@ -23,24 +22,26 @@ export async function GET(req: Request) {
   if (supabaseConfigured()) {
     const pending: Parameters<typeof applyCookies>[1] = [];
     const supabase = createRouteSupabase(req, pending);
-    if (!supabase) return NextResponse.redirect(fail);
-    const redirectTo = `${googleCallbackUrl(req)}?next=${encodeURIComponent(next)}`;
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo,
-        skipBrowserRedirect: true,
-        queryParams: {
-          access_type: "online",
-          prompt: "select_account",
+    if (supabase) {
+      const redirectTo = `${googleCallbackUrl(req)}?next=${encodeURIComponent(next)}`;
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+          skipBrowserRedirect: true,
+          queryParams: {
+            access_type: "online",
+            prompt: "select_account",
+          },
         },
-      },
-    });
-    if (error || !data.url) return NextResponse.redirect(fail);
-    return applyCookies(NextResponse.redirect(data.url), pending);
+      });
+      if (!error && data.url) {
+        return applyCookies(NextResponse.redirect(data.url), pending);
+      }
+    }
   }
 
-  if (!googleConfigured()) {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
     return NextResponse.redirect(fail);
   }
   const start = await createOauthStart(next);
