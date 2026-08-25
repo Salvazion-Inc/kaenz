@@ -1,3 +1,4 @@
+import { parseLocale } from "@/lib/locale";
 import { getSupabase } from "@/lib/supabase";
 
 export async function POST(req: Request) {
@@ -19,7 +20,7 @@ export async function POST(req: Request) {
     trip_time: String(body.trip_time || ""),
     guests: Number(body.guests) || 1,
     notes: String(body.notes || ""),
-    locale: body.locale === "es" ? "es" : "en",
+    locale: parseLocale(body.locale),
     status: String(body.status || "requested"),
   };
 

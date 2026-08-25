@@ -1,3 +1,5 @@
+import type { Localized } from "./locale";
+
 export type PlaceKind = "marina" | "port" | "place";
 
 export type Place = {
@@ -10,7 +12,7 @@ export type Place = {
   image: string;
   minutesByYacht: number;
   minutesByCar: number;
-  blurb: { en: string; es: string };
+  blurb: Localized;
 };
 
 export const places: Place[] = [
@@ -27,6 +29,8 @@ export const places: Place[] = [
     blurb: {
       en: "Prime slip for skyline hops to Brickell and South Beach.",
       es: "Muelle principal para saltos al skyline de Brickell y South Beach.",
+      fr: "Emplacement premium pour des sauts skyline vers Brickell et South Beach.",
+      it: "Ormeggio principale per salti skyline verso Brickell e South Beach.",
     },
   },
   {
@@ -42,6 +46,8 @@ export const places: Place[] = [
     blurb: {
       en: "Closest professional marina to South Beach on the MacArthur Causeway.",
       es: "La marina profesional más cercana a South Beach en la calzada MacArthur.",
+      fr: "Marina professionnelle la plus proche de South Beach sur la MacArthur Causeway.",
+      it: "La marina professionale più vicina a South Beach sulla MacArthur Causeway.",
     },
   },
   {
@@ -57,6 +63,8 @@ export const places: Place[] = [
     blurb: {
       en: "Heart of the Venice of America — yachts, Las Olas, and the New River.",
       es: "Corazón de la Venecia de América — yates, Las Olas y el New River.",
+      fr: "Cœur de la Venise d’Amérique — yachts, Las Olas et la New River.",
+      it: "Cuore della Venezia d’America — yacht, Las Olas e il New River.",
     },
   },
   {
@@ -72,6 +80,8 @@ export const places: Place[] = [
     blurb: {
       en: "Gateway to the Hollywood Beach sandbar in about 35 minutes from FTL.",
       es: "Puerta al sandbar de Hollywood Beach en unos 35 minutos desde FTL.",
+      fr: "Porte d’entrée du sandbar de Hollywood Beach en environ 35 minutes depuis FTL.",
+      it: "Porta al sandbar di Hollywood Beach in circa 35 minuti da FTL.",
     },
   },
   {
@@ -87,6 +97,8 @@ export const places: Place[] = [
     blurb: {
       en: "Sunset run from Fort Lauderdale — romance on the Intracoastal.",
       es: "Travesía al atardecer desde Fort Lauderdale por el Intracoastal.",
+      fr: "Traversée au coucher du soleil depuis Fort Lauderdale sur l’Intracoastal.",
+      it: "Traversata al tramonto da Fort Lauderdale sull’Intracoastal.",
     },
   },
   {
@@ -102,6 +114,8 @@ export const places: Place[] = [
     blurb: {
       en: "Coconut Grove classic. Easy Biscayne Bay cruising.",
       es: "Clásico de Coconut Grove. Crucero fácil por Biscayne Bay.",
+      fr: "Classique de Coconut Grove. Croisière facile sur Biscayne Bay.",
+      it: "Classico di Coconut Grove. Crociera facile su Biscayne Bay.",
     },
   },
   {
@@ -117,6 +131,8 @@ export const places: Place[] = [
     blurb: {
       en: "Ocean inlet access. Skip the bridges north of Miami Beach.",
       es: "Acceso al océano. Evita los puentes al norte de Miami Beach.",
+      fr: "Accès à l’océan. Évitez les ponts au nord de Miami Beach.",
+      it: "Accesso all’oceano. Evita i ponti a nord di Miami Beach.",
     },
   },
   {
@@ -132,6 +148,8 @@ export const places: Place[] = [
     blurb: {
       en: "Deep-water port. Meet cruise guests by yacht instead of by car.",
       es: "Puerto de aguas profundas. Recoge a cruceristas en yate, no en auto.",
+      fr: "Port en eaux profondes. Récupérez les croisiéristes en yacht, pas en voiture.",
+      it: "Porto di acque profonde. Raccogli i crocieristi in yacht, non in auto.",
     },
   },
   {
@@ -147,6 +165,8 @@ export const places: Place[] = [
     blurb: {
       en: "Cruise capital of the world. Water transfer beats downtown traffic.",
       es: "Capital mundial de cruceros. El traslado por agua gana al tráfico.",
+      fr: "Capitale mondiale des croisières. Le transfert par eau bat le trafic du centre.",
+      it: "Capitale mondiale delle crociere. Il trasferimento via acqua batte il traffico.",
     },
   },
   {
@@ -162,6 +182,8 @@ export const places: Place[] = [
     blurb: {
       en: "Anchor, swim, paddle. The family-day sandbar from Fort Lauderdale.",
       es: "Ancla, nado y paddle. El sandbar familiar desde Fort Lauderdale.",
+      fr: "Ancrez, nagez, pagayez. Le sandbar familial depuis Fort Lauderdale.",
+      it: "Ancora, nuoto e paddle. Il sandbar in famiglia da Fort Lauderdale.",
     },
   },
   {
@@ -177,6 +199,8 @@ export const places: Place[] = [
     blurb: {
       en: "Miami Beach to Brickell in 18 minutes. Goodbye traffic.",
       es: "De Miami Beach a Brickell en 18 minutos. Adiós tráfico.",
+      fr: "Miami Beach à Brickell en 18 minutes. Adieu le trafic.",
+      it: "Da Miami Beach a Brickell in 18 minuti. Addio traffico.",
     },
   },
   {
@@ -192,6 +216,8 @@ export const places: Place[] = [
     blurb: {
       en: "Slow cruise past the most photographed waterfront homes in Miami.",
       es: "Crucero lento frente a las casas más fotografiadas de Miami.",
+      fr: "Croisière lente devant les maisons les plus photographiées de Miami.",
+      it: "Crociera lenta davanti alle case più fotografate di Miami.",
     },
   },
   {
@@ -207,6 +233,8 @@ export const places: Place[] = [
     blurb: {
       en: "Open water, skyline views, and the highway of the future.",
       es: "Aguas abiertas, skyline y la autopista del futuro.",
+      fr: "Eaux ouvertes, vues sur le skyline et l’autoroute du futur.",
+      it: "Acque aperte, skyline e l’autostrada del futuro.",
     },
   },
   {
@@ -222,6 +250,8 @@ export const places: Place[] = [
     blurb: {
       en: "Fort Lauderdale to Palm Beach in 45 minutes at golden hour.",
       es: "De Fort Lauderdale a Palm Beach en 45 minutos al atardecer.",
+      fr: "Fort Lauderdale à Palm Beach en 45 minutes à l’heure dorée.",
+      it: "Da Fort Lauderdale a Palm Beach in 45 minuti all’ora d’oro.",
     },
   },
   {
@@ -237,6 +267,8 @@ export const places: Place[] = [
     blurb: {
       en: "Arrive by water. No valet line on Ocean Drive.",
       es: "Llega por agua. Sin fila de valet en Ocean Drive.",
+      fr: "Arrivez par l’eau. Pas de file de voiturier sur Ocean Drive.",
+      it: "Arriva via acqua. Niente fila del valet su Ocean Drive.",
     },
   },
 ];

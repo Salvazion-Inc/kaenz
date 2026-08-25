@@ -11,10 +11,7 @@ export function ConciergeChat({ locale }: { locale: Locale }) {
   const [messages, setMessages] = useState<Msg[]>([
     {
       role: "assistant",
-      content:
-        locale === "es"
-          ? "Soy el concierge de Kaenz. Dime origen, destino, número de personas y hora. Te propongo yate y ruta más rápida que el auto."
-          : "I’m the Kaenz concierge. Tell me origin, destination, party size, and time. I’ll match a yacht and a route that’s faster than the car.",
+      content: t(locale).conciergeHello,
     },
   ]);
   const [input, setInput] = useState("");
@@ -57,12 +54,8 @@ export function ConciergeChat({ locale }: { locale: Locale }) {
     } catch (err) {
       const fallback =
         err instanceof Error && err.message.includes("XAI")
-          ? locale === "es"
-            ? "Falta XAI_API_KEY en el servidor. Añádela para activar Grok."
-            : "Missing XAI_API_KEY on the server. Add it to enable Grok."
-          : locale === "es"
-            ? "El concierge no está disponible ahora. Reserva directo en la flota."
-            : "Concierge is unavailable right now. Book directly from the fleet.";
+          ? c.conciergeMissingKey
+          : c.conciergeUnavailable;
       setMessages((m) => {
         const copy = [...m];
         copy[copy.length - 1] = { role: "assistant", content: fallback };

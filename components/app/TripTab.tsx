@@ -34,27 +34,19 @@ export function TripTab({ locale }: { locale: Locale }) {
     if (trip.payMethod === "card") {
       const digits = card.replace(/\s/g, "");
       if (digits.length < 13 || digits.length > 19) {
-        setError(
-          locale === "es"
-            ? "Revisa el número de tarjeta."
-            : "Check the card number.",
-        );
+        setError(c.errCard);
         return;
       }
       if (!/^\d{2}\/\d{2}$/.test(exp)) {
-        setError(locale === "es" ? "Usa MM/AA." : "Use MM/YY.");
+        setError(c.errExp);
         return;
       }
       if (!/^\d{3,4}$/.test(cvc)) {
-        setError(locale === "es" ? "CVC inválido." : "Invalid CVC.");
+        setError(c.errCvc);
         return;
       }
     } else if (wallet.trim().length < 32) {
-      setError(
-        locale === "es"
-          ? "Billetera Solana incompleta."
-          : "Solana wallet looks incomplete.",
-      );
+      setError(c.errWallet);
       return;
     }
     setBusy(true);
@@ -83,11 +75,7 @@ export function TripTab({ locale }: { locale: Locale }) {
       if (!res.ok) throw new Error(data.error || "Error");
       setTrip({ status: "confirmed", bookingId: data.id });
     } catch {
-      setError(
-        locale === "es"
-          ? "No se pudo confirmar. Inténtalo de nuevo."
-          : "Could not confirm. Try again.",
-      );
+      setError(c.errConfirm);
     } finally {
       setBusy(false);
     }

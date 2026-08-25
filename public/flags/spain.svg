@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" width="48" height="32" role="img" aria-label="España">
+  <!-- Flat Spain flag — same 3:2 canvas as Salvazion chips -->
+  <rect width="48" height="32" fill="#C60B1E"/>
+  <rect y="8" width="48" height="16" fill="#FFC400"/>
+  <rect x="12" y="12.2" width="7.2" height="8.4" rx="0.6" fill="#C60B1E"/>
+  <rect x="12.55" y="12.7" width="2.7" height="7.4" fill="#AA151B"/>
+  <rect x="15.25" y="12.7" width="3.4" height="7.4" fill="#F1BF00"/>
+  <circle cx="16.95" cy="16.4" r="1.15" fill="#C60B1E"/>
+</svg>

@@ -38,3 +38,28 @@ textarea {
 .app-shell {
   padding-top: env(safe-area-inset-top);
 }
+
+.lang-flag {
+  display: block;
+  overflow: hidden;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.38);
+  opacity: 0.78;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.lang-flag:hover {
+  opacity: 1;
+  transform: scale(1.06);
+}
+
+.lang-flag-active {
+  opacity: 1;
+  transform: scale(1.1);
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 8px rgba(0, 161, 214, 0.55);
+}

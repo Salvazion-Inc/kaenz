@@ -7,6 +7,9 @@ export const metadata = {
     languages: {
       en: "https://kaenz.com/app",
       es: "https://kaenz.com/es/app",
+      fr: "https://kaenz.com/fr/app",
+      it: "https://kaenz.com/it/app",
+      "x-default": "https://kaenz.com/app",
     },
   },
   appleWebApp: {

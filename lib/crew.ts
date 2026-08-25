@@ -1,9 +1,11 @@
+import type { Localized } from "./locale";
+
 export type CrewMember = {
   id: string;
   name: string;
   city: string;
   photo: string;
-  bio: { en: string; es: string };
+  bio: Localized;
   interests: string[];
   goingTo: string;
 };
@@ -11,7 +13,7 @@ export type CrewMember = {
 export type CrewPost = {
   id: string;
   authorId: string;
-  body: { en: string; es: string };
+  body: Localized;
   place: string;
   likes: number;
   when: string;
@@ -26,6 +28,8 @@ export const crew: CrewMember[] = [
     bio: {
       en: "Family sandbar Sundays. Always bringing extra towels.",
       es: "Domingos de sandbar en familia. Siempre lleva toallas extra.",
+      fr: "Dimanches sandbar en famille. Toujours des serviettes en plus.",
+      it: "Domeniche sandbar in famiglia. Porta sempre asciugamani extra.",
     },
     interests: ["sandbar", "family", "Hollywood Beach"],
     goingTo: "Hollywood Beach Sandbar",
@@ -38,6 +42,8 @@ export const crew: CrewMember[] = [
     bio: {
       en: "Brickell commute by water. Never sitting on I-95 again.",
       es: "Va a Brickell por agua. Nunca más en la I-95.",
+      fr: "Trajet vers Brickell par l’eau. Plus jamais sur l’I-95.",
+      it: "Tragitto per Brickell via acqua. Mai più sull’I-95.",
     },
     interests: ["commute", "Brickell", "skyline"],
     goingTo: "Brickell Waterfront",
@@ -50,6 +56,8 @@ export const crew: CrewMember[] = [
     bio: {
       en: "Sunset runs and quiet Intracoastal evenings.",
       es: "Atardeceres y noches tranquilas en el Intracoastal.",
+      fr: "Traversées au coucher du soleil et soirs calmes sur l’Intracoastal.",
+      it: "Tramonti e sere tranquille sull’Intracoastal.",
     },
     interests: ["sunset", "Palm Beach", "romance"],
     goingTo: "Intracoastal Sunset",
@@ -62,6 +70,8 @@ export const crew: CrewMember[] = [
     bio: {
       en: "Captain and host. Celebrations on Las Olas 70.",
       es: "Capitán y anfitrión. Celebraciones en el Las Olas 70.",
+      fr: "Capitaine et hôte. Célébrations à bord du Las Olas 70.",
+      it: "Capitano e host. Celebrazioni sul Las Olas 70.",
     },
     interests: ["captain", "celebrations", "Las Olas"],
     goingTo: "Las Olas Marina",
@@ -74,6 +84,8 @@ export const crew: CrewMember[] = [
     bio: {
       en: "Star Island photo cruises and South Beach arrivals.",
       es: "Cruceros fotográficos por Star Island y llegadas a South Beach.",
+      fr: "Croisières photo à Star Island et arrivées à South Beach.",
+      it: "Crociere fotografiche a Star Island e arrivi a South Beach.",
     },
     interests: ["South Beach", "photos", "Star Island"],
     goingTo: "Star Island & Millionaire's Row",
@@ -86,6 +98,8 @@ export const crew: CrewMember[] = [
     bio: {
       en: "USCG-licensed. Sandbar briefing before every splash.",
       es: "Licencia USCG. Briefing de sandbar antes de cada chapuzón.",
+      fr: "Licencié USCG. Briefing sandbar avant chaque plongeon.",
+      it: "Licenza USCG. Briefing sandbar prima di ogni tuffo.",
     },
     interests: ["captain", "sandbar", "safety"],
     goingTo: "Hollywood Beach Sandbar",
@@ -99,6 +113,8 @@ export const crewFeed: CrewPost[] = [
     body: {
       en: "Miami Beach → Brickell in 18 minutes. The car still has not left the causeway.",
       es: "Miami Beach → Brickell en 18 minutos. El auto aún no sale de la calzada.",
+      fr: "Miami Beach → Brickell en 18 minutes. La voiture n’a toujours pas quitté la chaussée.",
+      it: "Miami Beach → Brickell in 18 minuti. L’auto non ha ancora lasciato la calzata.",
     },
     place: "Brickell Waterfront",
     likes: 48,
@@ -110,6 +126,8 @@ export const crewFeed: CrewPost[] = [
     body: {
       en: "Sandbar is glass today. Who wants to raft up around 1pm?",
       es: "El sandbar está como un espejo. ¿Quién se acerca a la 1pm?",
+      fr: "Le sandbar est comme un miroir. Qui vient s’amarrer vers 13 h ?",
+      it: "Il sandbar è uno specchio. Chi si unisce verso le 13?",
     },
     place: "Hollywood Beach Sandbar",
     likes: 73,
@@ -121,6 +139,8 @@ export const crewFeed: CrewPost[] = [
     body: {
       en: "Golden hour from FTL to Palm Beach. Bring a jacket for the flybridge.",
       es: "Hora dorada de FTL a Palm Beach. Lleva una chaqueta para el flybridge.",
+      fr: "Heure dorée de FTL à Palm Beach. Prenez une veste pour le flybridge.",
+      it: "Ora d’oro da FTL a Palm Beach. Porta una giacca per il flybridge.",
     },
     place: "Intracoastal Sunset",
     likes: 61,
@@ -132,6 +152,8 @@ export const crewFeed: CrewPost[] = [
     body: {
       en: "Slow pass by Star Island this Saturday. Extra seat if you travel light.",
       es: "Paso lento por Star Island este sábado. Hay un asiento si viajas ligero.",
+      fr: "Passage lent devant Star Island samedi. Place en plus si vous voyagez léger.",
+      it: "Passaggio lento a Star Island sabato. Posto extra se viaggi leggero.",
     },
     place: "Star Island & Millionaire's Row",
     likes: 39,

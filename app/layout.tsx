@@ -23,6 +23,9 @@ export const metadata: Metadata = {
     languages: {
       en: "https://kaenz.com",
       es: "https://kaenz.com/es",
+      fr: "https://kaenz.com/fr",
+      it: "https://kaenz.com/it",
+      "x-default": "https://kaenz.com",
     },
   },
   manifest: "/manifest.json",

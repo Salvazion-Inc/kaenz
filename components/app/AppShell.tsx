@@ -2,10 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { at, type AppTab } from "@/lib/app-copy";
 import { pathFor, type Locale } from "@/lib/locale";
 import { HtmlLang } from "../HtmlLang";
+import { LanguageSwitcher } from "../LanguageSwitcher";
 import {
   IconCrew,
   IconPin,
@@ -36,11 +36,6 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   const c = at(locale);
-  const pathname = usePathname();
-  const otherHref =
-    locale === "en"
-      ? `/es${pathname}`
-      : pathname.replace(/^\/es/, "") || "/";
 
   return (
     <div className="app-shell min-h-dvh bg-navy text-foam">
@@ -83,9 +78,7 @@ export function AppShell({
           </div>
         </div>
         <div className="flex items-center gap-3 text-xs font-semibold">
-          <Link href={otherHref} className="rounded-full border border-white/25 px-2 py-1">
-            {locale === "en" ? "ES" : "EN"}
-          </Link>
+          <LanguageSwitcher locale={locale} compact />
           <Link href={pathFor(locale, "/")} className="text-white/60">
             {c.openMarketing}
           </Link>

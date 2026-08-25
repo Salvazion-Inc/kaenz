@@ -16,11 +16,17 @@ export function middleware(request: NextRequest) {
   }
 
   if (APP_HOSTS.has(host)) {
-    const dest = pathname.startsWith("/es")
-      ? `${SITE}/es/app${pathname.replace(/^\/es/, "").replace(/^\/app/, "") || ""}`
-      : pathname.startsWith("/app")
-        ? `${SITE}${pathname}${search}`
-        : `${SITE}/app${pathname === "/" ? "" : pathname}${search}`;
+    const prefixed = pathname.match(/^\/(es|fr|it)(?=\/|$)/);
+    let dest: string;
+    if (prefixed) {
+      const rest =
+        pathname.slice(prefixed[0].length).replace(/^\/app/, "") || "";
+      dest = `${SITE}/${prefixed[1]}/app${rest}${search}`;
+    } else if (pathname.startsWith("/app")) {
+      dest = `${SITE}${pathname}${search}`;
+    } else {
+      dest = `${SITE}/app${pathname === "/" ? "" : pathname}${search}`;
+    }
     return NextResponse.redirect(dest, 308);
   }
 

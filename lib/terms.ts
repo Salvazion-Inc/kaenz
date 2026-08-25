@@ -1,3 +1,5 @@
+import type { Locale } from "./locale";
+
 export const termsEn = {
   title: "Terms and Conditions",
   intro:
@@ -101,3 +103,118 @@ export const termsEs = {
     },
   ],
 };
+
+export const termsFr = {
+  title: "Conditions générales",
+  intro:
+    "Conditions d’utilisation de Kaenz Yacht. Date d’entrée en vigueur : 23 février 2026. IMPORTANT : LISEZ ATTENTIVEMENT CES CONDITIONS AVANT D’UTILISER L’APPLICATION KAENZ. En créant un compte, en inscrivant un yacht, en proposant des services de capitaine ou en réservant un trajet sur l’application ou le site Kaenz Yacht (« Plateforme »), vous acceptez d’être légalement lié par ces Conditions. Si vous n’êtes pas d’accord, vous ne pouvez pas utiliser la Plateforme.",
+  sections: [
+    {
+      heading: "1. Définitions",
+      body: "Client / Utilisateur : toute personne qui réserve ou participe à un trajet en yacht via la Plateforme. Propriétaire du yacht : toute personne ou entité qui inscrit un yacht. Capitaine : tout capitaine licencié qui assure la navigation et la sécurité. Plateforme / Kaenz Yacht : la technologie marketplace qui relie Clients, Propriétaires et Capitaines. Trajet : une expérience privée avec équipage réservée via la Plateforme.",
+    },
+    {
+      heading: "2. Notre rôle",
+      body: "Kaenz Yacht est uniquement une plateforme technologique. Nous ne sommes ni un opérateur de charter, ni un propriétaire de bateaux, ni l’employeur des capitaines. Nous ne possédons, n’exploitons ni ne contrôlons aucun yacht ni capitaine. Tous les trajets sont fournis directement par des Propriétaires et Capitaines indépendants.",
+    },
+    {
+      heading: "3. Éligibilité et inscription",
+      body: "Vous devez avoir au moins 18 ans. Vous devez fournir des informations exactes et les tenir à jour. Les clients doivent disposer d’une pièce d’identité officielle. Les propriétaires doivent posséder le yacht et fournir l’immatriculation de Floride, le HIN et une preuve d’assurance. Les capitaines doivent détenir une credencial USCG Merchant Mariner (OUPV « Six-Pack » ou supérieure) et, le cas échéant, une licence FWC, et passer notre vérification des antécédents.",
+    },
+    {
+      heading: "4. Conditions par rôle",
+      body: "Les clients sont responsables de leur sécurité et de leur conduite, doivent suivre le capitaine, et ne peuvent pas apporter de substances illégales ni d’armes. Les propriétaires doivent maintenir une assurance maritime commerciale (minimum 1 000 000 $ de responsabilité) et un yacht en état de naviguer. Les capitaines sont des prestataires indépendants responsables de la navigation sûre, du briefing de sécurité et de l’équipement requis. Kaenz Yacht n’emploie pas de capitaines.",
+    },
+    {
+      heading: "5. Réservations, paiements et commissions",
+      body: "Toute réservation est définitive une fois confirmée par le Propriétaire/Capitaine. Les paiements transitent par notre système sécurisé (fiat ou cryptomonnaie sur Solana). Les paiements en crypto sont irréversibles. La commission Kaenz Yacht est de 30 % du montant total (payée par le Client). Les 70 % restants se répartissent entre le Propriétaire (40 %) et le Capitaine (30 %). Les prix affichés incluent la commission de la Plateforme, sauf mention contraire.",
+    },
+    {
+      heading: "6. Annulations et remboursements",
+      body: "Les annulations suivent la politique affichée au moment de la réservation. Les annulations météo décidées par le Capitaine sont généralement intégralement remboursées. Les absences (no-show) des Clients ne sont pas remboursables.",
+    },
+    {
+      heading: "7. Assurance et responsabilité",
+      body: "Les propriétaires doivent souscrire une assurance responsabilité maritime commerciale. Kaenz Yacht propose une assurance P2P complémentaire optionnelle pour les Clients. DANS LA MESURE MAXIMALE PERMISE PAR LA LOI, KAENZ YACHT N’EST PAS RESPONSABLE DES DOMMAGES DIRECTS, INDIRECTS, ACCESSOIRES, SPÉCIAUX OU CONSÉCUTIFS découlant de l’usage de la Plateforme ou d’un Trajet.",
+    },
+    {
+      heading: "8. Conduite interdite",
+      body: "Vous ne pouvez pas utiliser la Plateforme à des fins illégales, fausser les informations sur le yacht ou la licence, harceler d’autres utilisateurs, ni tenter de contourner notre structure de commissions.",
+    },
+    {
+      heading: "9. Confidentialité",
+      body: "L’utilisation de la Plateforme est également régie par notre Politique de confidentialité.",
+    },
+    {
+      heading: "10. Règlement des litiges",
+      body: "Tout litige sera tranché par arbitrage contraignant dans le comté de Miami-Dade, Floride, selon les règles de l’American Arbitration Association. Vous renoncez au procès devant jury. Droit applicable : État de Floride.",
+    },
+    {
+      heading: "11. Résiliation",
+      body: "Nous pouvons suspendre ou résilier votre compte à tout moment en cas de violation de ces Conditions, sans préavis ni remboursement. En créant un compte, vous reconnaissez avoir lu, compris et accepté d’être lié par ces Conditions d’utilisation.",
+    },
+  ],
+};
+
+export const termsIt = {
+  title: "Termini e Condizioni",
+  intro:
+    "Termini di servizio di Kaenz Yacht. Data di entrata in vigore: 23 febbraio 2026. IMPORTANTE: LEGGERE ATTENTAMENTE QUESTI TERMINI PRIMA DI USARE L’APP KAENZ. Creando un account, inserendo uno yacht, offrendo servizi da capitano o prenotando un viaggio sull’applicazione o sul sito Kaenz Yacht («Piattaforma»), accetti di essere legalmente vincolato da questi Termini di servizio. Se non sei d’accordo, non puoi usare la Piattaforma.",
+  sections: [
+    {
+      heading: "1. Definizioni",
+      body: "Cliente / Utente: chiunque prenoti o partecipi a un viaggio in yacht tramite la Piattaforma. Proprietario dello yacht: chiunque elenchi uno yacht. Capitano: qualsiasi capitano con licenza che fornisce navigazione e sicurezza. Piattaforma / Kaenz Yacht: la tecnologia marketplace che collega Clienti, Proprietari e Capitani. Viaggio: un’esperienza privata con equipaggio prenotata tramite la Piattaforma.",
+    },
+    {
+      heading: "2. Il nostro ruolo",
+      body: "Kaenz Yacht è solo una piattaforma tecnologica. Non siamo un operatore di charter, un proprietario di imbarcazioni né il datore di lavoro dei capitani. Non possediamo, gestiamo né controlliamo yacht o capitani. Tutti i viaggi sono forniti direttamente da Proprietari e Capitani indipendenti.",
+    },
+    {
+      heading: "3. Idoneità e registrazione",
+      body: "Devi avere almeno 18 anni. Devi fornire informazioni accurate e tenerle aggiornate. I clienti devono avere un documento d’identità ufficiale. I proprietari devono possedere lo yacht e fornire registrazione della Florida, HIN e prova di assicurazione. I capitani devono possedere una credenziale USCG Merchant Mariner (OUPV «Six-Pack» o superiore) e, se richiesta, la licenza FWC, e superare la verifica dei precedenti.",
+    },
+    {
+      heading: "4. Termini per ruolo",
+      body: "I clienti sono responsabili della sicurezza e della condotta, devono seguire il Capitano e non possono portare sostanze illegali o armi. I proprietari devono mantenere un’assicurazione marittima commerciale (minimo $1,000,000 di responsabilità) e uno yacht in condizioni di navigare. I capitani sono contraenti indipendenti responsabili della navigazione sicura, del briefing di sicurezza e dell’equipaggiamento richiesto. Kaenz Yacht non assume capitani.",
+    },
+    {
+      heading: "5. Prenotazioni, pagamenti e commissioni",
+      body: "Tutte le prenotazioni sono definitive una volta confermate dal Proprietario/Capitano. I pagamenti passano dal nostro sistema sicuro (fiat o criptovaluta su Solana). I pagamenti in cripto sono irreversibili. La commissione Kaenz Yacht è il 30% dell’importo totale (pagata dal Cliente). Il restante 70% è suddiviso tra Proprietario (40%) e Capitano (30%). I prezzi mostrati includono la commissione della Piattaforma, salvo diversa indicazione.",
+    },
+    {
+      heading: "6. Cancellazioni e rimborsi",
+      body: "Le cancellazioni seguono la policy mostrata al momento della prenotazione. Le cancellazioni per meteo decise dal Capitano sono in genere rimborsate per intero. Le mancate presentazioni dei Clienti non sono rimborsabili.",
+    },
+    {
+      heading: "7. Assicurazione e responsabilità",
+      body: "I proprietari devono avere un’assicurazione di responsabilità marittima commerciale. Kaenz Yacht offre un’assicurazione P2P supplementare opzionale per i Clienti. NELLA MISURA MASSIMA CONSENTITA DALLA LEGGE, KAENZ YACHT NON È RESPONSABILE PER DANNI DIRETTI, INDIRETTI, INCIDENTALI, SPECIALI O CONSEQUENZIALI derivanti dall’uso della Piattaforma o di qualsiasi Viaggio.",
+    },
+    {
+      heading: "8. Condotta vietata",
+      body: "Non puoi usare la Piattaforma per scopi illegali, falsificare informazioni su yacht o licenza, molestare altri utenti o tentare di aggirare la struttura delle commissioni.",
+    },
+    {
+      heading: "9. Privacy",
+      body: "L’uso della Piattaforma è anche regolato dalla nostra Informativa sulla privacy.",
+    },
+    {
+      heading: "10. Risoluzione delle controversie",
+      body: "Qualsiasi controversia sarà risolta mediante arbitrato vincolante nella contea di Miami-Dade, Florida, secondo le regole dell’American Arbitration Association. Rinunci al diritto a un processo con giuria. Legge applicabile: Stato della Florida.",
+    },
+    {
+      heading: "11. Risoluzione",
+      body: "Possiamo sospendere o chiudere il tuo account in qualsiasi momento per violazione di questi Termini, senza preavviso né rimborso. Creando un account, riconosci di aver letto, compreso e accettato di essere vincolato da questi Termini di servizio.",
+    },
+  ],
+};
+
+const termsByLocale = {
+  en: termsEn,
+  es: termsEs,
+  fr: termsFr,
+  it: termsIt,
+} as const;
+
+export function terms(locale: Locale) {
+  return termsByLocale[locale];
+}

@@ -36,11 +36,7 @@ export function BookForm({
       e.currentTarget.reset();
     } catch {
       setStatus("err");
-      setMessage(
-        locale === "es"
-          ? "No se pudo enviar. Inténtalo de nuevo."
-          : "Could not send. Please try again.",
-      );
+      setMessage(c.formError);
     }
   }
 

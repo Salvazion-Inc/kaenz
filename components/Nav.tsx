@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { Logo } from "./Logo";
 import { t } from "@/lib/copy";
 import { pathFor, type Locale } from "@/lib/locale";
@@ -12,8 +13,6 @@ export function Nav({ locale }: { locale: Locale }) {
     { href: "/concierge", label: c.nav.concierge },
     { href: "/join", label: c.nav.join },
   ];
-  const other = locale === "en" ? "/es" : "/";
-  const otherLabel = locale === "en" ? "ES" : "EN";
 
   return (
     <header className="absolute inset-x-0 top-0 z-40">
@@ -34,17 +33,7 @@ export function Nav({ locale }: { locale: Locale }) {
               {l.label}
             </Link>
           ))}
-          <Link
-            href={other}
-            className="rounded-full border border-white/30 px-3 py-1 text-xs tracking-widest"
-            aria-label={
-              locale === "en"
-                ? "Cambiar idioma al español"
-                : "Switch language to English"
-            }
-          >
-            {otherLabel}
-          </Link>
+          <LanguageSwitcher locale={locale} />
         </div>
         <div className="flex items-center gap-3 md:hidden">
           <Link
@@ -53,9 +42,7 @@ export function Nav({ locale }: { locale: Locale }) {
           >
             {c.nav.app}
           </Link>
-          <Link href={other} className="text-xs font-bold tracking-widest">
-            {otherLabel}
-          </Link>
+          <LanguageSwitcher locale={locale} compact />
         </div>
       </nav>
       <div className="flex flex-wrap justify-center gap-4 px-5 pb-3 text-xs font-semibold text-white/85 md:hidden">

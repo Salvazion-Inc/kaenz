@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" width="48" height="32" role="img" aria-label="United States">
+  <!-- Flat USA flag — same 3:2 canvas as Chile / Brazil so all chips match -->
+  <rect width="48" height="32" fill="#B22234"/>
+  <g fill="#fff">
+    <rect y="2.4615" width="48" height="2.4615"/>
+    <rect y="7.3846" width="48" height="2.4615"/>
+    <rect y="12.3077" width="48" height="2.4615"/>
+    <rect y="17.2308" width="48" height="2.4615"/>
+    <rect y="22.1538" width="48" height="2.4615"/>
+    <rect y="27.0769" width="48" height="2.4615"/>
+  </g>
+  <rect width="24.32" height="17.2308" fill="#3C3B6E"/>
+  <g fill="#fff">
+    <circle cx="2.027" cy="1.723" r="0.7"/>
+    <circle cx="6.08" cy="1.723" r="0.7"/>
+    <circle cx="10.133" cy="1.723" r="0.7"/>
+    <circle cx="14.187" cy="1.723" r="0.7"/>
+    <circle cx="18.24" cy="1.723" r="0.7"/>
+    <circle cx="22.293" cy="1.723" r="0.7"/>
+    <circle cx="4.053" cy="3.446" r="0.7"/>
+    <circle cx="8.107" cy="3.446" r="0.7"/>
+    <circle cx="12.16" cy="3.446" r="0.7"/>
+    <circle cx="16.213" cy="3.446" r="0.7"/>
+    <circle cx="20.267" cy="3.446" r="0.7"/>
+    <circle cx="2.027" cy="5.169" r="0.7"/>
+    <circle cx="6.08" cy="5.169" r="0.7"/>
+    <circle cx="10.133" cy="5.169" r="0.7"/>
+    <circle cx="14.187" cy="5.169" r="0.7"/>
+    <circle cx="18.24" cy="5.169" r="0.7"/>
+    <circle cx="22.293" cy="5.169" r="0.7"/>
+    <circle cx="4.053" cy="6.892" r="0.7"/>
+    <circle cx="8.107" cy="6.892" r="0.7"/>
+    <circle cx="12.16" cy="6.892" r="0.7"/>
+    <circle cx="16.213" cy="6.892" r="0.7"/>
+    <circle cx="20.267" cy="6.892" r="0.7"/>
+    <circle cx="2.027" cy="8.615" r="0.7"/>
+    <circle cx="6.08" cy="8.615" r="0.7"/>
+    <circle cx="10.133" cy="8.615" r="0.7"/>
+    <circle cx="14.187" cy="8.615" r="0.7"/>
+    <circle cx="18.24" cy="8.615" r="0.7"/>
+    <circle cx="22.293" cy="8.615" r="0.7"/>
+    <circle cx="4.053" cy="10.338" r="0.7"/>
+    <circle cx="8.107" cy="10.338" r="0.7"/>
+    <circle cx="12.16" cy="10.338" r="0.7"/>
+    <circle cx="16.213" cy="10.338" r="0.7"/>
+    <circle cx="20.267" cy="10.338" r="0.7"/>
+    <circle cx="2.027" cy="12.062" r="0.7"/>
+    <circle cx="6.08" cy="12.062" r="0.7"/>
+    <circle cx="10.133" cy="12.062" r="0.7"/>
+    <circle cx="14.187" cy="12.062" r="0.7"/>
+    <circle cx="18.24" cy="12.062" r="0.7"/>
+    <circle cx="22.293" cy="12.062" r="0.7"/>
+    <circle cx="4.053" cy="13.785" r="0.7"/>
+    <circle cx="8.107" cy="13.785" r="0.7"/>
+    <circle cx="12.16" cy="13.785" r="0.7"/>
+    <circle cx="16.213" cy="13.785" r="0.7"/>
+    <circle cx="20.267" cy="13.785" r="0.7"/>
+    <circle cx="2.027" cy="15.508" r="0.7"/>
+    <circle cx="6.08" cy="15.508" r="0.7"/>
+    <circle cx="10.133" cy="15.508" r="0.7"/>
+    <circle cx="14.187" cy="15.508" r="0.7"/>
+    <circle cx="18.24" cy="15.508" r="0.7"/>
+    <circle cx="22.293" cy="15.508" r="0.7"/>
+  </g>
+</svg>

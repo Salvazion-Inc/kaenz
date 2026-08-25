@@ -1,8 +1,9 @@
+import { localeMeta, parseLocale, type Locale } from "@/lib/locale";
 import { yachts } from "@/lib/yachts";
 
 export const runtime = "nodejs";
 
-function systemPrompt(locale: "en" | "es") {
+function systemPrompt(locale: Locale) {
   const fleet = yachts
     .map(
       (y) =>
@@ -25,7 +26,7 @@ ${fleet}
 
 Marinas: Miami Beach Marina, Island Gardens Miami, Las Olas Marina, Hollywood Marina, Palm Beach Town Docks.
 
-Help the guest pick a yacht, pickup marina, destination, duration, and guest count. Be concise, specific, and useful. Never invent live availability or guarantee weather. Suggest booking on the Kaenz site. Reply in ${locale === "es" ? "Spanish" : "English"}.`;
+Help the guest pick a yacht, pickup marina, destination, duration, and guest count. Be concise, specific, and useful. Never invent live availability or guarantee weather. Suggest booking on the Kaenz site. Reply in ${localeMeta[locale].replyLanguage}.`;
 }
 
 export async function POST(req: Request) {
@@ -35,7 +36,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const locale: "en" | "es" = body.locale === "es" ? "es" : "en";
+  const locale = parseLocale(body.locale);
   const incoming = Array.isArray(body.messages) ? body.messages : [];
   const messages = incoming
     .filter(

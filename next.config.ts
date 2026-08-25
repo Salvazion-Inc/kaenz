@@ -27,7 +27,22 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/es/terms-and-conditions",
+        destination: "/es/terms",
+        permanent: true,
+      },
+      {
+        source: "/es/terminos",
         destination: "/terminos",
+        permanent: true,
+      },
+      {
+        source: "/fr/terms-and-conditions",
+        destination: "/fr/terms",
+        permanent: true,
+      },
+      {
+        source: "/it/terms-and-conditions",
+        destination: "/it/terms",
         permanent: true,
       },
     ];

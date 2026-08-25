@@ -26,19 +26,11 @@ export function JoinForm({ locale }: { locale: Locale }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error");
       setStatus("ok");
-      setMessage(
-        locale === "es"
-          ? "Solicitud enviada. Te contactamos para verificar licencia y yate."
-          : "Application received. We will contact you to verify license and yacht.",
-      );
+      setMessage(c.joinSuccess);
       e.currentTarget.reset();
     } catch {
       setStatus("err");
-      setMessage(
-        locale === "es"
-          ? "No se pudo enviar. Inténtalo de nuevo."
-          : "Could not send. Please try again.",
-      );
+      setMessage(c.formError);
     }
   }
 
@@ -61,7 +53,7 @@ export function JoinForm({ locale }: { locale: Locale }) {
           <input className={field} name="phone" type="tel" />
         </label>
         <label className="block text-sm font-semibold">
-          {locale === "es" ? "Rol" : "Role"}
+          {c.role}
           <select className={field} name="role" defaultValue="captain">
             <option value="owner">{c.owner}</option>
             <option value="captain">{c.captain}</option>

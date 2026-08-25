@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { Logo } from "./Logo";
 import { t } from "@/lib/copy";
 import { pathFor, type Locale } from "@/lib/locale";
@@ -15,13 +16,16 @@ export function Footer({ locale }: { locale: Locale }) {
             <p className="max-w-sm text-sm text-white/70">{c.metaDescription}</p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-5 text-sm font-semibold text-white/80">
-          <Link href={pathFor(locale, "/app")}>{c.nav.app}</Link>
-          <Link href={pathFor(locale, "/fleet")}>{c.nav.fleet}</Link>
-          <Link href={pathFor(locale, "/book")}>{c.nav.book}</Link>
-          <Link href={pathFor(locale, "/concierge")}>{c.nav.concierge}</Link>
-          <Link href={pathFor(locale, "/join")}>{c.nav.join}</Link>
-          <Link href={c.termsHref}>{c.nav.terms}</Link>
+        <div className="flex flex-col items-start gap-5">
+          <div className="flex flex-wrap gap-5 text-sm font-semibold text-white/80">
+            <Link href={pathFor(locale, "/app")}>{c.nav.app}</Link>
+            <Link href={pathFor(locale, "/fleet")}>{c.nav.fleet}</Link>
+            <Link href={pathFor(locale, "/book")}>{c.nav.book}</Link>
+            <Link href={pathFor(locale, "/concierge")}>{c.nav.concierge}</Link>
+            <Link href={pathFor(locale, "/join")}>{c.nav.join}</Link>
+            <Link href={c.termsHref}>{c.nav.terms}</Link>
+          </div>
+          <LanguageSwitcher locale={locale} />
         </div>
       </div>
       <p className="pb-8 text-center text-xs text-white/50">

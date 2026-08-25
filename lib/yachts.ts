@@ -1,3 +1,5 @@
+import type { Localized } from "./locale";
+
 export type Captain = {
   name: string;
   license: string;
@@ -22,7 +24,7 @@ export type Yacht = {
   lng: number;
   etaMin: number;
   captain: Captain;
-  blurb: { en: string; es: string };
+  blurb: Localized;
 };
 
 export const yachts: Yacht[] = [
@@ -51,6 +53,8 @@ export const yachts: Yacht[] = [
     blurb: {
       en: "Skyline cruiser for Miami Beach to Brickell in 18 minutes.",
       es: "Crucero de skyline: Miami Beach a Brickell en 18 minutos.",
+      fr: "Croisière skyline : Miami Beach à Brickell en 18 minutes.",
+      it: "Crociera skyline: da Miami Beach a Brickell in 18 minuti.",
     },
   },
   {
@@ -78,6 +82,8 @@ export const yachts: Yacht[] = [
     blurb: {
       en: "Fort Lauderdale to Hollywood Beach in 35 minutes, with sandbar time.",
       es: "Fort Lauderdale a Hollywood Beach en 35 minutos, con sandbar.",
+      fr: "Fort Lauderdale à Hollywood Beach en 35 minutes, avec sandbar.",
+      it: "Da Fort Lauderdale a Hollywood Beach in 35 minuti, con sandbar.",
     },
   },
   {
@@ -105,6 +111,8 @@ export const yachts: Yacht[] = [
     blurb: {
       en: "Fort Lauderdale to Palm Beach in 45 minutes at golden hour.",
       es: "Fort Lauderdale a Palm Beach en 45 minutos al atardecer.",
+      fr: "Fort Lauderdale à Palm Beach en 45 minutes à l’heure dorée.",
+      it: "Da Fort Lauderdale a Palm Beach in 45 minuti all’ora d’oro.",
     },
   },
   {
@@ -132,6 +140,8 @@ export const yachts: Yacht[] = [
     blurb: {
       en: "Fast hop across Biscayne Bay. Skip the causeways.",
       es: "Salto rápido por Biscayne Bay. Olvídate de las calzadas.",
+      fr: "Saut rapide sur Biscayne Bay. Oubliez les chaussées.",
+      it: "Salto veloce su Biscayne Bay. Dimentica le calzate.",
     },
   },
   {
@@ -159,6 +169,8 @@ export const yachts: Yacht[] = [
     blurb: {
       en: "Flagship from Fort Lauderdale — celebrations, clients, sunsets.",
       es: "Buque insignia desde Fort Lauderdale — celebraciones y atardeceres.",
+      fr: "Navire amiral depuis Fort Lauderdale — célébrations, clients, couchers de soleil.",
+      it: "Ammiraglia da Fort Lauderdale — celebrazioni, clienti, tramonti.",
     },
   },
 ];
