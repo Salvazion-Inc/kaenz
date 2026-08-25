@@ -1,5 +1,8 @@
+"use client";
+
 import { HomePage } from "@/components/HomePage";
+import { WithLocale } from "@/components/WithLocale";
 
 export default function Page() {
-  return <HomePage locale="en" />;
+  return <WithLocale Component={HomePage} />;
 }

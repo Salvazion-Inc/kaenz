@@ -7,7 +7,6 @@ import { pathFor, type Locale } from "@/lib/locale";
 export function Nav({ locale }: { locale: Locale }) {
   const c = t(locale);
   const links = [
-    { href: "/app", label: c.nav.app },
     { href: "/fleet", label: c.nav.fleet },
     { href: "/book", label: c.nav.book },
     { href: "/concierge", label: c.nav.concierge },
@@ -23,7 +22,7 @@ export function Nav({ locale }: { locale: Locale }) {
             Kaenz
           </span>
         </Link>
-        <div className="hidden items-center gap-7 text-sm font-semibold text-white/90 md:flex">
+        <div className="hidden items-center gap-6 text-sm font-semibold text-white/90 md:flex">
           {links.map((l) => (
             <Link
               key={l.href}
@@ -33,16 +32,34 @@ export function Nav({ locale }: { locale: Locale }) {
               {l.label}
             </Link>
           ))}
-          <LanguageSwitcher locale={locale} />
-        </div>
-        <div className="flex items-center gap-3 md:hidden">
+          <LanguageSwitcher />
           <Link
-            href={pathFor(locale, "/app")}
+            href="/login"
+            className="rounded-full border border-white/30 px-3 py-1 text-xs tracking-wide"
+          >
+            {c.nav.login}
+          </Link>
+          <Link
+            href="/app"
             className="rounded-full bg-kaenz px-4 py-2 text-xs font-bold text-white"
           >
             {c.nav.app}
           </Link>
-          <LanguageSwitcher locale={locale} compact />
+        </div>
+        <div className="flex items-center gap-3 md:hidden">
+          <Link
+            href="/login"
+            className="text-xs font-bold tracking-wide text-white/90"
+          >
+            {c.nav.login}
+          </Link>
+          <Link
+            href="/app"
+            className="rounded-full bg-kaenz px-4 py-2 text-xs font-bold text-white"
+          >
+            {c.nav.app}
+          </Link>
+          <LanguageSwitcher compact />
         </div>
       </nav>
       <div className="flex flex-wrap justify-center gap-4 px-5 pb-3 text-xs font-semibold text-white/85 md:hidden">

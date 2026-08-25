@@ -6,6 +6,7 @@ import { at, type AppTab } from "@/lib/app-copy";
 import { pathFor, type Locale } from "@/lib/locale";
 import { HtmlLang } from "../HtmlLang";
 import { LanguageSwitcher } from "../LanguageSwitcher";
+import { AccountChip } from "../AccountChip";
 import {
   IconCrew,
   IconPin,
@@ -78,7 +79,8 @@ export function AppShell({
           </div>
         </div>
         <div className="flex items-center gap-3 text-xs font-semibold">
-          <LanguageSwitcher locale={locale} compact />
+          <LanguageSwitcher compact />
+          <AccountChip locale={locale} />
           <Link href={pathFor(locale, "/")} className="text-white/60">
             {c.openMarketing}
           </Link>

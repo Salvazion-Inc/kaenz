@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Outfit } from "next/font/google";
+import { LocaleProvider } from "@/lib/locale-context";
+import { LOCALE_COOKIE, parseLocale } from "@/lib/locale";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -22,9 +25,9 @@ export const metadata: Metadata = {
     canonical: "https://kaenz.com",
     languages: {
       en: "https://kaenz.com",
-      es: "https://kaenz.com/es",
-      fr: "https://kaenz.com/fr",
-      it: "https://kaenz.com/it",
+      es: "https://kaenz.com",
+      fr: "https://kaenz.com",
+      it: "https://kaenz.com",
       "x-default": "https://kaenz.com",
     },
   },
@@ -50,12 +53,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const jar = await cookies();
+  const locale = parseLocale(jar.get(LOCALE_COOKIE)?.value);
   return (
-    <html lang="en">
-      <body className={`${outfit.className} antialiased`}>{children}</body>
+    <html lang={locale}>
+      <body className={`${outfit.className} antialiased`}>
+        <LocaleProvider initialLocale={locale}>{children}</LocaleProvider>
+      </body>
     </html>
   );
 }

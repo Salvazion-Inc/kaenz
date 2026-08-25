@@ -1,5 +1,8 @@
+"use client";
+
 import { KaenzApp } from "@/components/app/KaenzApp";
+import { WithLocale } from "@/components/WithLocale";
 
 export default function Page() {
-  return <KaenzApp locale="en" tab="places" />;
+  return <WithLocale Component={KaenzApp} tab="places" />;
 }

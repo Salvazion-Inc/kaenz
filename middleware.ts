@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import {
+  LOCALE_COOKIE,
+  localeCookieHeader,
+  localeFromPath,
+  stripLocalePrefix,
+} from "@/lib/locale";
+import { SESSION_COOKIE, readSession } from "@/lib/session";
 
 const APP_HOSTS = new Set(["app.kaenz.com", "www.app.kaenz.com"]);
 const SITE = "https://kaenz.com";
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const host = request.headers.get("host")?.split(":")[0] ?? "";
   const { pathname, search } = request.nextUrl;
 
@@ -16,23 +23,38 @@ export function middleware(request: NextRequest) {
   }
 
   if (APP_HOSTS.has(host)) {
-    const prefixed = pathname.match(/^\/(es|fr|it)(?=\/|$)/);
-    let dest: string;
-    if (prefixed) {
-      const rest =
-        pathname.slice(prefixed[0].length).replace(/^\/app/, "") || "";
-      dest = `${SITE}/${prefixed[1]}/app${rest}${search}`;
-    } else if (pathname.startsWith("/app")) {
-      dest = `${SITE}${pathname}${search}`;
-    } else {
-      dest = `${SITE}/app${pathname === "/" ? "" : pathname}${search}`;
-    }
+    const dest = pathname.startsWith("/app")
+      ? `${SITE}${pathname}${search}`
+      : `${SITE}/app${pathname === "/" ? "" : pathname}${search}`;
     return NextResponse.redirect(dest, 308);
   }
 
-  return NextResponse.next();
+  const prefixed = localeFromPath(pathname);
+  if (prefixed) {
+    const dest = new URL(stripLocalePrefix(pathname) + search, request.url);
+    const res = NextResponse.redirect(dest, 308);
+    res.headers.append("Set-Cookie", localeCookieHeader(prefixed));
+    return res;
+  }
+
+  if (pathname.startsWith("/app")) {
+    const user = await readSession(request.cookies.get(SESSION_COOKIE)?.value);
+    if (!user) {
+      const login = request.nextUrl.clone();
+      login.pathname = "/login";
+      login.search = `?next=${encodeURIComponent(pathname + search)}`;
+      return NextResponse.redirect(login);
+    }
+  }
+
+  const locale = request.cookies.get(LOCALE_COOKIE)?.value;
+  const res = NextResponse.next();
+  if (locale) res.headers.set("x-kaenz-locale", locale);
+  return res;
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.png|icon.png|manifest.json).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.png|icon.png|manifest.json|flags/).*)",
+  ],
 };

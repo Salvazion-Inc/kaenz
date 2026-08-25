@@ -17,32 +17,17 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/terminos-y-condiciones",
-        destination: "/terminos",
+        destination: "/terms",
         permanent: true,
       },
       {
-        source: "/es/terminos-y-condiciones",
-        destination: "/terminos",
+        source: "/auth/login",
+        destination: "/login",
         permanent: true,
       },
       {
-        source: "/es/terms-and-conditions",
-        destination: "/es/terms",
-        permanent: true,
-      },
-      {
-        source: "/es/terminos",
-        destination: "/terminos",
-        permanent: true,
-      },
-      {
-        source: "/fr/terms-and-conditions",
-        destination: "/fr/terms",
-        permanent: true,
-      },
-      {
-        source: "/it/terms-and-conditions",
-        destination: "/it/terms",
+        source: "/auth/signup",
+        destination: "/signup",
         permanent: true,
       },
     ];

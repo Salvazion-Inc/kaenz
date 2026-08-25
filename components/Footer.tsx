@@ -25,7 +25,7 @@ export function Footer({ locale }: { locale: Locale }) {
             <Link href={pathFor(locale, "/join")}>{c.nav.join}</Link>
             <Link href={c.termsHref}>{c.nav.terms}</Link>
           </div>
-          <LanguageSwitcher locale={locale} />
+          <LanguageSwitcher />
         </div>
       </div>
       <p className="pb-8 text-center text-xs text-white/50">

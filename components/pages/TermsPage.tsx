@@ -1,24 +1,11 @@
+"use client";
+
 import { Site } from "@/components/Site";
-import { t } from "@/lib/copy";
-import { requirePrefixedLocale } from "@/lib/prefixed";
+import { useLocale } from "@/lib/locale-context";
 import { terms } from "@/lib/terms";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const locale = await requirePrefixedLocale(params);
-  const c = t(locale);
-  return { title: `${c.termsTitle} | Kaenz` };
-}
-
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const locale = await requirePrefixedLocale(params);
+export function TermsPage() {
+  const { locale } = useLocale();
   const copy = terms(locale);
   return (
     <Site locale={locale}>

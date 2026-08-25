@@ -1,5 +1,8 @@
+"use client";
+
+import { WithLocale } from "@/components/WithLocale";
 import { ConciergePage } from "@/components/pages/ConciergePage";
 
 export default function Page() {
-  return <ConciergePage locale="en" />;
+  return <WithLocale Component={ConciergePage} />;
 }

@@ -6,9 +6,9 @@ export const metadata = {
     canonical: "https://kaenz.com/app",
     languages: {
       en: "https://kaenz.com/app",
-      es: "https://kaenz.com/es/app",
-      fr: "https://kaenz.com/fr/app",
-      it: "https://kaenz.com/it/app",
+      es: "https://kaenz.com/app",
+      fr: "https://kaenz.com/app",
+      it: "https://kaenz.com/app",
       "x-default": "https://kaenz.com/app",
     },
   },

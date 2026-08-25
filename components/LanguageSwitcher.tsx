@@ -1,17 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { LOCALES, localeMeta, switchLocale, type Locale } from "@/lib/locale";
+import { LOCALES, localeMeta } from "@/lib/locale";
+import { useLocale } from "@/lib/locale-context";
 
-export function LanguageSwitcher({
-  locale,
-  compact = false,
-}: {
-  locale: Locale;
-  compact?: boolean;
-}) {
-  const pathname = usePathname() || "/";
+export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
+  const { locale, setLocale } = useLocale();
   const size = compact
     ? "h-[15px] w-[22px]"
     : "h-[15px] w-[22px] md:h-[19px] md:w-[28px]";
@@ -22,13 +15,13 @@ export function LanguageSwitcher({
         const meta = localeMeta[code];
         const active = code === locale;
         return (
-          <Link
+          <button
             key={code}
-            href={switchLocale(pathname, code)}
-            hrefLang={code}
+            type="button"
             title={meta.name}
             aria-label={meta.name}
             aria-current={active ? "true" : undefined}
+            onClick={() => setLocale(code)}
             className={`lang-flag ${active ? "lang-flag-active" : ""}`}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -39,7 +32,7 @@ export function LanguageSwitcher({
               height={compact ? 15 : 19}
               className={`block ${size}`}
             />
-          </Link>
+          </button>
         );
       })}
     </nav>

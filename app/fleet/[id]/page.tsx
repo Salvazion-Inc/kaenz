@@ -1,4 +1,4 @@
-import { YachtDetail } from "@/components/pages/YachtDetail";
+import { YachtDetailClient } from "@/components/pages/YachtDetailClient";
 import { yachts } from "@/lib/yachts";
 import { notFound } from "next/navigation";
 
@@ -14,5 +14,5 @@ export default async function Page({
   const { id } = await params;
   const yacht = yachts.find((y) => y.id === id);
   if (!yacht) notFound();
-  return <YachtDetail locale="en" yacht={yacht} />;
+  return <YachtDetailClient yacht={yacht} />;
 }
