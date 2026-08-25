@@ -11,10 +11,7 @@ export function Footer({ locale }: { locale: Locale }) {
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-5 py-12 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-4">
           <Logo size={64} />
-          <div>
-            <p className="font-bold">Kaenz</p>
-            <p className="max-w-sm text-sm text-white/70">{c.metaDescription}</p>
-          </div>
+          <p className="max-w-sm text-sm text-white/70">{c.metaDescription}</p>
         </div>
         <div className="flex flex-col items-start gap-5">
           <div className="flex flex-wrap gap-5 text-sm font-semibold text-white/80">

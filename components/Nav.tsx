@@ -16,11 +16,8 @@ export function Nav({ locale }: { locale: Locale }) {
   return (
     <header className="absolute inset-x-0 top-0 z-40">
       <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-5">
-        <Link href={pathFor(locale, "/")} className="flex items-center gap-3">
+        <Link href={pathFor(locale, "/")} className="flex items-center">
           <Logo size={56} />
-          <span className="text-lg font-bold tracking-wide text-white">
-            Kaenz
-          </span>
         </Link>
         <div className="hidden items-center gap-6 text-sm font-semibold text-white/90 md:flex">
           {links.map((l) => (
