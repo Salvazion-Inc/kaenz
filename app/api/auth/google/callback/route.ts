@@ -18,6 +18,12 @@ import {
   readOauthState,
   safeNext,
 } from "@/lib/google-oauth";
+import { getSupabase } from "@/lib/supabase";
+import {
+  applyCookies,
+  createRouteSupabase,
+  supabaseConfigured,
+} from "@/lib/supabase-route";
 
 export const runtime = "nodejs";
 
@@ -29,16 +35,92 @@ function fail(req: Request, next: string) {
   return res;
 }
 
+function dest(req: Request, next: string) {
+  const url = new URL(req.url);
+  const host = (req.headers.get("x-forwarded-host") || url.host).split(",")[0].trim();
+  if (host.includes("localhost") || host.startsWith("127.")) {
+    return new URL(next, url.origin);
+  }
+  return new URL(next, "https://kaenz.com");
+}
+
+async function finishLogin(
+  req: Request,
+  res: NextResponse,
+  user: { id: string; email: string; name: string },
+) {
+  const users = await readAccounts(
+    cookieValue(req.headers.get("cookie"), ACCOUNTS_COOKIE),
+  );
+  let account = users.find((u) => u.email === user.email);
+  if (!account) {
+    account = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      hash: GOOGLE_MARKER,
+    } satisfies AccountRecord;
+    users.push(account);
+    if (users.length > 25) users.splice(0, users.length - 25);
+  } else if (!account.name || account.name === account.email) {
+    account.name = user.name;
+  }
+  const session = await createSessionToken({
+    id: account.id,
+    email: account.email,
+    name: account.name,
+  });
+  const vault = await signAccounts(users);
+  res.headers.append("Set-Cookie", sessionCookie(session));
+  res.headers.append("Set-Cookie", accountsCookie(vault));
+  res.headers.append("Set-Cookie", clearOauthStateCookie());
+  const admin = getSupabase();
+  if (admin) {
+    try {
+      await admin.from("profiles").upsert({
+        id: account.id,
+        full_name: account.name,
+        role: "client",
+      });
+    } catch {
+      /* schema may not be applied yet */
+    }
+  }
+  return res;
+}
+
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
+  const next = safeNext(url.searchParams.get("next"));
+
+  if (supabaseConfigured() && code) {
+    const pending: Parameters<typeof applyCookies>[1] = [];
+    const supabase = createRouteSupabase(req, pending);
+    if (supabase) {
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+      if (!error && data.user?.email) {
+        const email = data.user.email.toLowerCase();
+        const name =
+          String(
+            data.user.user_metadata?.full_name ||
+              data.user.user_metadata?.name ||
+              "",
+          ) || email;
+        const res = applyCookies(NextResponse.redirect(dest(req, next)), pending);
+        return finishLogin(req, res, { id: data.user.id, email, name });
+      }
+    }
+    return fail(req, next);
+  }
+
   const nonce = url.searchParams.get("state");
   const state = await readOauthState(
     cookieValue(req.headers.get("cookie"), OAUTH_STATE_COOKIE),
   );
-  const next = safeNext(state?.next);
+  const nativeNext = safeNext(state?.next || next);
   if (!code || !nonce || !state || nonce !== state.nonce) {
-    return fail(req, next);
+    return fail(req, nativeNext);
   }
 
   let profile;
@@ -49,40 +131,17 @@ export async function GET(req: Request) {
       callback: googleCallbackUrl(req),
     });
   } catch {
-    return fail(req, next);
+    return fail(req, nativeNext);
   }
-  if (!profile) return fail(req, next);
+  if (!profile) return fail(req, nativeNext);
 
-  const users = await readAccounts(
-    cookieValue(req.headers.get("cookie"), ACCOUNTS_COOKIE),
-  );
-  let account = users.find((u) => u.email === profile.email);
-  if (!account) {
-    account = {
+  return finishLogin(
+    req,
+    NextResponse.redirect(dest(req, nativeNext)),
+    {
       id: `google:${profile.sub}`,
       email: profile.email,
       name: profile.name,
-      hash: GOOGLE_MARKER,
-    } satisfies AccountRecord;
-    users.push(account);
-    if (users.length > 25) users.splice(0, users.length - 25);
-  } else if (!account.name || account.name === account.email) {
-    account.name = profile.name;
-  }
-
-  const session = await createSessionToken({
-    id: account.id,
-    email: account.email,
-    name: account.name,
-  });
-  const vault = await signAccounts(users);
-  const res = NextResponse.redirect(new URL(next, "https://kaenz.com"));
-  const host = (req.headers.get("x-forwarded-host") || url.host).split(",")[0].trim();
-  if (host.includes("localhost") || host.startsWith("127.")) {
-    res.headers.set("Location", new URL(next, url.origin).toString());
-  }
-  res.headers.append("Set-Cookie", sessionCookie(session));
-  res.headers.append("Set-Cookie", accountsCookie(vault));
-  res.headers.append("Set-Cookie", clearOauthStateCookie());
-  return res;
+    },
+  );
 }

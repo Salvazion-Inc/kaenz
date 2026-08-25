@@ -21,7 +21,11 @@ type OauthState = {
 };
 
 export function googleConfigured() {
-  return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+  const supabase =
+    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const native =
+    process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET;
+  return Boolean(supabase || native);
 }
 
 export function safeNext(value: string | null | undefined) {
