@@ -15,6 +15,7 @@ const paths = [
   "/login",
   "/signup",
   "/terms",
+  "/privacy",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
