@@ -1,4 +1,4 @@
-export const LOCALES = ["en", "es", "fr", "it"] as const;
+export const LOCALES = ["en", "es", "fr", "it", "pt"] as const;
 export type Locale = (typeof LOCALES)[number];
 export type Localized = Record<Locale, string>;
 
@@ -44,6 +44,13 @@ export const localeMeta: Record<
     ogLocale: "it_IT",
     replyLanguage: "Italian",
   },
+  pt: {
+    flag: "brazil",
+    name: "Português",
+    htmlLang: "pt",
+    ogLocale: "pt_BR",
+    replyLanguage: "Brazilian Portuguese",
+  },
 };
 
 export function isLocale(value: string | null | undefined): value is Locale {
@@ -60,13 +67,13 @@ export function pathFor(_locale: Locale, href: string) {
 }
 
 export function stripLocalePrefix(pathname: string): string {
-  const match = pathname.match(/^\/(es|fr|it)(?=\/|$)/);
+  const match = pathname.match(/^\/(es|fr|it|pt)(?=\/|$)/);
   if (!match) return pathname || "/";
   return pathname.slice(match[0].length) || "/";
 }
 
 export function localeFromPath(pathname: string): Locale | null {
-  const match = pathname.match(/^\/(es|fr|it)(?=\/|$)/);
+  const match = pathname.match(/^\/(es|fr|it|pt)(?=\/|$)/);
   return match ? (match[1] as Locale) : null;
 }
 
@@ -77,6 +84,7 @@ export function languageAlternates(path: string) {
     es: url,
     fr: url,
     it: url,
+    pt: url,
     "x-default": url,
   };
 }

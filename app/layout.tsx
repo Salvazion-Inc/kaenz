@@ -28,6 +28,7 @@ export const metadata: Metadata = {
       es: "https://kaenz.com",
       fr: "https://kaenz.com",
       it: "https://kaenz.com",
+      pt: "https://kaenz.com",
       "x-default": "https://kaenz.com",
     },
   },

@@ -55,6 +55,7 @@ export const yachts: Yacht[] = [
       es: "Crucero de skyline: Miami Beach a Brickell en 18 minutos.",
       fr: "Croisière skyline : Miami Beach à Brickell en 18 minutes.",
       it: "Crociera skyline: da Miami Beach a Brickell in 18 minuti.",
+      pt: "Cruzeiro de skyline: Miami Beach a Brickell em 18 minutos.",
     },
   },
   {
@@ -84,6 +85,7 @@ export const yachts: Yacht[] = [
       es: "Fort Lauderdale a Hollywood Beach en 35 minutos, con sandbar.",
       fr: "Fort Lauderdale à Hollywood Beach en 35 minutes, avec sandbar.",
       it: "Da Fort Lauderdale a Hollywood Beach in 35 minuti, con sandbar.",
+      pt: "De Fort Lauderdale a Hollywood Beach em 35 minutos, com sandbar.",
     },
   },
   {
@@ -113,6 +115,7 @@ export const yachts: Yacht[] = [
       es: "Fort Lauderdale a Palm Beach en 45 minutos al atardecer.",
       fr: "Fort Lauderdale à Palm Beach en 45 minutes à l’heure dorée.",
       it: "Da Fort Lauderdale a Palm Beach in 45 minuti all’ora d’oro.",
+      pt: "De Fort Lauderdale a Palm Beach em 45 minutos na hora dourada.",
     },
   },
   {
@@ -142,6 +145,7 @@ export const yachts: Yacht[] = [
       es: "Salto rápido por Biscayne Bay. Olvídate de las calzadas.",
       fr: "Saut rapide sur Biscayne Bay. Oubliez les chaussées.",
       it: "Salto veloce su Biscayne Bay. Dimentica le calzate.",
+      pt: "Salto rápido pela Biscayne Bay. Esqueça as calçadas.",
     },
   },
   {
@@ -171,6 +175,7 @@ export const yachts: Yacht[] = [
       es: "Buque insignia desde Fort Lauderdale — celebraciones y atardeceres.",
       fr: "Navire amiral depuis Fort Lauderdale — célébrations, clients, couchers de soleil.",
       it: "Ammiraglia da Fort Lauderdale — celebrazioni, clienti, tramonti.",
+      pt: "Iate-chefe de Fort Lauderdale — celebrações, clientes, pores do sol.",
     },
   },
 ];

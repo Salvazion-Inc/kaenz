@@ -38,6 +38,7 @@ const southFlorida: Place[] = [
       es: "Muelle principal para saltos al skyline de Brickell y South Beach.",
       fr: "Emplacement premium pour des sauts skyline vers Brickell et South Beach.",
       it: "Ormeggio principale per salti skyline verso Brickell e South Beach.",
+      pt: "Vaga principal para saltos de skyline até Brickell e South Beach.",
     },
   },
   {
@@ -55,6 +56,7 @@ const southFlorida: Place[] = [
       es: "La marina profesional más cercana a South Beach en la calzada MacArthur.",
       fr: "Marina professionnelle la plus proche de South Beach sur la MacArthur Causeway.",
       it: "La marina professionale più vicina a South Beach sulla MacArthur Causeway.",
+      pt: "A marina profissional mais próxima de South Beach na MacArthur Causeway.",
     },
   },
   {
@@ -72,6 +74,7 @@ const southFlorida: Place[] = [
       es: "Corazón de la Venecia de América — yates, Las Olas y el New River.",
       fr: "Cœur de la Venise d’Amérique — yachts, Las Olas et la New River.",
       it: "Cuore della Venezia d’America — yacht, Las Olas e il New River.",
+      pt: "Coração da Veneza da América — iates, Las Olas e o New River.",
     },
   },
   {
@@ -89,6 +92,7 @@ const southFlorida: Place[] = [
       es: "Puerta al sandbar de Hollywood Beach en unos 35 minutos desde FTL.",
       fr: "Porte d’entrée du sandbar de Hollywood Beach en environ 35 minutes depuis FTL.",
       it: "Porta al sandbar di Hollywood Beach in circa 35 minuti da FTL.",
+      pt: "Porta para o sandbar de Hollywood Beach em cerca de 35 minutos a partir de FTL.",
     },
   },
   {
@@ -106,6 +110,7 @@ const southFlorida: Place[] = [
       es: "Travesía al atardecer desde Fort Lauderdale por el Intracoastal.",
       fr: "Traversée au coucher du soleil depuis Fort Lauderdale sur l’Intracoastal.",
       it: "Traversata al tramonto da Fort Lauderdale sull’Intracoastal.",
+      pt: "Travessia ao pôr do sol desde Fort Lauderdale no Intracoastal.",
     },
   },
   {
@@ -123,6 +128,7 @@ const southFlorida: Place[] = [
       es: "Clásico de Coconut Grove. Crucero fácil por Biscayne Bay.",
       fr: "Classique de Coconut Grove. Croisière facile sur Biscayne Bay.",
       it: "Classico di Coconut Grove. Crociera facile su Biscayne Bay.",
+      pt: "Clássico de Coconut Grove. Cruzeiro fácil na Biscayne Bay.",
     },
   },
   {
@@ -140,6 +146,7 @@ const southFlorida: Place[] = [
       es: "Acceso al océano. Evita los puentes al norte de Miami Beach.",
       fr: "Accès à l’océan. Évitez les ponts au nord de Miami Beach.",
       it: "Accesso all’oceano. Evita i ponti a nord di Miami Beach.",
+      pt: "Acesso ao oceano. Evite as pontes ao norte de Miami Beach.",
     },
   },
   {
@@ -157,6 +164,7 @@ const southFlorida: Place[] = [
       es: "Puerto de aguas profundas. Recoge a cruceristas en yate, no en auto.",
       fr: "Port en eaux profondes. Récupérez les croisiéristes en yacht, pas en voiture.",
       it: "Porto di acque profonde. Raccogli i crocieristi in yacht, non in auto.",
+      pt: "Porto de águas profundas. Busque passageiros de cruzeiro de iate, não de carro.",
     },
   },
   {
@@ -174,6 +182,7 @@ const southFlorida: Place[] = [
       es: "Capital mundial de cruceros. El traslado por agua gana al tráfico.",
       fr: "Capitale mondiale des croisières. Le transfert par eau bat le trafic du centre.",
       it: "Capitale mondiale delle crociere. Il trasferimento via acqua batte il traffico.",
+      pt: "Capital mundial dos cruzeiros. O traslado pela água ganha do trânsito.",
     },
   },
   {
@@ -191,6 +200,7 @@ const southFlorida: Place[] = [
       es: "Ancla, nado y paddle. El sandbar familiar desde Fort Lauderdale.",
       fr: "Ancrez, nagez, pagayez. Le sandbar familial depuis Fort Lauderdale.",
       it: "Ancora, nuoto e paddle. Il sandbar in famiglia da Fort Lauderdale.",
+      pt: "Ancore, nade, reme. O sandbar em família desde Fort Lauderdale.",
     },
   },
   {
@@ -208,6 +218,7 @@ const southFlorida: Place[] = [
       es: "De Miami Beach a Brickell en 18 minutos. Adiós tráfico.",
       fr: "Miami Beach à Brickell en 18 minutes. Adieu le trafic.",
       it: "Da Miami Beach a Brickell in 18 minuti. Addio traffico.",
+      pt: "De Miami Beach a Brickell em 18 minutos. Adeus trânsito.",
     },
   },
   {
@@ -225,6 +236,7 @@ const southFlorida: Place[] = [
       es: "Crucero lento frente a las casas más fotografiadas de Miami.",
       fr: "Croisière lente devant les maisons les plus photographiées de Miami.",
       it: "Crociera lenta davanti alle case più fotografate di Miami.",
+      pt: "Cruzeiro lento diante das casas mais fotografadas de Miami.",
     },
   },
   {
@@ -242,6 +254,7 @@ const southFlorida: Place[] = [
       es: "Aguas abiertas, skyline y la autopista del futuro.",
       fr: "Eaux ouvertes, vues sur le skyline et l’autoroute du futur.",
       it: "Acque aperte, skyline e l’autostrada del futuro.",
+      pt: "Águas abertas, skyline e a autoestrada do futuro.",
     },
   },
   {
@@ -259,6 +272,7 @@ const southFlorida: Place[] = [
       es: "De Fort Lauderdale a Palm Beach en 45 minutos al atardecer.",
       fr: "Fort Lauderdale à Palm Beach en 45 minutes à l’heure dorée.",
       it: "Da Fort Lauderdale a Palm Beach in 45 minuti all’ora d’oro.",
+      pt: "De Fort Lauderdale a Palm Beach em 45 minutos na hora dourada.",
     },
   },
   {
@@ -276,6 +290,7 @@ const southFlorida: Place[] = [
       es: "Llega por agua. Sin fila de valet en Ocean Drive.",
       fr: "Arrivez par l’eau. Pas de file de voiturier sur Ocean Drive.",
       it: "Arriva via acqua. Niente fila del valet su Ocean Drive.",
+      pt: "Chegue pela água. Sem fila de valet na Ocean Drive.",
     },
   },
 ];

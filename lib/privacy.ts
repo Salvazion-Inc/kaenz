@@ -240,11 +240,72 @@ export const privacyIt = {
   ],
 };
 
+export const privacyPt = {
+  title: "Política de Privacidade",
+  intro:
+    "Política de Privacidade da Kaenz. Última atualização: 24 de agosto de 2026. A Kaenz é um marketplace de iates operado pela Salvazion, Inc. (“Kaenz”, “nós”). Esta política descreve quais dados processamos em https://kaenz.com, para quais finalidades, com quem os compartilhamos e quais direitos você tem. Ao usar a Plataforma, você aceita esta política junto com nossos Termos e Condições em /terms.",
+  sections: [
+    {
+      heading: "1. Controlador",
+      body: "Controlador dos dados: Salvazion, Inc., sociedade de Delaware. Sede: 131 Continental Dr, Suite 305, Newark, DE 19713, EUA. Contato: info@salvazion.org.",
+    },
+    {
+      heading: "2. Dados que podemos coletar",
+      body: "Conforme o uso da Plataforma, podemos tratar: dados de conta (nome, e-mail, hash da senha); cookies de sessão; preferência de idioma (kaenz_locale); pedidos de reserva (marina de origem, destino, data, hora, convidados, notas, telefone); candidaturas de donos e capitães (função, nome do iate, licença USCG); mensagens ao concierge para planejar uma viagem; e dados técnicos de segurança e hospedagem (IP, navegador, dispositivo). Rascunhos de viagem no navegador (localStorage) ficam no seu dispositivo até você enviá-los.",
+    },
+    {
+      heading: "3. Finalidades",
+      body: "Tratamos dados para criar e manter sua conta; conectar clientes, donos e capitães; confirmar reservas; operar o concierge Kaenz; lembrar o idioma; melhorar a segurança; prevenir abusos; e cumprir obrigações legais.",
+    },
+    {
+      heading: "4. Bases legais",
+      body: "Tratamos dados para executar o contrato de uso da Plataforma, com o seu consentimento quando exigido e, se aplicável, por interesses legítimos de segurança e melhoria do produto, ou por obrigação legal.",
+    },
+    {
+      heading: "5. Operadores e fornecedores",
+      body: "Usamos fornecedores que tratam dados em nosso nome, incluindo Vercel (hospedagem), Supabase opcional (autenticação e banco) e xAI / Grok (respostas do concierge: as mensagens que você envia podem ser encaminhadas só para gerar a resposta). Pagamentos, se habilitados, podem passar por Stripe ou Solana; transações em blockchain são públicas e irreversíveis. Não vendemos seus dados pessoais para publicidade de terceiros.",
+    },
+    {
+      heading: "6. Conservação",
+      body: "Conservamos os dados enquanto você tiver conta ou pelo tempo necessário ao serviço, segurança, contabilidade e obrigações legais. Você pode pedir a exclusão da conta em info@salvazion.org. Apagaremos ou anonimizaremos os dados pessoais que controlamos em prazo razoável, salvo registros que devemos guardar. Cache e localStorage ficam no dispositivo até você limpá-los.",
+    },
+    {
+      heading: "7. Segurança",
+      body: "Aplicamos medidas razoáveis (HTTPS, senhas com hash, cookies de sessão assinados, acesso limitado da equipe). Nenhum sistema é 100% invulnerável; relate incidentes relevantes a info@salvazion.org.",
+    },
+    {
+      heading: "8. Seus direitos",
+      body: "Conforme a sua jurisdição (acesso, retificação, exclusão, oposição, portabilidade, limitação e, se aplicável, direitos tipo Califórnia ou GDPR), você pode exercê-los escrevendo para info@salvazion.org.",
+    },
+    {
+      heading: "9. Menores",
+      body: "A Plataforma é para usuários com 18 anos ou mais. Não coletamos de propósito dados de crianças. Se um responsável achar que um menor nos enviou dados, contate-nos para revisar e apagar.",
+    },
+    {
+      heading: "10. Transferências internacionais",
+      body: "A Salvazion, Inc. está estabelecida nos Estados Unidos. Fornecedores como Vercel, Supabase e xAI podem tratar dados em servidores nos Estados Unidos ou em outros países. Usamos fornecedores reconhecidos e medidas contratuais habituais quando aplicável.",
+    },
+    {
+      heading: "11. Cookies",
+      body: "Usamos cookies ou armazenamento semelhante essenciais para autenticação, segurança e idioma. Não dependemos de redes de anúncios de terceiros para a Plataforma.",
+    },
+    {
+      heading: "12. Alterações",
+      body: "Podemos atualizar esta política publicando a nova versão nesta URL com data atualizada. O uso contínuo constitui aceitação de mudanças materiais na medida permitida pela lei.",
+    },
+    {
+      heading: "13. Contato",
+      body: "Privacidade e dados pessoais: info@salvazion.org. Salvazion, Inc., 131 Continental Dr, Suite 305, Newark, DE 19713, EUA. Termos: veja Termos e Condições em /terms.",
+    },
+  ],
+};
+
 const privacyByLocale = {
   en: privacyEn,
   es: privacyEs,
   fr: privacyFr,
   it: privacyIt,
+  pt: privacyPt,
 } as const;
 
 export function privacy(locale: Locale) {

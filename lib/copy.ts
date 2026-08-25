@@ -599,6 +599,155 @@ export const copy = {
     sessionNeeded: "Accedi per aprire la piattaforma Kaenz.",
     nameRequired: "Il nome completo è obbligatorio.",
   },
+  pt: {
+    metaTitle: "Kaenz: Deixe o carro e viaje de iate!",
+    metaDescription:
+      "Kaenz: “Acreditamos que a água é o jeito mais inteligente, bonito e divertido de se deslocar pelo South Florida.”",
+    brand: "Kaenz",
+    nav: {
+      app: "App",
+      fleet: "Frota",
+      book: "Reservar",
+      concierge: "Concierge",
+      join: "Junte-se",
+      terms: "Termos",
+      privacy: "Privacidade",
+      login: "Entrar",
+      signup: "Criar conta",
+      logout: "Sair",
+    },
+    heroTitle: "Pule o trânsito. Navegue Miami de iate!",
+    heroCta: "Abrir app",
+    heroSecondary: "Reservar um iate",
+    solveEyebrow: "O que resolvemos?",
+    solveLead:
+      "Acreditamos que a água é a autoestrada do futuro na Flórida.",
+    pillars: [
+      {
+        title: "Ganhe tempo",
+        body: "Economize horas de trânsito e chegue antes, porque nada fica no seu caminho.",
+      },
+      {
+        title: "Elimina o estresse",
+        body: "Esqueça buzinas e frustração. Aqui sobram tranquilidade e paz.",
+      },
+      {
+        title: "Aproveite as viagens",
+        body: "Há milhares de milhas navegáveis, sandbars e skylines para curtir.",
+      },
+    ],
+    uniqueTitle: "Serviço único!",
+    uniqueBody:
+      "O Uber dos iates em Miami–Fort Lauderdale. Reserve em minutos um iate privado com capitão local verificado e chegue mais rápido do que de carro. Evite pontes, filas e estresse. Curta skylines, sandbars e pores do sol enquanto cuidamos de tudo.",
+    uniqueTerms: "Leia os Termos e Condições.",
+    testimonialsTitle: "O que pensam os nossos clientes?",
+    testimonials: [
+      {
+        quote:
+          "De Fort Lauderdale a Hollywood Beach em 35 minutos com sandbar. Dia em família perfeito!",
+        name: "Mia Lee",
+        city: "Fort Lauderdale",
+      },
+      {
+        quote: "De Miami Beach a Brickell em 18 minutos de iate. Adeus trânsito!",
+        name: "William Brown",
+        city: "Miami",
+      },
+      {
+        quote:
+          "De Fort Lauderdale a Palm Beach em 45 minutos ao pôr do sol. Romance inesquecível!",
+        name: "Emily Johnson",
+        city: "Palm Beach",
+      },
+    ],
+    marinasTitle: "Marinas e portos",
+    marinasBody:
+      "A Kaenz conecta iates privados em marinas e portos do mundo. Chegue e saia pela água — do South Florida ao Mediterrâneo, ao Caribe e além.",
+    joinTitle: "Você tem um iate e é capitão?",
+    joinCta: "Junte-se à Kaenz",
+    joinLead:
+      "Anuncie seu iate ou ofereça serviços de capitão. Proprietários independentes e capitães com licença USCG ficam com 70% de cada viagem.",
+    fleetTitle: "Escolha o seu iate",
+    fleetLead: "Privado, com capitão, pronto quando você estiver.",
+    from: "A partir de",
+    guests: "convidados",
+    hours: "horas",
+    bookNow: "Reservar",
+    bookTitle: "Reserve um iate privado",
+    bookLead:
+      "Reserve em minutos. Toda viagem inclui um capitão local verificado.",
+    form: {
+      name: "Nome completo",
+      email: "E-mail",
+      phone: "Telefone",
+      yacht: "Iate",
+      origin: "Marina de partida",
+      destination: "Destino",
+      date: "Data",
+      time: "Hora",
+      guests: "Convidados",
+      notes: "Notas",
+      submit: "Solicitar reserva",
+      sending: "Enviando…",
+      success: "Pedido recebido. Um concierge Kaenz confirmará em breve.",
+    },
+    conciergeTitle: "Concierge Kaenz",
+    conciergeLead:
+      "Planeje uma viagem de iate no South Florida com o Grok. Rotas, sandbars, horários e o barco certo.",
+    conciergePlaceholder: "Para onde você quer ir, e quando?",
+    conciergeSend: "Enviar",
+    joinPageTitle: "Junte-se à Kaenz",
+    joinPageLead:
+      "A Kaenz é um marketplace que conecta clientes, donos de iates e capitães. Somos uma plataforma tecnológica: as viagens são feitas por donos e capitães independentes.",
+    owner: "Dono de iate",
+    captain: "Capitão",
+    both: "Dono e capitão",
+    uscg: "Licença USCG (capitães)",
+    yachtName: "Nome do iate",
+    submitJoin: "Candidatar-se",
+    rights: "Todos os direitos reservados para Salvazion Inc. 2026.",
+    termsTitle: "Termos e Condições",
+    termsHref: "/terms",
+    privacyTitle: "Política de Privacidade",
+    privacyHref: "/privacy",
+    mapTitle: "Marinas e portos mundiais Kaenz",
+    mapWorld: "Mundo",
+    mapFlorida: "South Florida",
+    legendMarina: "Marina",
+    legendPort: "Porto",
+    hubsLabel: "marinas e portos para chegadas e partidas de iate",
+    mapZoomIn: "Aproximar",
+    mapZoomOut: "Afastar",
+    role: "Função",
+    joinFee: "Comissão Kaenz: 30% da reserva. Dono 40%. Capitão 30%.",
+    joinCaptains:
+      "Capitães: credencial USCG OUPV Six-Pack ou superior, mais verificação de antecedentes.",
+    joinOwners:
+      "Donos: registro da Flórida, HIN e seguro marítimo comercial (mín. US$ 1.000.000).",
+    formError: "Não foi possível enviar. Tente de novo.",
+    joinSuccess:
+      "Candidatura recebida. Vamos contactá-lo para verificar licença e iate.",
+    conciergeHello:
+      "Sou o concierge Kaenz. Diga origem, destino, número de pessoas e horário. Eu combino um iate e uma rota mais rápida do que o carro.",
+    conciergeMissingKey:
+      "Falta XAI_API_KEY no servidor. Adicione-a para ativar o Grok.",
+    conciergeUnavailable:
+      "O concierge está indisponível agora. Reserve direto pela frota.",
+    loginTitle: "Entre na plataforma Kaenz",
+    signupTitle: "Crie a sua conta Kaenz",
+    password: "Senha",
+    passwordConfirm: "Confirmar senha",
+    haveAccount: "Já tem conta? Entrar",
+    needAccount: "Novo por aqui? Criar uma conta",
+    loginCta: "Entrar",
+    signupCta: "Criar conta",
+    loginError: "E-mail ou senha incorretos.",
+    signupError: "Não foi possível criar a conta.",
+    passwordMismatch: "As senhas não coincidem.",
+    passwordShort: "Use pelo menos 8 caracteres.",
+    sessionNeeded: "Entre para abrir a plataforma Kaenz.",
+    nameRequired: "O nome completo é obrigatório.",
+  },
 } as const;
 
 export function t(locale: Locale) {

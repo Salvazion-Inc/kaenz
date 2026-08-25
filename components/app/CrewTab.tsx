@@ -23,7 +23,7 @@ export function CrewTab({ locale }: { locale: Locale }) {
     const post: CrewPost = {
       id: `local-${Date.now()}`,
       authorId: "william-brown",
-      body: { en: body, es: body, fr: body, it: body },
+      body: { en: body, es: body, fr: body, it: body, pt: body },
       place: "Kaenz",
       likes: 1,
       when: "now",

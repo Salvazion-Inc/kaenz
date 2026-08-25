@@ -208,11 +208,64 @@ export const termsIt = {
   ],
 };
 
+export const termsPt = {
+  title: "Termos e Condições",
+  intro:
+    "Termos de Serviço da Kaenz Yacht. Data de vigência: 23 de fevereiro de 2026. IMPORTANTE: LEIA ESTES TERMOS COM ATENÇÃO ANTES DE USAR O APP KAENZ. Ao criar uma conta, listar um iate, oferecer serviços de capitão ou reservar uma viagem no aplicativo ou site Kaenz Yacht (“Plataforma”), você concorda em ficar legalmente vinculado a estes Termos de Serviço. Se não concordar, não use a Plataforma.",
+  sections: [
+    {
+      heading: "1. Definições",
+      body: "Cliente / Usuário: qualquer pessoa que reserve ou participe de uma viagem de iate pela Plataforma. Dono do iate: quem lista um iate para charter. Capitão: capitão licenciado que navega e cuida da segurança. Plataforma / Kaenz Yacht: o marketplace que conecta clientes, donos e capitães. Viagem: experiência privada com tripulação reservada na Plataforma.",
+    },
+    {
+      heading: "2. Nosso papel",
+      body: "A Kaenz Yacht é apenas uma plataforma tecnológica. Não somos operador de charter, donos de embarcações nem empregadores de capitães. Não possuímos, operamos nem controlamos iates ou capitães. Todas as viagens são feitas por donos e capitães independentes.",
+    },
+    {
+      heading: "3. Elegibilidade e registro",
+      body: "Você deve ter pelo menos 18 anos. Deve fornecer informações corretas e mantê-las atualizadas. Clientes precisam de documento oficial. Donos devem possuir o iate e apresentar registro da Flórida, HIN e seguro. Capitães devem ter credencial USCG Merchant Mariner (OUPV “Six-Pack” ou superior) e, se exigida, licença FWC, e passar na verificação de antecedentes.",
+    },
+    {
+      heading: "4. Condições por função",
+      body: "O cliente é responsável pela segurança e conduta, deve seguir o capitão e não pode levar substâncias ilegais nem armas. O dono mantém seguro marítimo comercial (mínimo US$ 1.000.000) e o iate em condições de navegar. O capitão é contratado independente responsável pela navegação segura, briefing de segurança e equipamentos. A Kaenz Yacht não emprega capitães.",
+    },
+    {
+      heading: "5. Reservas, pagamentos e taxas",
+      body: "As reservas são definitivas após a confirmação do Dono/Capitão. Pagamentos passam pelo nosso sistema seguro (fiat ou criptomoeda em Solana). Pagamentos em cripto são irreversíveis. A taxa da Kaenz Yacht é 30% do valor (paga pelo Cliente). Os 70% restantes: dono 40% e capitão 30%. Os preços incluem a taxa da Plataforma, salvo indicação em contrário.",
+    },
+    {
+      heading: "6. Cancelamentos e reembolsos",
+      body: "Cancelamentos seguem a política mostrada na reserva. Cancelamentos por clima decididos pelo Capitão em geral são reembolsados por completo. Faltas (no-show) dos Clientes não são reembolsáveis.",
+    },
+    {
+      heading: "7. Seguro e responsabilidade",
+      body: "Donos devem ter seguro de responsabilidade marítima comercial. A Kaenz Yacht oferece seguro P2P complementar opcional para Clientes. NA MEDIDA MÁXIMA PERMITIDA PELA LEI, A KAENZ YACHT NÃO É RESPONSÁVEL POR DANOS DIRETOS, INDIRETOS, INCIDENTAIS, ESPECIAIS OU CONSEQUENCIAIS decorrentes do uso da Plataforma ou de qualquer Viagem.",
+    },
+    {
+      heading: "8. Conduta proibida",
+      body: "Você não pode usar a Plataforma para fins ilegais, falsear informações de iate ou licença, assediar outros usuários nem tentar contornar a estrutura de taxas.",
+    },
+    {
+      heading: "9. Privacidade",
+      body: "O uso da Plataforma também é regido pela nossa Política de Privacidade.",
+    },
+    {
+      heading: "10. Resolução de disputas",
+      body: "Qualquer disputa será resolvida por arbitragem vinculante no condado de Miami-Dade, Flórida, segundo as regras da American Arbitration Association. Você abre mão do júri. Lei aplicável: Estado da Flórida.",
+    },
+    {
+      heading: "11. Encerramento",
+      body: "Podemos suspender ou encerrar sua conta a qualquer momento por violação destes Termos, sem aviso prévio nem reembolso. Ao criar uma conta, você reconhece ter lido, compreendido e aceitado estes Termos de Serviço.",
+    },
+  ],
+};
+
 const termsByLocale = {
   en: termsEn,
   es: termsEs,
   fr: termsFr,
   it: termsIt,
+  pt: termsPt,
 } as const;
 
 export function terms(locale: Locale) {

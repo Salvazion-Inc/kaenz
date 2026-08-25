@@ -9,6 +9,7 @@ export const metadata = {
       es: "https://kaenz.com/app",
       fr: "https://kaenz.com/app",
       it: "https://kaenz.com/app",
+      pt: "https://kaenz.com/app",
       "x-default": "https://kaenz.com/app",
     },
   },

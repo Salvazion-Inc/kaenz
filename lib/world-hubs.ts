@@ -727,12 +727,14 @@ function blurbFor(kind: "marina" | "port", name: string, city: string, country: 
   const esC = countryName(country, "es");
   const frC = countryName(country, "fr");
   const itC = countryName(country, "it");
+  const ptC = countryName(country, "pt");
   if (kind === "port") {
     return {
       en: `${name} in ${city}, ${enC}. Port for yacht arrivals and departures.`,
       es: `${name} en ${city}, ${esC}. Puerto para llegadas y salidas en yate.`,
       fr: `${name} à ${city}, ${frC}. Port pour arrivées et départs en yacht.`,
       it: `${name} a ${city}, ${itC}. Porto per arrivi e partenze in yacht.`,
+      pt: `${name} em ${city}, ${ptC}. Porto para chegadas e partidas de iate.`,
     };
   }
   return {
@@ -740,6 +742,7 @@ function blurbFor(kind: "marina" | "port", name: string, city: string, country: 
     es: `${name} en ${city}, ${esC}. Marina para llegadas y salidas en yate.`,
     fr: `${name} à ${city}, ${frC}. Marina pour arrivées et départs en yacht.`,
     it: `${name} a ${city}, ${itC}. Marina per arrivi e partenze in yacht.`,
+    pt: `${name} em ${city}, ${ptC}. Marina para chegadas e partidas de iate.`,
   };
 }
 
