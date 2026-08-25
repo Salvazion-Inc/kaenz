@@ -1,4 +1,5 @@
 import type { Localized } from "./locale";
+import { worldHubs } from "./world-hubs";
 
 export type PlaceKind = "marina" | "port" | "place";
 
@@ -7,6 +8,7 @@ export type Place = {
   kind: PlaceKind;
   name: string;
   city: string;
+  country?: string;
   lat: number;
   lng: number;
   image: string;
@@ -15,7 +17,11 @@ export type Place = {
   blurb: Localized;
 };
 
-export const places: Place[] = [
+export function placeCountry(place: Place) {
+  return place.country || "United States";
+}
+
+const southFlorida: Place[] = [
   {
     id: "miami-beach-marina",
     kind: "marina",
@@ -272,6 +278,12 @@ export const places: Place[] = [
     },
   },
 ];
+
+export const places: Place[] = [...southFlorida, ...worldHubs];
+
+export const mapHubs = places.filter(
+  (p) => p.kind === "marina" || p.kind === "port",
+);
 
 export function placeById(id: string) {
   return places.find((p) => p.id === id);

@@ -63,7 +63,7 @@ export const copy = {
     ],
     marinasTitle: "Marinas & Ports",
     marinasBody:
-      "Kaenz connects private yachts across Miami, Fort Lauderdale, Hollywood Beach, and Palm Beach.",
+      "Kaenz connects private yachts at marinas and ports worldwide. Arrive and depart by water — from South Florida to the Med, the Caribbean, and beyond.",
     joinTitle: "Do you Own a Yacht and Are you a Captain?",
     joinCta: "Join Kaenz",
     joinLead:
@@ -109,7 +109,12 @@ export const copy = {
     rights: "All Rights Reserved for Salvazion Inc. 2026.",
     termsTitle: "Terms and Conditions",
     termsHref: "/terms",
-    mapTitle: "Kaenz waterways",
+    mapTitle: "Kaenz world marinas & ports",
+    mapWorld: "World",
+    mapFlorida: "South Florida",
+    legendMarina: "Marina",
+    legendPort: "Port",
+    hubsLabel: "marinas and ports for yacht arrivals and departures",
     role: "Role",
     joinFee: "Kaenz fee: 30% of the booking. Owner 40%. Captain 30%.",
     joinCaptains:
@@ -202,7 +207,7 @@ export const copy = {
     ],
     marinasTitle: "Marinas y Puertos",
     marinasBody:
-      "Kaenz conecta yates privados en Miami, Fort Lauderdale, Hollywood Beach y Palm Beach.",
+      "Kaenz conecta yates privados en marinas y puertos de todo el mundo. Llega y sale por agua — de South Florida al Mediterráneo, el Caribe y más allá.",
     joinTitle: "¿Tienes un Yate y eres Capitán?",
     joinCta: "Únete a Kaenz",
     joinLead:
@@ -248,7 +253,12 @@ export const copy = {
     rights: "Todos los Derechos Reservados para Salvazion Inc. 2026.",
     termsTitle: "Términos y Condiciones",
     termsHref: "/terms",
-    mapTitle: "Vías de Kaenz",
+    mapTitle: "Marinas y puertos mundiales Kaenz",
+    mapWorld: "Mundo",
+    mapFlorida: "South Florida",
+    legendMarina: "Marina",
+    legendPort: "Puerto",
+    hubsLabel: "marinas y puertos para llegadas y salidas en yate",
     role: "Rol",
     joinFee: "Tarifa Kaenz: 30% del booking. Dueño 40%. Capitán 30%.",
     joinCaptains:
@@ -342,7 +352,7 @@ export const copy = {
     ],
     marinasTitle: "Marinas et ports",
     marinasBody:
-      "Kaenz relie des yachts privés à Miami, Fort Lauderdale, Hollywood Beach et Palm Beach.",
+      "Kaenz relie des yachts privés dans des marinas et ports du monde entier. Arrivez et partez par l’eau — de South Florida à la Méditerranée, aux Caraïbes et au-delà.",
     joinTitle: "Vous possédez un yacht et vous êtes capitaine ?",
     joinCta: "Rejoindre Kaenz",
     joinLead:
@@ -388,7 +398,12 @@ export const copy = {
     rights: "Tous droits réservés pour Salvazion Inc. 2026.",
     termsTitle: "Conditions générales",
     termsHref: "/terms",
-    mapTitle: "Voies Kaenz",
+    mapTitle: "Marinas et ports mondiaux Kaenz",
+    mapWorld: "Monde",
+    mapFlorida: "South Florida",
+    legendMarina: "Marina",
+    legendPort: "Port",
+    hubsLabel: "marinas et ports pour arrivées et départs en yacht",
     role: "Rôle",
     joinFee: "Commission Kaenz : 30 % de la réservation. Propriétaire 40 %. Capitaine 30 %.",
     joinCaptains:
@@ -482,7 +497,7 @@ export const copy = {
     ],
     marinasTitle: "Marine e porti",
     marinasBody:
-      "Kaenz collega yacht privati a Miami, Fort Lauderdale, Hollywood Beach e Palm Beach.",
+      "Kaenz collega yacht privati in marine e porti di tutto il mondo. Arriva e parti via acqua — da South Florida al Mediterraneo, ai Caraibi e oltre.",
     joinTitle: "Possiedi uno yacht e sei un capitano?",
     joinCta: "Unisciti a Kaenz",
     joinLead:
@@ -528,7 +543,12 @@ export const copy = {
     rights: "Tutti i diritti riservati per Salvazion Inc. 2026.",
     termsTitle: "Termini e Condizioni",
     termsHref: "/terms",
-    mapTitle: "Vie d’acqua Kaenz",
+    mapTitle: "Marine e porti mondiali Kaenz",
+    mapWorld: "Mondo",
+    mapFlorida: "South Florida",
+    legendMarina: "Marina",
+    legendPort: "Porto",
+    hubsLabel: "marine e porti per arrivi e partenze in yacht",
     role: "Ruolo",
     joinFee: "Commissione Kaenz: 30% della prenotazione. Proprietario 40%. Capitano 30%.",
     joinCaptains:

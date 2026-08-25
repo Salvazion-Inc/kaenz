@@ -3,12 +3,10 @@ import Link from "next/link";
 import { Footer } from "./Footer";
 import { HtmlLang } from "./HtmlLang";
 import { Nav } from "./Nav";
+import { WorldMap } from "./WorldMap";
 import { t } from "@/lib/copy";
 import { pathFor, type Locale } from "@/lib/locale";
 import { formatUsd, yachts } from "@/lib/yachts";
-
-const MAP =
-  "https://www.google.com/maps/d/embed?mid=1dH1tLxo5g6flVs5zjw9yLtgK3i7TdRU";
 
 export function HomePage({ locale }: { locale: Locale }) {
   const c = t(locale);
@@ -156,14 +154,8 @@ export function HomePage({ locale }: { locale: Locale }) {
       <section className="mx-auto max-w-6xl px-5 py-24">
         <h2 className="text-3xl font-bold md:text-4xl">{c.marinasTitle}</h2>
         <p className="mt-3 max-w-2xl text-white/70">{c.marinasBody}</p>
-        <div className="mt-8 overflow-hidden rounded-2xl border border-white/10">
-          <iframe
-            title={c.mapTitle}
-            src={MAP}
-            className="h-[480px] w-full border-0"
-            loading="lazy"
-            allowFullScreen
-          />
+        <div className="mt-8">
+          <WorldMap locale={locale} variant="site" />
         </div>
       </section>
 

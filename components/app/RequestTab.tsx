@@ -56,6 +56,7 @@ export function RequestTab({ locale }: { locale: Locale }) {
             {places.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name} — {p.city}
+                {p.country ? `, ${p.country}` : ""}
               </option>
             ))}
           </select>
@@ -70,6 +71,7 @@ export function RequestTab({ locale }: { locale: Locale }) {
             {places.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name} — {p.city}
+                {p.country ? `, ${p.country}` : ""}
               </option>
             ))}
           </select>

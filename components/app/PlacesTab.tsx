@@ -3,9 +3,10 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { WorldMap } from "@/components/WorldMap";
 import { at } from "@/lib/app-copy";
 import { pathFor, type Locale } from "@/lib/locale";
-import { places, type PlaceKind } from "@/lib/places";
+import { placeCountry, places, type PlaceKind } from "@/lib/places";
 import { useTrip } from "@/lib/trip-store";
 
 export function PlacesTab({ locale }: { locale: Locale }) {
@@ -18,7 +19,8 @@ export function PlacesTab({ locale }: { locale: Locale }) {
   const list = useMemo(() => {
     return places.filter((p) => {
       const okKind = kind === "all" || p.kind === kind;
-      const hay = `${p.name} ${p.city} ${p.blurb[locale]}`.toLowerCase();
+      const hay =
+        `${p.name} ${p.city} ${placeCountry(p)} ${p.blurb[locale]}`.toLowerCase();
       return okKind && hay.includes(q.toLowerCase());
     });
   }, [q, kind, locale]);
@@ -55,12 +57,12 @@ export function PlacesTab({ locale }: { locale: Locale }) {
         ))}
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-2xl border border-white/10">
-        <iframe
-          title={c.tabs.places}
-          className="h-52 w-full border-0 md:h-72"
-          loading="lazy"
-          src="https://www.google.com/maps/d/embed?mid=1dH1tLxo5g6flVs5zjw9yLtgK3i7TdRU"
+      <div className="mt-4">
+        <WorldMap
+          locale={locale}
+          variant="app"
+          onPickup={(p) => go(p.id, "originId")}
+          onDropoff={(p) => go(p.id, "destinationId")}
         />
       </div>
 
@@ -77,6 +79,7 @@ export function PlacesTab({ locale }: { locale: Locale }) {
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-kaenz">
                   {c.kinds[p.kind]} · {p.city}
+                  {placeCountry(p) !== p.city ? ` · ${placeCountry(p)}` : ""}
                 </p>
                 <h2 className="truncate text-base font-bold">{p.name}</h2>
                 <p className="mt-1 line-clamp-2 text-xs text-white/70">
