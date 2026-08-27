@@ -88,21 +88,25 @@ export async function GET(req: Request) {
   const next = safeNext(url.searchParams.get("next"));
 
   if (supabaseConfigured() && code) {
-    const pending: Parameters<typeof applyCookies>[1] = [];
-    const supabase = createRouteSupabase(req, pending);
-    if (supabase) {
-      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-      if (!error && data.user?.email) {
-        const email = data.user.email.toLowerCase();
-        const name =
-          String(
-            data.user.user_metadata?.full_name ||
-              data.user.user_metadata?.name ||
-              "",
-          ) || email;
-        const res = applyCookies(NextResponse.redirect(dest(req, next)), pending);
-        return finishLogin(req, res, { id: data.user.id, email, name });
+    try {
+      const pending: Parameters<typeof applyCookies>[1] = [];
+      const supabase = createRouteSupabase(req, pending);
+      if (supabase) {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+        if (!error && data.user?.email) {
+          const email = data.user.email.toLowerCase();
+          const name =
+            String(
+              data.user.user_metadata?.full_name ||
+                data.user.user_metadata?.name ||
+                "",
+            ) || email;
+          const res = applyCookies(NextResponse.redirect(dest(req, next)), pending);
+          return finishLogin(req, res, { id: data.user.id, email, name });
+        }
       }
+    } catch {
+      /* native Google OAuth below */
     }
   }
 

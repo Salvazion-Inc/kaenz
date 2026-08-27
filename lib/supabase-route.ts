@@ -13,6 +13,25 @@ export function supabaseConfigured() {
   );
 }
 
+/** GoTrue still returns an authorize URL when Google is disabled. */
+export async function supabaseGoogleEnabled() {
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!base || !key) return false;
+  try {
+    const res = await fetch(`${base.replace(/\/$/, "")}/auth/v1/settings`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+      cache: "no-store",
+    });
+    if (!res.ok) return false;
+    const json = (await res.json()) as { external?: Record<string, boolean | string> };
+    const google = json.external?.google;
+    return google === true || google === "true";
+  } catch {
+    return false;
+  }
+}
+
 export function createRouteSupabase(req: Request, pending: PendingCookie[]) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
