@@ -11,25 +11,28 @@ import {
   type FeaturedKind,
 } from "@/lib/featured-places";
 import { pathFor, type Locale } from "@/lib/locale";
-import { placeCountry, places, type PlaceKind } from "@/lib/places";
+import { placeCountry, type PlaceKind } from "@/lib/places";
 import { useTrip } from "@/lib/trip-store";
+import { AddMarinaForm } from "./AddMarinaForm";
 
 export function PlacesTab({ locale }: { locale: Locale }) {
   const c = at(locale);
-  const { setTrip } = useTrip();
+  const { setTrip, allPlaces, addPartnerPlace } = useTrip();
   const router = useRouter();
   const [q, setQ] = useState("");
   const [kind, setKind] = useState<PlaceKind | "all">("all");
+  const [adding, setAdding] = useState(false);
+  const [notice, setNotice] = useState("");
 
   const list = useMemo(() => {
-    return places.filter((p) => {
+    return allPlaces.filter((p) => {
       if (p.featured) return false;
       const okKind = kind === "all" || p.kind === kind;
       const hay =
-        `${p.name} ${p.city} ${placeCountry(p, locale)} ${p.blurb[locale]}`.toLowerCase();
+        `${p.name} ${p.city} ${p.address || ""} ${p.region || ""} ${placeCountry(p, locale)} ${p.blurb[locale]}`.toLowerCase();
       return okKind && hay.includes(q.toLowerCase());
     });
-  }, [q, kind, locale]);
+  }, [q, kind, locale, allPlaces]);
 
   function go(id: string, role: "originId" | "destinationId") {
     setTrip({ [role]: id });
@@ -40,6 +43,29 @@ export function PlacesTab({ locale }: { locale: Locale }) {
     <div>
       <h1 className="text-2xl font-extrabold">{c.tabs.places}</h1>
       <p className="mt-1 text-sm text-white/70">{c.placesLead}</p>
+      <button
+        type="button"
+        onClick={() => setAdding((open) => !open)}
+        className="mt-3 rounded-full bg-kaenz px-4 py-1.5 text-xs font-bold text-white"
+      >
+        {c.addMarina.cta}
+      </button>
+      {adding ? (
+        <AddMarinaForm
+          locale={locale}
+          onCancel={() => setAdding(false)}
+          onListed={(place) => {
+            addPartnerPlace(place);
+            setAdding(false);
+            setNotice(c.addMarina.listed);
+          }}
+        />
+      ) : null}
+      {notice ? (
+        <p className="mt-3 rounded-xl border border-kaenz/40 bg-kaenz/10 px-3 py-2 text-sm text-kaenz">
+          {notice}
+        </p>
+      ) : null}
 
       <section className="mt-5">
         <h2 className="text-lg font-extrabold">{c.featuredPlaces}</h2>
@@ -135,11 +161,18 @@ export function PlacesTab({ locale }: { locale: Locale }) {
             className="overflow-hidden rounded-2xl border border-white/10 bg-white/5"
           >
             <div className="flex gap-3 p-3">
-              <div className="relative h-24 w-28 shrink-0 overflow-hidden rounded-xl">
-                <Image src={p.image} alt={p.name} fill className="object-cover" />
-              </div>
+              {p.image ? (
+                <div className="relative h-24 w-28 shrink-0 overflow-hidden rounded-xl">
+                  <Image src={p.image} alt={p.name} fill className="object-cover" />
+                </div>
+              ) : (
+                <div className="flex h-24 w-28 shrink-0 items-center justify-center rounded-xl bg-white/10 text-[10px] font-bold uppercase tracking-widest text-kaenz">
+                  {c.kinds[p.kind]}
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-kaenz">
+                  {p.partner ? `${c.addMarina.partner} · ` : ""}
                   {c.kinds[p.kind]} · {p.city}
                   {placeCountry(p, locale) !== p.city
                     ? ` · ${placeCountry(p, locale)}`
@@ -149,18 +182,28 @@ export function PlacesTab({ locale }: { locale: Locale }) {
                 <p className="mt-1 line-clamp-2 text-xs text-white/70">
                   {p.blurb[locale]}
                 </p>
-                <p className="mt-2 text-xs text-white/55">
-                  {p.minutesByCar > 0 ? (
-                    <>
-                      {p.minutesByYacht} min {c.byYacht} · {p.minutesByCar} min{" "}
-                      {c.byCar}
-                    </>
-                  ) : (
-                    <>
-                      {p.minutesByYacht} min {c.byYacht} · {c.waterOnly}
-                    </>
-                  )}
-                </p>
+                {p.partner ? (
+                  <p className="mt-2 text-xs text-white/55">
+                    {p.dockmaster ? `${p.dockmaster} · ` : ""}
+                    {p.phone}
+                    {p.website ? ` · ${p.website.replace(/^https?:\/\//, "")}` : ""}
+                    {" · "}
+                    {c.addMarina.fee}
+                  </p>
+                ) : (
+                  <p className="mt-2 text-xs text-white/55">
+                    {p.minutesByCar > 0 ? (
+                      <>
+                        {p.minutesByYacht} min {c.byYacht} · {p.minutesByCar} min{" "}
+                        {c.byCar}
+                      </>
+                    ) : (
+                      <>
+                        {p.minutesByYacht} min {c.byYacht} · {c.waterOnly}
+                      </>
+                    )}
+                  </p>
+                )}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2 px-3 pb-3">

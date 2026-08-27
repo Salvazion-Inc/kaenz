@@ -7,8 +7,9 @@ import {
   useMemo,
   useState,
 } from "react";
+import { marinaShares } from "./marina-listings";
+import { placeById, places, type Place } from "./places";
 import { estimateFare, yachtById, yachts, type Yacht } from "./yachts";
-import { placeById } from "./places";
 
 export type TripKind = "commute" | "tour" | "special";
 export type TripStatus = "draft" | "requested" | "confirmed";
@@ -54,11 +55,19 @@ type Ctx = {
   setTrip: (patch: Partial<TripDraft>) => void;
   reset: () => void;
   yacht: Yacht | undefined;
-  fare: ReturnType<typeof estimateFare> | null;
+  fare:
+    | (ReturnType<typeof estimateFare> & {
+        marina: ReturnType<typeof marinaShares>;
+      })
+    | null;
   originName: string;
   destinationName: string;
+  originPlace: Place | undefined;
+  destinationPlace: Place | undefined;
   ready: boolean;
   fleet: Yacht[];
+  allPlaces: Place[];
+  addPartnerPlace: (place: Place) => void;
 };
 
 const TripCtx = createContext<Ctx | null>(null);
@@ -67,6 +76,7 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
   const [trip, setState] = useState<TripDraft>(empty);
   const [hydrated, setHydrated] = useState(false);
   const [listings, setListings] = useState<Yacht[]>([]);
+  const [partners, setPartners] = useState<Place[]>([]);
 
   useEffect(() => {
     try {
@@ -83,6 +93,10 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
       .then((res) => res.json())
       .then((data) => setListings(Array.isArray(data.yachts) ? data.yachts : []))
       .catch(() => setListings([]));
+    fetch("/api/marinas")
+      .then((res) => res.json())
+      .then((data) => setPartners(Array.isArray(data.places) ? data.places : []))
+      .catch(() => setPartners([]));
   }, []);
 
   useEffect(() => {
@@ -92,9 +106,25 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo(() => {
     const fleet = [...listings, ...yachts];
+    const allPlaces = [...partners, ...places];
+    const findPlace = (id: string) =>
+      partners.find((item) => item.id === id) || placeById(id);
     const yacht = yachtById(trip.yachtId) || listings.find((item) => item.id === trip.yachtId);
-    const fare =
+    const originPlace = findPlace(trip.originId);
+    const destinationPlace = findPlace(trip.destinationId);
+    const base =
       yacht && yacht.priceFrom > 0 ? estimateFare(yacht, trip.kind) : null;
+    const marina = base
+      ? marinaShares(base.total, originPlace, destinationPlace)
+      : null;
+    const fare =
+      base && marina
+        ? {
+            ...base,
+            marina,
+            platform: Math.max(0, base.total - base.owner - base.captain - marina.total),
+          }
+        : null;
     return {
       trip,
       setTrip: (patch: Partial<TripDraft>) =>
@@ -102,13 +132,17 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
       reset: () => setState(empty),
       yacht,
       fare,
-      originName: placeById(trip.originId)?.name ?? trip.originId,
-      destinationName:
-        placeById(trip.destinationId)?.name ?? trip.destinationId,
+      originName: originPlace?.name ?? trip.originId,
+      destinationName: destinationPlace?.name ?? trip.destinationId,
+      originPlace,
+      destinationPlace,
       ready: hydrated,
       fleet,
+      allPlaces,
+      addPartnerPlace: (place: Place) =>
+        setPartners((cur) => [place, ...cur.filter((item) => item.id !== place.id)]),
     };
-  }, [trip, hydrated, listings]);
+  }, [trip, hydrated, listings, partners]);
 
   return <TripCtx.Provider value={value}>{children}</TripCtx.Provider>;
 }

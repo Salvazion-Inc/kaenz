@@ -64,7 +64,7 @@ export function TripTab({ locale }: { locale: Locale }) {
           trip_date: trip.date,
           trip_time: trip.time,
           guests: trip.guests,
-          notes: `${trip.kind}; ${trip.payMethod}; ${formatUsd(fare.total)}; gratuity ${trip.gratuityPct || 0}%`,
+          notes: `${trip.kind}; ${trip.payMethod}; ${formatUsd(fare.total)}; gratuity ${trip.gratuityPct || 0}%; marina ${formatUsd(fare.marina.total)}`,
           locale,
           status: "confirmed",
           amount:
@@ -181,6 +181,27 @@ export function TripTab({ locale }: { locale: Locale }) {
               )}
             </dd>
           </div>
+          {fare.marina.roundTrip && fare.marina.total ? (
+            <div className="flex justify-between text-navy/60">
+              <dt>{c.marinaRoundShare}</dt>
+              <dd>{formatUsd(fare.marina.total)}</dd>
+            </div>
+          ) : (
+            <>
+              {fare.marina.origin ? (
+                <div className="flex justify-between text-navy/60">
+                  <dt>{c.marinaPickupShare}</dt>
+                  <dd>{formatUsd(fare.marina.origin)}</dd>
+                </div>
+              ) : null}
+              {fare.marina.destination ? (
+                <div className="flex justify-between text-navy/60">
+                  <dt>{c.marinaDropoffShare}</dt>
+                  <dd>{formatUsd(fare.marina.destination)}</dd>
+                </div>
+              ) : null}
+            </>
+          )}
           <div className="flex justify-between text-navy/60">
             <dt>{c.platformShare}</dt>
             <dd>{formatUsd(fare.platform)}</dd>

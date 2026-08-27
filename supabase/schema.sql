@@ -124,3 +124,27 @@ alter table public.yacht_listings enable row level security;
 create policy "public read listed yachts"
   on public.yacht_listings for select
   using (status = 'listed');
+
+create table if not exists public.marina_listings (
+  id uuid primary key default gen_random_uuid(),
+  slug text unique not null,
+  created_by text,
+  status text not null default 'listed',
+  kind text not null default 'marina',
+  name text not null,
+  lat double precision not null,
+  lng double precision not null,
+  address text not null,
+  region text not null,
+  dockmaster text not null,
+  phone text not null,
+  website text not null,
+  wallet text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.marina_listings enable row level security;
+
+create policy "public read listed marinas"
+  on public.marina_listings for select
+  using (status = 'listed');

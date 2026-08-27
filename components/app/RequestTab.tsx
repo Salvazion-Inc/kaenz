@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { at } from "@/lib/app-copy";
 import { pathFor, type Locale } from "@/lib/locale";
-import { placeCountry, places } from "@/lib/places";
+import { placeCountry } from "@/lib/places";
 import { formatUsd } from "@/lib/yachts";
 import { useTrip, type TripKind } from "@/lib/trip-store";
 
@@ -12,7 +12,7 @@ const field =
 
 export function RequestTab({ locale }: { locale: Locale }) {
   const c = at(locale);
-  const { trip, setTrip, fare, yacht, fleet } = useTrip();
+  const { trip, setTrip, fare, yacht, fleet, allPlaces } = useTrip();
   const router = useRouter();
   const kinds: TripKind[] = ["commute", "tour", "special"];
 
@@ -53,8 +53,8 @@ export function RequestTab({ locale }: { locale: Locale }) {
             value={trip.originId}
             onChange={(e) => setTrip({ originId: e.target.value })}
           >
-            {places.map((p) => (
-              <option key={p.id} value={p.id}>
+            {allPlaces.map((p) => (
+              <option key={`o-${p.id}`} value={p.id}>
                 {p.name} — {p.city}, {placeCountry(p, locale)}
               </option>
             ))}
@@ -67,8 +67,8 @@ export function RequestTab({ locale }: { locale: Locale }) {
             value={trip.destinationId}
             onChange={(e) => setTrip({ destinationId: e.target.value })}
           >
-            {places.map((p) => (
-              <option key={p.id} value={p.id}>
+            {allPlaces.map((p) => (
+              <option key={`d-${p.id}`} value={p.id}>
                 {p.name} — {p.city}, {placeCountry(p, locale)}
               </option>
             ))}

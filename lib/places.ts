@@ -19,6 +19,12 @@ export type Place = {
   minutesByYacht: number;
   minutesByCar: number;
   blurb: Localized;
+  partner?: boolean;
+  address?: string;
+  region?: string;
+  dockmaster?: string;
+  phone?: string;
+  website?: string;
 };
 
 export function placeCountry(place: Place, locale: Locale = "en") {
