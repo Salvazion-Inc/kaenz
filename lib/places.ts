@@ -1,12 +1,15 @@
 import { countryName } from "./countries";
+import { featuredPlaces, type FeaturedKind } from "./featured-places";
 import type { Locale, Localized } from "./locale";
 import { worldHubs } from "./world-hubs";
 
 export type PlaceKind = "marina" | "port" | "place";
+export type { FeaturedKind };
 
 export type Place = {
   id: string;
   kind: PlaceKind;
+  featured?: FeaturedKind;
   name: string;
   city: string;
   country?: string;
@@ -185,24 +188,7 @@ const southFlorida: Place[] = [
       pt: "Capital mundial dos cruzeiros. O traslado pela água ganha do trânsito.",
     },
   },
-  {
-    id: "hollywood-sandbar",
-    kind: "place",
-    name: "Hollywood Beach Sandbar",
-    city: "Hollywood",
-    lat: 26.021,
-    lng: -80.114,
-    image: "/fleet/sandbar.jpg",
-    minutesByYacht: 35,
-    minutesByCar: 0,
-    blurb: {
-      en: "Anchor, swim, paddle. The family-day sandbar from Fort Lauderdale.",
-      es: "Ancla, nado y paddle. El sandbar familiar desde Fort Lauderdale.",
-      fr: "Ancrez, nagez, pagayez. Le sandbar familial depuis Fort Lauderdale.",
-      it: "Ancora, nuoto e paddle. Il sandbar in famiglia da Fort Lauderdale.",
-      pt: "Ancore, nade, reme. O sandbar em família desde Fort Lauderdale.",
-    },
-  },
+
   {
     id: "brickell",
     kind: "place",
@@ -221,24 +207,7 @@ const southFlorida: Place[] = [
       pt: "De Miami Beach a Brickell em 18 minutos. Adeus trânsito.",
     },
   },
-  {
-    id: "star-island",
-    kind: "place",
-    name: "Star Island & Millionaire's Row",
-    city: "Miami Beach",
-    lat: 25.777,
-    lng: -80.151,
-    image: "/fleet/center-console.jpg",
-    minutesByYacht: 14,
-    minutesByCar: 0,
-    blurb: {
-      en: "Slow cruise past the most photographed waterfront homes in Miami.",
-      es: "Crucero lento frente a las casas más fotografiadas de Miami.",
-      fr: "Croisière lente devant les maisons les plus photographiées de Miami.",
-      it: "Crociera lenta davanti alle case più fotografate di Miami.",
-      pt: "Cruzeiro lento diante das casas mais fotografadas de Miami.",
-    },
-  },
+
   {
     id: "biscayne-bay",
     kind: "place",
@@ -275,27 +244,9 @@ const southFlorida: Place[] = [
       pt: "De Fort Lauderdale a Palm Beach em 45 minutos na hora dourada.",
     },
   },
-  {
-    id: "south-beach",
-    kind: "place",
-    name: "South Beach",
-    city: "Miami Beach",
-    lat: 25.7826,
-    lng: -80.134,
-    image: "/fleet/yacht-1.jpg",
-    minutesByYacht: 10,
-    minutesByCar: 25,
-    blurb: {
-      en: "Arrive by water. No valet line on Ocean Drive.",
-      es: "Llega por agua. Sin fila de valet en Ocean Drive.",
-      fr: "Arrivez par l’eau. Pas de file de voiturier sur Ocean Drive.",
-      it: "Arriva via acqua. Niente fila del valet su Ocean Drive.",
-      pt: "Chegue pela água. Sem fila de valet na Ocean Drive.",
-    },
-  },
 ];
 
-export const places: Place[] = [...southFlorida, ...worldHubs];
+export const places: Place[] = [...southFlorida, ...featuredPlaces, ...worldHubs];
 
 export const mapHubs = places.filter(
   (p) => p.kind === "marina" || p.kind === "port",
