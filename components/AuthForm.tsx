@@ -7,7 +7,13 @@ import { t } from "@/lib/copy";
 import { useLocale } from "@/lib/locale-context";
 import { Site } from "./Site";
 
-export function AuthForm({ mode }: { mode: "login" | "signup" }) {
+export function AuthForm({
+  mode,
+  googleReason,
+}: {
+  mode: "login" | "signup";
+  googleReason?: string;
+}) {
   const { locale } = useLocale();
   const c = t(locale);
   const router = useRouter();
@@ -15,6 +21,18 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const next = search.get("next") || "/app";
   const [status, setStatus] = useState<"idle" | "sending" | "err">("idle");
   const [message, setMessage] = useState("");
+  const reason =
+    googleReason ||
+    (search.get("auth") === "google" ? search.get("reason") : null) ||
+    (search.get("error") === "google" ? "failed" : null);
+  const googleMessage =
+    reason === "unconfigured"
+      ? c.googleUnconfigured
+      : reason === "denied"
+        ? c.googleDenied
+        : reason
+          ? c.googleError
+          : "";
   const field =
     "mt-2 w-full rounded-lg border border-navy/15 bg-white px-4 py-3 text-navy outline-none focus:border-kaenz";
 
@@ -75,8 +93,16 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           onSubmit={onSubmit}
           className="mt-8 rounded-2xl border border-white/10 bg-white p-6 text-navy"
         >
+          {message || googleMessage ? (
+            <div
+              role="alert"
+              className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+            >
+              {message || googleMessage}
+            </div>
+          ) : null}
           <a
-            href={`/api/auth/google?next=${encodeURIComponent(next)}`}
+            href={`/api/auth/google?next=${encodeURIComponent(next)}&from=${mode}`}
             className="flex w-full items-center justify-center gap-2 rounded-md border border-navy/15 bg-white py-3 text-sm font-semibold text-navy hover:border-kaenz"
           >
             <GoogleMark />
@@ -128,11 +154,6 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
                 ? c.loginCta
                 : c.signupCta}
           </button>
-          {message || search.get("error") === "google" ? (
-            <p className="mt-4 text-sm text-red-600">
-              {message || c.googleError}
-            </p>
-          ) : null}
         </form>
         <p className="mt-6 text-sm text-white/70">
           {mode === "login" ? (

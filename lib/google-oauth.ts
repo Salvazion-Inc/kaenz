@@ -14,18 +14,18 @@ export type GoogleProfile = {
   sub: string;
 };
 
+export type AuthFrom = "login" | "signup";
+export type GoogleFailReason = "unconfigured" | "denied" | "failed";
+
 type OauthState = {
   nonce: string;
   next: string;
   verifier: string;
+  from: AuthFrom;
 };
 
 export function googleConfigured() {
-  const supabase =
-    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const native =
-    process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET;
-  return Boolean(supabase || native);
+  return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 }
 
 export function safeNext(value: string | null | undefined) {
@@ -35,15 +35,44 @@ export function safeNext(value: string | null | undefined) {
   return value;
 }
 
-export function googleCallbackUrl(req: Request) {
+export function parseAuthFrom(value: string | null | undefined): AuthFrom {
+  return value === "signup" ? "signup" : "login";
+}
+
+export function googleReasonFromSearch(sp: {
+  auth?: string;
+  reason?: string;
+  error?: string;
+}) {
+  if (sp.auth === "google" || sp.error === "google") return sp.reason || "failed";
+  return undefined;
+}
+
+export function publicOrigin(req: Request) {
   const host = (req.headers.get("x-forwarded-host") || new URL(req.url).host)
     .split(",")[0]
     .trim();
   if (host.includes("localhost") || host.startsWith("127.")) {
     const proto = req.headers.get("x-forwarded-proto") || "http";
-    return `${proto}://${host}/api/auth/google/callback`;
+    return `${proto}://${host}`;
   }
-  return "https://kaenz.com/api/auth/google/callback";
+  return "https://kaenz.com";
+}
+
+export function googleCallbackUrl(req: Request) {
+  return `${publicOrigin(req)}/api/auth/google/callback`;
+}
+
+export function googleFailUrl(
+  req: Request,
+  opts: { next: string; from: AuthFrom; reason: GoogleFailReason },
+) {
+  const path = opts.from === "signup" ? "/signup" : "/login";
+  const url = new URL(path, publicOrigin(req));
+  url.searchParams.set("auth", "google");
+  url.searchParams.set("reason", opts.reason);
+  url.searchParams.set("next", safeNext(opts.next));
+  return url;
 }
 
 function b64Url(buf: Buffer) {
@@ -54,11 +83,11 @@ function b64Url(buf: Buffer) {
     .replace(/=+$/, "");
 }
 
-export async function createOauthStart(next: string) {
+export async function createOauthStart(next: string, from: AuthFrom) {
   const nonce = b64Url(randomBytes(16));
   const verifier = b64Url(randomBytes(32));
   const challenge = b64Url(createHash("sha256").update(verifier).digest());
-  const state: OauthState = { nonce, next: safeNext(next), verifier };
+  const state: OauthState = { nonce, next: safeNext(next), verifier, from };
   const token = await signValue(JSON.stringify(state));
   return { token, nonce, challenge };
 }
@@ -69,7 +98,12 @@ export async function readOauthState(token: string | undefined | null) {
   try {
     const data = JSON.parse(raw) as OauthState;
     if (!data?.nonce || !data?.verifier || !data?.next) return null;
-    return data;
+    return {
+      nonce: data.nonce,
+      next: data.next,
+      verifier: data.verifier,
+      from: parseAuthFrom(data.from),
+    };
   } catch {
     return null;
   }
@@ -87,6 +121,7 @@ export function googleAuthUrl(opts: {
     response_type: "code",
     scope: "openid email profile",
     state: opts.nonce,
+    nonce: opts.nonce,
     code_challenge: opts.challenge,
     code_challenge_method: "S256",
     prompt: "select_account",
@@ -107,7 +142,7 @@ export async function exchangeGoogleCode(opts: {
   code: string;
   verifier: string;
   callback: string;
-}): Promise<GoogleProfile | null> {
+}): Promise<{ profile: GoogleProfile; idToken?: string; accessToken: string } | null> {
   const clientId = process.env.GOOGLE_CLIENT_ID || "";
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET || "";
   const body = new URLSearchParams({
@@ -124,7 +159,10 @@ export async function exchangeGoogleCode(opts: {
     body,
   });
   if (!tokenRes.ok) return null;
-  const tokens = (await tokenRes.json()) as { access_token?: string };
+  const tokens = (await tokenRes.json()) as {
+    access_token?: string;
+    id_token?: string;
+  };
   if (!tokens.access_token) return null;
   const infoRes = await fetch(USERINFO, {
     headers: { Authorization: `Bearer ${tokens.access_token}` },
@@ -140,8 +178,12 @@ export async function exchangeGoogleCode(opts: {
   const email = String(info.email || "").trim().toLowerCase();
   if (!email || !email.includes("@") || info.email_verified === false) return null;
   return {
-    email,
-    name: String(info.name || info.given_name || email),
-    sub: String(info.sub || email),
+    profile: {
+      email,
+      name: String(info.name || info.given_name || email),
+      sub: String(info.sub || email),
+    },
+    idToken: tokens.id_token,
+    accessToken: tokens.access_token,
   };
 }

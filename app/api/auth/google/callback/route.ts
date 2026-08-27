@@ -15,33 +15,33 @@ import {
   exchangeGoogleCode,
   googleCallbackUrl,
   GOOGLE_MARKER,
+  googleFailUrl,
+  parseAuthFrom,
+  publicOrigin,
   readOauthState,
   safeNext,
+  type AuthFrom,
+  type GoogleFailReason,
 } from "@/lib/google-oauth";
 import { ensureSupabaseUser } from "@/lib/supabase";
 import {
   applyCookies,
   createRouteSupabase,
-  supabaseConfigured,
 } from "@/lib/supabase-route";
 
 export const runtime = "nodejs";
 
-function fail(req: Request, next: string) {
-  const res = NextResponse.redirect(
-    new URL(`/login?error=google&next=${encodeURIComponent(next)}`, req.url),
-  );
+function fail(
+  req: Request,
+  opts: { next: string; from: AuthFrom; reason: GoogleFailReason },
+) {
+  const res = NextResponse.redirect(googleFailUrl(req, opts));
   res.headers.append("Set-Cookie", clearOauthStateCookie());
   return res;
 }
 
 function dest(req: Request, next: string) {
-  const url = new URL(req.url);
-  const host = (req.headers.get("x-forwarded-host") || url.host).split(",")[0].trim();
-  if (host.includes("localhost") || host.startsWith("127.")) {
-    return new URL(next, url.origin);
-  }
-  return new URL(next, "https://kaenz.com");
+  return new URL(safeNext(next), publicOrigin(req));
 }
 
 async function finishLogin(
@@ -82,62 +82,83 @@ async function finishLogin(
   return res;
 }
 
+async function supabaseFromIdToken(
+  req: Request,
+  opts: { idToken: string; accessToken: string; nonce: string },
+) {
+  const pending: Parameters<typeof applyCookies>[1] = [];
+  const supabase = createRouteSupabase(req, pending);
+  if (!supabase) return { user: null, pending };
+  const { data, error } = await supabase.auth.signInWithIdToken({
+    provider: "google",
+    token: opts.idToken,
+    access_token: opts.accessToken,
+    nonce: opts.nonce,
+  });
+  if (error || !data.user?.email) return { user: null, pending };
+  const email = data.user.email.toLowerCase();
+  const name =
+    String(
+      data.user.user_metadata?.full_name || data.user.user_metadata?.name || "",
+    ) || email;
+  return {
+    user: { id: data.user.id, email, name },
+    pending,
+  };
+}
+
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
-  const next = safeNext(url.searchParams.get("next"));
-
-  if (supabaseConfigured() && code) {
-    try {
-      const pending: Parameters<typeof applyCookies>[1] = [];
-      const supabase = createRouteSupabase(req, pending);
-      if (supabase) {
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-        if (!error && data.user?.email) {
-          const email = data.user.email.toLowerCase();
-          const name =
-            String(
-              data.user.user_metadata?.full_name ||
-                data.user.user_metadata?.name ||
-                "",
-            ) || email;
-          const res = applyCookies(NextResponse.redirect(dest(req, next)), pending);
-          return finishLogin(req, res, { id: data.user.id, email, name });
-        }
-      }
-    } catch {
-      /* native Google OAuth below */
-    }
-  }
-
+  const googleError = url.searchParams.get("error");
   const nonce = url.searchParams.get("state");
   const state = await readOauthState(
     cookieValue(req.headers.get("cookie"), OAUTH_STATE_COOKIE),
   );
-  const nativeNext = safeNext(state?.next || next);
-  if (!code || !nonce || !state || nonce !== state.nonce) {
-    return fail(req, nativeNext);
+  const next = safeNext(state?.next || url.searchParams.get("next"));
+  const from = parseAuthFrom(state?.from);
+
+  if (googleError === "access_denied" || googleError === "user_cancelled") {
+    return fail(req, { next, from, reason: "denied" });
   }
 
-  let profile;
+  if (!code || !nonce || !state || nonce !== state.nonce) {
+    return fail(req, { next, from, reason: "failed" });
+  }
+
+  let exchanged;
   try {
-    profile = await exchangeGoogleCode({
+    exchanged = await exchangeGoogleCode({
       code,
       verifier: state.verifier,
       callback: googleCallbackUrl(req),
     });
   } catch {
-    return fail(req, nativeNext);
+    return fail(req, { next, from, reason: "failed" });
   }
-  if (!profile) return fail(req, nativeNext);
+  if (!exchanged) return fail(req, { next, from, reason: "failed" });
 
-  return finishLogin(
-    req,
-    NextResponse.redirect(dest(req, nativeNext)),
-    {
-      id: `google:${profile.sub}`,
-      email: profile.email,
-      name: profile.name,
-    },
-  );
+  let user = {
+    id: `google:${exchanged.profile.sub}`,
+    email: exchanged.profile.email,
+    name: exchanged.profile.name,
+  };
+  let pending: Parameters<typeof applyCookies>[1] = [];
+
+  if (exchanged.idToken) {
+    try {
+      const linked = await supabaseFromIdToken(req, {
+        idToken: exchanged.idToken,
+        accessToken: exchanged.accessToken,
+        nonce: state.nonce,
+      });
+      pending = linked.pending;
+      if (linked.user) user = linked.user;
+    } catch {
+      /* Kaenz session still succeeds via ensureSupabaseUser */
+    }
+  }
+
+  const res = applyCookies(NextResponse.redirect(dest(req, next)), pending);
+  return finishLogin(req, res, user);
 }

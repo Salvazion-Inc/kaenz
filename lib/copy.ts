@@ -151,7 +151,9 @@ export const copy = {
     nameRequired: "Full name is required.",
     googleCta: "Continue with Gmail",
     orContinue: "or",
-    googleError: "Could not sign in with Gmail. Try again.",
+    googleError: "Could not sign in with Gmail. Try again, or use email and password.",
+    googleUnconfigured: "Gmail sign-in is not available right now. Use email and password.",
+    googleDenied: "Gmail sign-in was cancelled. Try again, or use email and password.",
   },
   es: {
     metaTitle: "Kaenz: ¡Deja el Auto y viaja en Yate!",
@@ -303,7 +305,9 @@ export const copy = {
     nameRequired: "El nombre completo es obligatorio.",
     googleCta: "Continuar con Gmail",
     orContinue: "o",
-    googleError: "No se pudo entrar con Gmail. Inténtalo de nuevo.",
+    googleError: "No se pudo entrar con Gmail. Inténtalo de nuevo o usa email y contraseña.",
+    googleUnconfigured: "El acceso con Gmail no está disponible ahora. Usa email y contraseña.",
+    googleDenied: "Cancelaste el acceso con Gmail. Inténtalo de nuevo o usa email y contraseña.",
   },
   fr: {
     metaTitle: "Kaenz : Laissez la voiture, voyagez en yacht !",
@@ -456,7 +460,9 @@ export const copy = {
     nameRequired: "Le nom complet est obligatoire.",
     googleCta: "Continuer avec Gmail",
     orContinue: "ou",
-    googleError: "Connexion Gmail impossible. Réessayez.",
+    googleError: "Connexion Gmail impossible. Réessayez, ou utilisez e-mail et mot de passe.",
+    googleUnconfigured: "La connexion Gmail n'est pas disponible pour le moment. Utilisez e-mail et mot de passe.",
+    googleDenied: "Connexion Gmail annulée. Réessayez, ou utilisez e-mail et mot de passe.",
   },
   it: {
     metaTitle: "Kaenz: Lascia l’auto e viaggia in yacht!",
@@ -609,7 +615,9 @@ export const copy = {
     nameRequired: "Il nome completo è obbligatorio.",
     googleCta: "Continua con Gmail",
     orContinue: "oppure",
-    googleError: "Accesso con Gmail non riuscito. Riprova.",
+    googleError: "Accesso con Gmail non riuscito. Riprova, oppure usa email e password.",
+    googleUnconfigured: "L'accesso con Gmail non è disponibile in questo momento. Usa email e password.",
+    googleDenied: "Accesso Gmail annullato. Riprova, oppure usa email e password.",
   },
   pt: {
     metaTitle: "Kaenz: Deixe o carro e viaje de iate!",
@@ -761,7 +769,9 @@ export const copy = {
     nameRequired: "O nome completo é obrigatório.",
     googleCta: "Continuar com Gmail",
     orContinue: "ou",
-    googleError: "Não foi possível entrar com Gmail. Tente de novo.",
+    googleError: "Não foi possível entrar com Gmail. Tente de novo ou use e-mail e senha.",
+    googleUnconfigured: "O acesso com Gmail não está disponível agora. Use e-mail e senha.",
+    googleDenied: "O acesso com Gmail foi cancelado. Tente de novo ou use e-mail e senha.",
   },
 } as const;
 
