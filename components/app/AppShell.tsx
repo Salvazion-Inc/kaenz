@@ -43,7 +43,13 @@ export function AppShell({
       <HtmlLang locale={locale} />
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[4.5rem] flex-col items-center border-r border-white/10 bg-navy-2 py-4 md:flex">
         <Link href={pathFor(locale, "/app")} className="mb-6">
-          <Image src="/brand/logo.png" alt="Kaenz" width={44} height={44} />
+          <Image
+            src="/brand/logo-app.png"
+            alt="Kaenz"
+            width={44}
+            height={44}
+            className="rounded-xl ring-1 ring-kaenz/45"
+          />
         </Link>
         <nav className="flex flex-1 flex-col gap-1">
           {TABS.map(({ id, href, Icon }) => {
@@ -67,11 +73,12 @@ export function AppShell({
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-white/10 bg-navy/90 px-4 py-3 backdrop-blur md:ml-[4.5rem]">
         <div className="flex items-center gap-3">
           <Image
-            src="/brand/logo.png"
-            alt=""
-            width={36}
-            height={36}
-            className="md:hidden"
+            src="/brand/logo-app.png"
+            alt="Kaenz"
+            width={40}
+            height={40}
+            className="rounded-xl ring-1 ring-kaenz/50 md:hidden"
+            priority
           />
           <div>
             <p className="text-sm font-bold leading-none">{c.appName}</p>

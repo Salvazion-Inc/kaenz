@@ -1,3 +1,4 @@
+import { AppSplash } from "@/components/app/AppSplash";
 import { TripProvider } from "@/lib/trip-store";
 
 export const metadata = {
@@ -21,5 +22,9 @@ export const metadata = {
 };
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  return <TripProvider>{children}</TripProvider>;
+  return (
+    <TripProvider>
+      <AppSplash>{children}</AppSplash>
+    </TripProvider>
+  );
 }

@@ -39,6 +39,12 @@ textarea {
   padding-top: env(safe-area-inset-top);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .app-splash-video {
+    display: none;
+  }
+}
+
 .lang-flag {
   display: block;
   overflow: hidden;
