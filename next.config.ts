@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "www.kaenz.com" },
       { protocol: "https", hostname: "media.canva.com" },
       { protocol: "https", hostname: "mqkyzkrpoinbvclxurfg.supabase.co" },
+      { protocol: "https", hostname: "server.arcgisonline.com" },
+      { protocol: "https", hostname: "services.arcgisonline.com" },
     ],
   },
   async redirects() {

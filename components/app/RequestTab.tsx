@@ -3,10 +3,11 @@
 import { useRouter } from "next/navigation";
 import { at } from "@/lib/app-copy";
 import { pathFor, type Locale } from "@/lib/locale";
-import { placeCountry } from "@/lib/places";
+import { useLocation } from "@/lib/location";
 import { defaultHoursFor, type TripKind } from "@/lib/pricing";
 import { formatUsd } from "@/lib/yachts";
 import { useTrip } from "@/lib/trip-store";
+import { PlaceSuggest } from "./PlaceSuggest";
 
 const field =
   "mt-1.5 w-full rounded-xl border border-navy/10 bg-white px-3 py-2.5 text-sm text-navy outline-none";
@@ -14,6 +15,7 @@ const field =
 export function RequestTab({ locale }: { locale: Locale }) {
   const c = at(locale);
   const { trip, setTrip, fare, yacht, fleet, allPlaces } = useTrip();
+  const { here } = useLocation();
   const router = useRouter();
   const kinds: TripKind[] = ["commute", "tour", "special"];
 
@@ -49,34 +51,24 @@ export function RequestTab({ locale }: { locale: Locale }) {
       </div>
 
       <form onSubmit={submit} className="mt-6 space-y-4">
-        <label className="block text-xs font-bold uppercase tracking-wide text-white/60">
-          {c.pickup}
-          <select
-            className={field}
-            value={trip.originId}
-            onChange={(e) => setTrip({ originId: e.target.value })}
-          >
-            {allPlaces.map((p) => (
-              <option key={`o-${p.id}`} value={p.id}>
-                {p.name} — {p.city}, {placeCountry(p, locale)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="block text-xs font-bold uppercase tracking-wide text-white/60">
-          {c.dropoff}
-          <select
-            className={field}
-            value={trip.destinationId}
-            onChange={(e) => setTrip({ destinationId: e.target.value })}
-          >
-            {allPlaces.map((p) => (
-              <option key={`d-${p.id}`} value={p.id}>
-                {p.name} — {p.city}, {placeCountry(p, locale)}
-              </option>
-            ))}
-          </select>
-        </label>
+        <PlaceSuggest
+          locale={locale}
+          label={c.pickup}
+          placeholder={c.searchPickup}
+          valueId={trip.originId}
+          places={allPlaces}
+          here={here}
+          onSelect={(id) => setTrip({ originId: id })}
+        />
+        <PlaceSuggest
+          locale={locale}
+          label={c.dropoff}
+          placeholder={c.searchDropoff}
+          valueId={trip.destinationId}
+          places={allPlaces}
+          here={here}
+          onSelect={(id) => setTrip({ destinationId: id })}
+        />
         <div className="grid grid-cols-2 gap-3">
           <label className="block text-xs font-bold uppercase tracking-wide text-white/60">
             {c.when}

@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import { t } from "@/lib/copy";
 import { at } from "@/lib/app-copy";
 import { mapViewFor } from "@/lib/geo";
 import type { Locale } from "@/lib/locale";
 import { useLocation } from "@/lib/location";
+import { formatCoords, placePhoto } from "@/lib/place-photo";
 import { mapHubs, placeCountry, type Place } from "@/lib/places";
 
 const FLORIDA: [number, number] = [26.05, -80.14];
@@ -18,14 +19,26 @@ function tooltipFor(place: Place, locale: Locale) {
   return `${kind} · ${place.name} · ${place.city}, ${placeCountry(place, locale)}`;
 }
 
+function uniqueHubs(list: Place[]) {
+  const seen = new Set<string>();
+  return list.filter((p) => {
+    if (p.kind !== "marina" && p.kind !== "port") return false;
+    if (seen.has(p.id)) return false;
+    seen.add(p.id);
+    return true;
+  });
+}
+
 export function WorldMap({
   locale,
   variant = "site",
+  hubs,
   onPickup,
   onDropoff,
 }: {
   locale: Locale;
   variant?: "site" | "app";
+  hubs?: Place[];
   onPickup?: (place: Place) => void;
   onDropoff?: (place: Place) => void;
 }) {
@@ -42,6 +55,12 @@ export function WorldMap({
   const zoomRef = useRef<import("leaflet").Control.Zoom | null>(null);
   const localeRef = useRef(locale);
   localeRef.current = locale;
+  const pins = useMemo(
+    () => uniqueHubs(hubs?.length ? hubs : mapHubs),
+    [hubs],
+  );
+  const pinsRef = useRef(pins);
+  pinsRef.current = pins;
   const [selected, setSelected] = useState<Place | null>(null);
   const [view, setView] = useState<"world" | "florida" | "you">("world");
   const [ready, setReady] = useState(false);
@@ -59,7 +78,7 @@ export function WorldMap({
         zoomControl: false,
         attributionControl: true,
         minZoom: 2,
-        maxZoom: 12,
+        maxZoom: 16,
         worldCopyJump: true,
       }).setView(WORLD, 2);
       mapRef.current = map;
@@ -81,28 +100,6 @@ export function WorldMap({
       zoom.addTo(map);
       zoomRef.current = zoom;
 
-      const placed: { place: Place; marker: import("leaflet").Marker }[] = [];
-      for (const place of mapHubs) {
-        const pin = L.divIcon({
-          className: `kaenz-pin ${place.kind === "port" ? "kaenz-pin-port" : "kaenz-pin-marina"}`,
-          iconSize: [14, 14],
-          iconAnchor: [7, 7],
-        });
-        const marker = L.marker([place.lat, place.lng], { icon: pin });
-        marker.bindTooltip(tooltipFor(place, localeRef.current), {
-          direction: "top",
-          offset: [0, -8],
-        });
-        marker.on("click", () => {
-          setSelected(place);
-          map?.flyTo([place.lat, place.lng], Math.max(map.getZoom(), 7), {
-            duration: 0.6,
-          });
-        });
-        marker.addTo(map);
-        placed.push({ place, marker });
-      }
-      markersRef.current = placed;
       setReady(true);
     }
 
@@ -140,6 +137,39 @@ export function WorldMap({
     zoom.addTo(map);
     zoomRef.current = zoom;
   }, [locale]);
+
+  useEffect(() => {
+    const L = leafletRef.current;
+    const map = mapRef.current;
+    if (!L || !map || !ready) return;
+
+    for (const { marker } of markersRef.current) {
+      map.removeLayer(marker);
+    }
+
+    const placed: { place: Place; marker: import("leaflet").Marker }[] = [];
+    for (const place of pinsRef.current) {
+      const pin = L.divIcon({
+        className: `kaenz-pin ${place.kind === "port" ? "kaenz-pin-port" : "kaenz-pin-marina"}`,
+        iconSize: [14, 14],
+        iconAnchor: [7, 7],
+      });
+      const marker = L.marker([place.lat, place.lng], { icon: pin });
+      marker.bindTooltip(tooltipFor(place, localeRef.current), {
+        direction: "top",
+        offset: [0, -8],
+      });
+      marker.on("click", () => {
+        setSelected(place);
+        map.flyTo([place.lat, place.lng], Math.max(map.getZoom(), 14), {
+          duration: 0.6,
+        });
+      });
+      marker.addTo(map);
+      placed.push({ place, marker });
+    }
+    markersRef.current = placed;
+  }, [ready, pins]);
 
   useEffect(() => {
     const L = leafletRef.current;
@@ -188,7 +218,7 @@ export function WorldMap({
     <div>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-white/70">
-          <span className="font-bold text-kaenz">{mapHubs.length}</span>{" "}
+          <span className="font-bold text-kaenz">{pins.length}</span>{" "}
           {c.hubsLabel}
         </p>
         <div className="flex flex-wrap items-center gap-2">
@@ -231,44 +261,60 @@ export function WorldMap({
       </div>
       <div
         className={`overflow-hidden rounded-2xl border border-white/10 ${
-          variant === "app" ? "h-64 md:h-80" : "h-[420px] md:h-[520px]"
+          variant === "app" ? "h-80 md:h-[28rem]" : "h-[420px] md:h-[520px]"
         }`}
       >
         <div ref={host} className="h-full w-full" />
       </div>
       {selected ? (
-        <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-kaenz">
-            {selected.kind === "port" ? c.legendPort : c.legendMarina} ·{" "}
-            {placeCountry(selected, locale)}
-          </p>
-          <h3 className="mt-1 text-lg font-bold">{selected.name}</h3>
-          <p className="text-sm text-white/70">
-            {selected.city}, {placeCountry(selected, locale)}
-          </p>
-          <p className="mt-2 text-sm text-white/80">{selected.blurb[locale]}</p>
-          {variant === "app" && (onPickup || onDropoff) ? (
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              {onPickup ? (
-                <button
-                  type="button"
-                  onClick={() => onPickup(selected)}
-                  className="rounded-lg bg-white/10 py-2 text-xs font-bold"
-                >
-                  {a.setPickup}
-                </button>
-              ) : null}
-              {onDropoff ? (
-                <button
-                  type="button"
-                  onClick={() => onDropoff(selected)}
-                  className="rounded-lg bg-kaenz py-2 text-xs font-bold text-white"
-                >
-                  {a.setDropoff}
-                </button>
-              ) : null}
-            </div>
-          ) : null}
+        <div className="mt-3 overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+          <div className="relative h-44 bg-navy-2">
+            {/* Satellite still of these coordinates, or a real local photo. */}
+            <img
+              src={placePhoto(selected)}
+              alt={selected.name}
+              className="h-full w-full object-cover"
+            />
+          </div>
+          <div className="p-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-kaenz">
+              {selected.kind === "port" ? c.legendPort : c.legendMarina} ·{" "}
+              {placeCountry(selected, locale)}
+            </p>
+            <h3 className="mt-1 text-lg font-bold">{selected.name}</h3>
+            <p className="text-sm text-white/70">
+              {selected.city}, {placeCountry(selected, locale)}
+            </p>
+            <p className="mt-1 font-mono text-[11px] text-white/45">
+              {formatCoords(selected.lat, selected.lng)}
+            </p>
+            {selected.address ? (
+              <p className="mt-1 text-xs text-white/55">{selected.address}</p>
+            ) : null}
+            <p className="mt-2 text-sm text-white/80">{selected.blurb[locale]}</p>
+            {variant === "app" && (onPickup || onDropoff) ? (
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {onPickup ? (
+                  <button
+                    type="button"
+                    onClick={() => onPickup(selected)}
+                    className="rounded-lg bg-white/10 py-2 text-xs font-bold"
+                  >
+                    {a.setPickup}
+                  </button>
+                ) : null}
+                {onDropoff ? (
+                  <button
+                    type="button"
+                    onClick={() => onDropoff(selected)}
+                    className="rounded-lg bg-kaenz py-2 text-xs font-bold text-white"
+                  >
+                    {a.setDropoff}
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
         </div>
       ) : null}
     </div>

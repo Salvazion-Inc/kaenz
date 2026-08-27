@@ -39,7 +39,7 @@ const southFlorida: Place[] = [
     city: "Miami Beach",
     lat: 25.7785,
     lng: -80.1452,
-    image: "/fleet/miami-skyline.jpg",
+    image: "/featured/scenic-miami-beach-marina.jpg",
     minutesByYacht: 18,
     minutesByCar: 45,
     blurb: {
@@ -57,7 +57,7 @@ const southFlorida: Place[] = [
     city: "Watson Island",
     lat: 25.7851,
     lng: -80.1774,
-    image: "/fleet/center-console.jpg",
+    image: "/featured/scenic-island-gardens.jpg",
     minutesByYacht: 12,
     minutesByCar: 28,
     blurb: {
@@ -75,7 +75,7 @@ const southFlorida: Place[] = [
     city: "Fort Lauderdale",
     lat: 26.1192,
     lng: -80.108,
-    image: "/fleet/ftl-marina.jpg",
+    image: "/featured/ocean-prime.jpg",
     minutesByYacht: 22,
     minutesByCar: 55,
     blurb: {
@@ -93,7 +93,7 @@ const southFlorida: Place[] = [
     city: "Hollywood",
     lat: 26.0114,
     lng: -80.1238,
-    image: "/fleet/sandbar.jpg",
+    image: "/featured/hollywood-broadwalk.jpg",
     minutesByYacht: 15,
     minutesByCar: 40,
     blurb: {
@@ -111,7 +111,7 @@ const southFlorida: Place[] = [
     city: "Palm Beach",
     lat: 26.7056,
     lng: -80.0364,
-    image: "/fleet/sunset.jpg",
+    image: "/featured/palm-beach-estates.jpg",
     minutesByYacht: 45,
     minutesByCar: 90,
     blurb: {
@@ -129,7 +129,7 @@ const southFlorida: Place[] = [
     city: "Coconut Grove",
     lat: 25.7274,
     lng: -80.2347,
-    image: "/fleet/yacht-1.jpg",
+    image: "/featured/montys.jpg",
     minutesByYacht: 20,
     minutesByCar: 38,
     blurb: {
@@ -147,7 +147,7 @@ const southFlorida: Place[] = [
     city: "North Miami Beach",
     lat: 25.9029,
     lng: -80.1231,
-    image: "/hero-poster.jpg",
+    image: "/featured/haulover-sandbar.jpg",
     minutesByYacht: 16,
     minutesByCar: 35,
     blurb: {
@@ -165,7 +165,7 @@ const southFlorida: Place[] = [
     city: "Fort Lauderdale",
     lat: 26.094,
     lng: -80.115,
-    image: "/fleet/ftl-marina.jpg",
+    image: "/featured/port-everglades-inlet.jpg",
     minutesByYacht: 10,
     minutesByCar: 30,
     blurb: {
@@ -183,7 +183,7 @@ const southFlorida: Place[] = [
     city: "Miami",
     lat: 25.778,
     lng: -80.177,
-    image: "/fleet/miami-skyline.jpg",
+    image: "/featured/downtown-bayside.jpg",
     minutesByYacht: 8,
     minutesByCar: 32,
     blurb: {

@@ -1,4 +1,5 @@
 import { countryName } from "./countries";
+import { aerialPhotoUrl } from "./place-photo";
 import type { Place } from "./places";
 
 type HubRow = [
@@ -11,20 +12,11 @@ type HubRow = [
   lng: number,
 ];
 
-const IMAGES = [
-  "/fleet/ftl-marina.jpg",
-  "/fleet/miami-skyline.jpg",
-  "/fleet/yacht-1.jpg",
-  "/fleet/center-console.jpg",
-  "/fleet/sunset.jpg",
-  "/hero-poster.jpg",
-];
-
 const rows: HubRow[] = [
-  ["bahia-mar", "marina", "Bahia Mar Yachting Center", "Fort Lauderdale", "United States", 26.1125, -80.1078],
+  ["bahia-mar-yachting", "marina", "Bahia Mar Yachting Center", "Fort Lauderdale", "United States", 26.1125, -80.1078],
   ["pier-66-marina", "marina", "Pier 66 Marina", "Fort Lauderdale", "United States", 26.101, -80.117],
   ["hilton-ftl-marina", "marina", "Hilton Fort Lauderdale Marina", "Fort Lauderdale", "United States", 26.118, -80.137],
-  ["lauderdale-marine-center", "marina", "Lauderdale Marine Center", "Fort Lauderdale", "United States", 26.085, -80.16],
+  ["lmc-yard", "marina", "Lauderdale Marine Center", "Fort Lauderdale", "United States", 26.085, -80.16],
   ["harbour-towne", "marina", "Harbour Towne Marina", "Dania Beach", "United States", 26.058, -80.115],
   ["hall-of-fame-marina", "marina", "Hall of Fame Marina", "Fort Lauderdale", "United States", 26.116, -80.108],
   ["turnberry-isle", "marina", "Turnberry Isle Marina", "Aventura", "United States", 25.958, -80.126],
@@ -722,7 +714,12 @@ const rows: HubRow[] = [
 ];
 
 
-function blurbFor(kind: "marina" | "port", name: string, city: string, country: string) {
+function blurbFor(
+  kind: "marina" | "port",
+  name: string,
+  city: string,
+  country: string,
+) {
   const enC = countryName(country, "en");
   const esC = countryName(country, "es");
   const frC = countryName(country, "fr");
@@ -730,23 +727,23 @@ function blurbFor(kind: "marina" | "port", name: string, city: string, country: 
   const ptC = countryName(country, "pt");
   if (kind === "port") {
     return {
-      en: `${name} in ${city}, ${enC}. Port for yacht arrivals and departures.`,
-      es: `${name} en ${city}, ${esC}. Puerto para llegadas y salidas en yate.`,
-      fr: `${name} à ${city}, ${frC}. Port pour arrivées et départs en yacht.`,
-      it: `${name} a ${city}, ${itC}. Porto per arrivi e partenze in yacht.`,
-      pt: `${name} em ${city}, ${ptC}. Porto para chegadas e partidas de iate.`,
+      en: `${name} is the port of ${city}, ${enC}. Yacht arrivals and departures at these coordinates.`,
+      es: `${name} es el puerto de ${city}, ${esC}. Llegadas y salidas en yate en estas coordenadas.`,
+      fr: `${name} est le port de ${city}, ${frC}. Arrivées et départs en yacht à ces coordonnées.`,
+      it: `${name} è il porto di ${city}, ${itC}. Arrivi e partenze in yacht a queste coordinate.`,
+      pt: `${name} é o porto de ${city}, ${ptC}. Chegadas e partidas de iate nestas coordenadas.`,
     };
   }
   return {
-    en: `${name} in ${city}, ${enC}. Marina for yacht arrivals and departures.`,
-    es: `${name} en ${city}, ${esC}. Marina para llegadas y salidas en yate.`,
-    fr: `${name} à ${city}, ${frC}. Marina pour arrivées et départs en yacht.`,
-    it: `${name} a ${city}, ${itC}. Marina per arrivi e partenze in yacht.`,
-    pt: `${name} em ${city}, ${ptC}. Marina para chegadas e partidas de iate.`,
+    en: `${name} is a marina in ${city}, ${enC}. Yacht pickup and dropoff at this harbor.`,
+    es: `${name} es una marina en ${city}, ${esC}. Origen y destino en yate en este puerto.`,
+    fr: `${name} est une marina à ${city}, ${frC}. Départ et arrivée en yacht dans ce port.`,
+    it: `${name} è una marina a ${city}, ${itC}. Partenza e arrivo in yacht in questo porto.`,
+    pt: `${name} é uma marina em ${city}, ${ptC}. Partida e chegada de iate neste porto.`,
   };
 }
 
-export const worldHubs: Place[] = rows.map((row, index) => {
+export const worldHubs: Place[] = rows.map((row) => {
   const [id, kind, name, city, country, lat, lng] = row;
   return {
     id,
@@ -756,7 +753,7 @@ export const worldHubs: Place[] = rows.map((row, index) => {
     country,
     lat,
     lng,
-    image: IMAGES[index % IMAGES.length],
+    image: aerialPhotoUrl(lat, lng),
     minutesByYacht: 20,
     minutesByCar: 0,
     blurb: blurbFor(kind, name, city, country),
