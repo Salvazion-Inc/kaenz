@@ -1,3 +1,4 @@
+import { sortByGps } from "./geo";
 import type { Place } from "./places";
 
 export const FEATURED_KINDS = ["sandbar", "beach", "dine", "scenic"] as const;
@@ -1206,6 +1207,16 @@ export const featuredPlaces: Place[] = [
   },
 ];
 
-export function featuredByKind(kind: FeaturedKind) {
-  return featuredPlaces.filter((p) => p.featured === kind);
+export function featuredByKind(
+  kind: FeaturedKind,
+  here?: { lat: number; lng: number } | null,
+) {
+  return sortByGps(
+    featuredPlaces.filter((p) => p.featured === kind),
+    here,
+  );
+}
+
+export function featuredSorted(here?: { lat: number; lng: number } | null) {
+  return sortByGps(featuredPlaces, here);
 }

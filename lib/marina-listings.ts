@@ -77,9 +77,9 @@ export function marinaShares(
   origin?: Place,
   destination?: Place,
 ) {
-  const originOn = Boolean(origin?.partner);
-  const destOn = Boolean(destination?.partner);
-  if (originOn && destOn && origin && destination && origin.id === destination.id) {
+  const same =
+    Boolean(origin && destination && origin.id === destination.id);
+  if (same) {
     const fee = Math.round(total * 0.07);
     return {
       roundTrip: true,
@@ -88,8 +88,8 @@ export function marinaShares(
       total: fee,
     };
   }
-  const originFee = originOn ? Math.round(total * 0.035) : 0;
-  const destFee = destOn ? Math.round(total * 0.035) : 0;
+  const originFee = origin ? Math.round(total * 0.035) : 0;
+  const destFee = destination ? Math.round(total * 0.035) : 0;
   return {
     roundTrip: false,
     origin: originFee,

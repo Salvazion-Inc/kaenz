@@ -4,9 +4,10 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { at } from "@/lib/app-copy";
-import { defaultHere, etaFromKm, haversineKm } from "@/lib/geo";
+import { etaFromKm, haversineKm } from "@/lib/geo";
 import { CAPTAIN_LANG_FLAGS, type CaptainLang } from "@/lib/listings";
 import { pathFor, type Locale } from "@/lib/locale";
+import { useLocation } from "@/lib/location";
 import { formatUsd, yachts, type Yacht } from "@/lib/yachts";
 import { useTrip } from "@/lib/trip-store";
 import { AddYachtForm } from "./AddYachtForm";
@@ -15,9 +16,8 @@ import { IconBadge } from "./icons";
 export function YachtsTab({ locale }: { locale: Locale }) {
   const c = at(locale);
   const { setTrip } = useTrip();
+  const { here, located, locating, locate } = useLocation();
   const router = useRouter();
-  const [here, setHere] = useState(defaultHere);
-  const [located, setLocated] = useState(false);
   const [adding, setAdding] = useState(false);
   const [listings, setListings] = useState<Yacht[]>([]);
   const [notice, setNotice] = useState("");
@@ -39,22 +39,6 @@ export function YachtsTab({ locale }: { locale: Locale }) {
       .sort((a, b) => a.km - b.km);
   }, [here, listings]);
 
-  function locate() {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setHere({
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-          label: c.nearby,
-        });
-        setLocated(true);
-      },
-      () => setLocated(false),
-      { enableHighAccuracy: true, timeout: 8000 },
-    );
-  }
-
   function request(id: string) {
     setTrip({ yachtId: id });
     router.push(pathFor(locale, "/app/request"));
@@ -70,7 +54,7 @@ export function YachtsTab({ locale }: { locale: Locale }) {
           onClick={locate}
           className="rounded-full border border-kaenz/40 px-4 py-1.5 text-xs font-bold text-kaenz"
         >
-          {located ? here.label : c.useLocation}
+          {locating ? c.locating : located ? here.label : c.useLocation}
         </button>
         <button
           type="button"

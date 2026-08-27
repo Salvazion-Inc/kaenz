@@ -1,10 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { t } from "@/lib/copy";
 import type { Locale } from "@/lib/locale";
-import { mapHubs, placeCountry } from "@/lib/places";
-import { yachts } from "@/lib/yachts";
+import { mapHubs, placeById, placeCountry } from "@/lib/places";
+import {
+  DEFAULT_HOURS,
+  defaultHoursFor,
+  estimateFare,
+  type TripKind,
+} from "@/lib/pricing";
+import { formatUsd, yachtById, yachts } from "@/lib/yachts";
 
 export function BookForm({
   locale,
@@ -18,6 +24,27 @@ export function BookForm({
     "idle",
   );
   const [message, setMessage] = useState("");
+  const [kind, setKind] = useState<TripKind>("tour");
+  const [yachtId, setYachtId] = useState(defaultYacht || yachts[0].id);
+  const [hours, setHours] = useState(DEFAULT_HOURS.tour);
+  const [guests, setGuests] = useState(4);
+  const [date, setDate] = useState("");
+  const [originId, setOriginId] = useState(mapHubs[0]?.id || "");
+  const [destinationId, setDestinationId] = useState(
+    mapHubs[1]?.id || mapHubs[0]?.id || "",
+  );
+
+  const quote = useMemo(() => {
+    const yacht = yachtById(yachtId);
+    if (!yacht) return null;
+    return estimateFare(yacht, kind, {
+      hours,
+      guests,
+      date,
+      origin: placeById(originId),
+      destination: placeById(destinationId),
+    });
+  }, [yachtId, kind, hours, guests, date, originId, destinationId]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -63,11 +90,44 @@ export function BookForm({
           <input className={field} name="phone" type="tel" />
         </label>
         <label className="block text-sm font-semibold">
+          {c.form.kind}
+          <select
+            className={field}
+            name="trip_kind"
+            value={kind}
+            onChange={(e) => {
+              const next = e.target.value as TripKind;
+              setKind(next);
+              setHours(defaultHoursFor(next, yachtById(yachtId)));
+            }}
+          >
+            {(["commute", "tour", "special"] as const).map((k, i) => (
+              <option key={k} value={k}>
+                {c.tripTypes[i].title}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block text-sm font-semibold">
+          {c.form.duration}
+          <input
+            className={field}
+            type="number"
+            name="hours"
+            min={1}
+            max={12}
+            required
+            value={hours}
+            onChange={(e) => setHours(Number(e.target.value))}
+          />
+        </label>
+        <label className="block text-sm font-semibold">
           {c.form.yacht}
           <select
             className={field}
             name="yacht_slug"
-            defaultValue={defaultYacht || yachts[0].id}
+            value={yachtId}
+            onChange={(e) => setYachtId(e.target.value)}
           >
             {yachts.map((y) => (
               <option key={y.id} value={y.id}>
@@ -81,7 +141,11 @@ export function BookForm({
           <select
             className={field}
             name="origin"
-            defaultValue={mapHubs[0]?.name}
+            value={mapHubs.find((m) => m.id === originId)?.name || ""}
+            onChange={(e) => {
+              const hub = mapHubs.find((m) => m.name === e.target.value);
+              if (hub) setOriginId(hub.id);
+            }}
           >
             {mapHubs.map((m) => (
               <option key={m.id} value={m.name}>
@@ -95,7 +159,11 @@ export function BookForm({
           <select
             className={field}
             name="destination"
-            defaultValue={mapHubs[1]?.name || mapHubs[0]?.name}
+            value={mapHubs.find((m) => m.id === destinationId)?.name || ""}
+            onChange={(e) => {
+              const hub = mapHubs.find((m) => m.name === e.target.value);
+              if (hub) setDestinationId(hub.id);
+            }}
           >
             {mapHubs.map((m) => (
               <option key={m.id} value={m.name}>
@@ -106,7 +174,14 @@ export function BookForm({
         </label>
         <label className="block text-sm font-semibold">
           {c.form.date}
-          <input className={field} type="date" name="trip_date" required />
+          <input
+            className={field}
+            type="date"
+            name="trip_date"
+            required
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
         </label>
         <label className="block text-sm font-semibold">
           {c.form.time}
@@ -120,7 +195,8 @@ export function BookForm({
             name="guests"
             min={1}
             max={13}
-            defaultValue={4}
+            value={guests}
+            onChange={(e) => setGuests(Number(e.target.value))}
             required
           />
         </label>
@@ -129,6 +205,11 @@ export function BookForm({
           <textarea className={field} name="notes" rows={3} />
         </label>
       </div>
+      {quote ? (
+        <p className="mt-5 text-sm font-semibold text-kaenz-deep">
+          {c.from} {formatUsd(quote.total)} · {c.pricingTitle}
+        </p>
+      ) : null}
       <button
         type="submit"
         disabled={status === "sending"}

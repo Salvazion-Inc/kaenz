@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Outfit } from "next/font/google";
 import { LocaleProvider } from "@/lib/locale-context";
+import { LocationProvider } from "@/lib/location";
 import { LOCALE_COOKIE, parseLocale } from "@/lib/locale";
 import "./globals.css";
 
@@ -18,9 +19,9 @@ export const viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://kaenz.com"),
-  title: "Kaenz: Leave the Car and travel by Yacht!!",
+  title: "Kaenz: Commute, Tour & Special Occasion by yacht",
   description:
-    "Kaenz: “We believe that water is the smartest, most beautiful, and most fun way to get around South Florida.”",
+    "Kaenz is an end-to-end yacht platform — not a charter operator — for Commute, Tour, and Special Occasion trips worldwide. Pay with Stripe.",
   alternates: {
     canonical: "https://kaenz.com",
     languages: {
@@ -47,9 +48,9 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
-    title: "Kaenz: Leave the Car and travel by Yacht!!",
+    title: "Kaenz: Commute, Tour & Special Occasion by yacht",
     description:
-      "Kaenz: “We believe that water is the smartest, most beautiful, and most fun way to get around South Florida.”",
+      "Kaenz is an end-to-end yacht platform for Commute, Tour, and Special Occasion trips worldwide. Pay with Stripe.",
     type: "website",
     url: "https://kaenz.com",
   },
@@ -63,7 +64,9 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body className={`${outfit.className} antialiased`}>
-        <LocaleProvider initialLocale={locale}>{children}</LocaleProvider>
+        <LocaleProvider initialLocale={locale}>
+          <LocationProvider>{children}</LocationProvider>
+        </LocaleProvider>
       </body>
     </html>
   );

@@ -69,6 +69,32 @@ export function HomePage({ locale }: { locale: Locale }) {
         </div>
       </section>
 
+      <section className="mx-auto max-w-6xl px-5 pb-8">
+        <p className="text-sm font-semibold uppercase tracking-[0.25em] text-kaenz">
+          {c.tripTypesTitle}
+        </p>
+        <h2 className="mt-3 max-w-3xl text-3xl font-bold md:text-4xl">
+          {c.tripTypesLead}
+        </h2>
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
+          {c.tripTypes.map((p) => (
+            <article
+              key={p.title}
+              className="rounded-2xl border border-white/10 bg-white/5 p-8"
+            >
+              <h3 className="text-2xl font-bold text-kaenz">{p.title}</h3>
+              <p className="mt-4 text-white/80">{p.body}</p>
+            </article>
+          ))}
+        </div>
+        <div className="mt-10 rounded-2xl border border-kaenz/30 bg-kaenz/10 p-8">
+          <h3 className="text-2xl font-bold">{c.pricingTitle}</h3>
+          <p className="mt-4 max-w-4xl leading-relaxed text-white/85">
+            {c.pricingBody}
+          </p>
+        </div>
+      </section>
+
       <section className="relative overflow-hidden">
         <Image
           src="/fleet/miami-skyline.jpg"

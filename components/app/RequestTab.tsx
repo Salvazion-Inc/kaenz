@@ -4,8 +4,9 @@ import { useRouter } from "next/navigation";
 import { at } from "@/lib/app-copy";
 import { pathFor, type Locale } from "@/lib/locale";
 import { placeCountry } from "@/lib/places";
+import { defaultHoursFor, type TripKind } from "@/lib/pricing";
 import { formatUsd } from "@/lib/yachts";
-import { useTrip, type TripKind } from "@/lib/trip-store";
+import { useTrip } from "@/lib/trip-store";
 
 const field =
   "mt-1.5 w-full rounded-xl border border-navy/10 bg-white px-3 py-2.5 text-sm text-navy outline-none";
@@ -32,7 +33,9 @@ export function RequestTab({ locale }: { locale: Locale }) {
           <button
             key={k}
             type="button"
-            onClick={() => setTrip({ kind: k })}
+            onClick={() =>
+              setTrip({ kind: k, hours: defaultHoursFor(k, yacht) })
+            }
             className={`rounded-2xl border p-4 text-left ${
               trip.kind === k
                 ? "border-kaenz bg-kaenz/15"
@@ -97,6 +100,19 @@ export function RequestTab({ locale }: { locale: Locale }) {
           </label>
         </div>
         <label className="block text-xs font-bold uppercase tracking-wide text-white/60">
+          {c.duration}
+          <input
+            className={field}
+            type="number"
+            min={1}
+            max={12}
+            step={1}
+            required
+            value={trip.hours}
+            onChange={(e) => setTrip({ hours: Number(e.target.value) })}
+          />
+        </label>
+        <label className="block text-xs font-bold uppercase tracking-wide text-white/60">
           {c.who}
           <input
             className={field}
@@ -152,9 +168,12 @@ export function RequestTab({ locale }: { locale: Locale }) {
           />
         </label>
         {fare ? (
-          <p className="text-sm font-semibold text-kaenz">
-            {c.total}: {formatUsd(fare.total)}
-          </p>
+          <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+            <p className="text-sm font-semibold text-kaenz">
+              {c.total}: {formatUsd(fare.total)}
+            </p>
+            <p className="mt-1 text-xs text-white/55">{c.fareHow}</p>
+          </div>
         ) : null}
         <button
           type="submit"

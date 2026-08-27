@@ -11,7 +11,7 @@ export const privacyEn = {
     },
     {
       heading: "2. Data we may collect",
-      body: "Depending on how you use the Platform, we may process: account data (name, email, password hash); session cookies; language preference (kaenz_locale); booking requests (pickup marina, destination, date, time, guests, notes, phone); owner and captain applications (role, yacht name, USCG license); concierge chat messages you send to plan a trip; and technical data needed for security and hosting (IP, browser, device). Trip drafts stored in your browser (localStorage) stay on your device unless you submit them.",
+      body: "Depending on how you use the Platform, we may process: account data (name, email, password hash); session cookies; language preference (kaenz_locale); booking requests (pickup marina, destination, date, time, guests, notes, phone); owner and captain applications (role, yacht name, USCG license); concierge chat messages you send to plan a trip; with your permission, device location to sort nearby places and center the map; payment data processed by Stripe; and technical data needed for security and hosting (IP, browser, device). Trip drafts stored in your browser (localStorage) stay on your device unless you submit them.",
     },
     {
       heading: "3. Purposes",
@@ -23,7 +23,7 @@ export const privacyEn = {
     },
     {
       heading: "5. Processors and providers",
-      body: "We use providers that process data on our behalf, including Vercel (hosting), optional Supabase (authentication and database, when enabled), and xAI / Grok (concierge replies: messages you send may be forwarded solely to generate the response). Payments, if enabled, may be processed by Stripe or on Solana; blockchain transactions are public and irreversible. We do not sell your personal information for third-party advertising.",
+      body: "We use providers that process data on our behalf, including Vercel (hosting), optional Supabase (authentication and database, when enabled), and xAI / Grok (concierge replies: messages you send may be forwarded solely to generate the response). Payments, if enabled, are processed by Stripe. We do not sell your personal information for third-party advertising.",
     },
     {
       heading: "6. Retention",
@@ -71,7 +71,7 @@ export const privacyEs = {
     },
     {
       heading: "2. Datos que podemos recoger",
-      body: "Según cómo uses la Plataforma, podemos tratar: datos de cuenta (nombre, email, hash de contraseña); cookies de sesión; preferencia de idioma (kaenz_locale); solicitudes de reserva (marina de origen, destino, fecha, hora, huéspedes, notas, teléfono); postulaciones de dueños y capitanes (rol, nombre del yate, licencia USCG); mensajes al concierge para planear un viaje; y datos técnicos de seguridad y hosting (IP, navegador, dispositivo). Los borradores de viaje en tu navegador (localStorage) permanecen en tu dispositivo salvo que los envíes.",
+      body: "Según cómo uses la Plataforma, podemos tratar: datos de cuenta (nombre, email, hash de contraseña); cookies de sesión; preferencia de idioma (kaenz_locale); solicitudes de reserva (marina de origen, destino, fecha, hora, huéspedes, notas, teléfono); postulaciones de dueños y capitanes (rol, nombre del yate, licencia USCG); mensajes al concierge para planear un viaje; con tu permiso, la ubicación del dispositivo para ordenar lugares cercanos y centrar el mapa; datos de pago tratados por Stripe; y datos técnicos de seguridad y hosting (IP, navegador, dispositivo). Los borradores de viaje en tu navegador (localStorage) permanecen en tu dispositivo salvo que los envíes.",
     },
     {
       heading: "3. Finalidades",
@@ -83,7 +83,7 @@ export const privacyEs = {
     },
     {
       heading: "5. Encargados y proveedores",
-      body: "Usamos proveedores que tratan datos por nuestra cuenta, entre ellos Vercel (hosting), Supabase opcional (autenticación y base de datos) y xAI / Grok (respuestas del concierge: los mensajes que envías pueden reenviarse solo para generar la respuesta). Los pagos, si están habilitados, pueden procesarse con Stripe o en Solana; las transacciones en blockchain son públicas e irreversibles. No vendemos tu información personal para publicidad de terceros.",
+      body: "Usamos proveedores que tratan datos por nuestra cuenta, entre ellos Vercel (hosting), Supabase opcional (autenticación y base de datos) y xAI / Grok (respuestas del concierge: los mensajes que envías pueden reenviarse solo para generar la respuesta). Los pagos, si están habilitados, se procesan con Stripe. No vendemos tu información personal para publicidad de terceros.",
     },
     {
       heading: "6. Conservación",
@@ -143,7 +143,7 @@ export const privacyFr = {
     },
     {
       heading: "5. Sous-traitants et prestataires",
-      body: "Nous utilisons des prestataires qui traitent des données pour notre compte, notamment Vercel (hébergement), Supabase optionnel (authentification et base) et xAI / Grok (réponses du concierge : les messages que vous envoyez peuvent être transmis uniquement pour générer la réponse). Les paiements, s’ils sont activés, peuvent passer par Stripe ou Solana ; les transactions blockchain sont publiques et irréversibles. Nous ne vendons pas vos données à des fins de publicité tierce.",
+      body: "Nous utilisons des prestataires qui traitent des données pour notre compte, notamment Vercel (hébergement), Supabase optionnel (authentification et base) et xAI / Grok (réponses du concierge : les messages que vous envoyez peuvent être transmis uniquement pour générer la réponse). Les paiements, s’ils sont activés, passent par Stripe. Nous ne vendons pas vos données à des fins de publicité tierce.",
     },
     {
       heading: "6. Conservation",
@@ -203,7 +203,7 @@ export const privacyIt = {
     },
     {
       heading: "5. Responsabili e fornitori",
-      body: "Usiamo fornitori che trattano dati per nostro conto, tra cui Vercel (hosting), Supabase opzionale (autenticazione e database) e xAI / Grok (risposte del concierge: i messaggi che invii possono essere inoltrati solo per generare la risposta). I pagamenti, se abilitati, possono passare da Stripe o Solana; le transazioni blockchain sono pubbliche e irreversibili. Non vendiamo i tuoi dati personali per pubblicità di terzi.",
+      body: "Usiamo fornitori che trattano dati per nostro conto, tra cui Vercel (hosting), Supabase opzionale (autenticazione e database) e xAI / Grok (risposte del concierge: i messaggi che invii possono essere inoltrati solo per generare la risposta). I pagamenti, se abilitati, passano da Stripe. Non vendiamo i tuoi dati personali per pubblicità di terzi.",
     },
     {
       heading: "6. Conservazione",
@@ -263,7 +263,7 @@ export const privacyPt = {
     },
     {
       heading: "5. Operadores e fornecedores",
-      body: "Usamos fornecedores que tratam dados em nosso nome, incluindo Vercel (hospedagem), Supabase opcional (autenticação e banco) e xAI / Grok (respostas do concierge: as mensagens que você envia podem ser encaminhadas só para gerar a resposta). Pagamentos, se habilitados, podem passar por Stripe ou Solana; transações em blockchain são públicas e irreversíveis. Não vendemos seus dados pessoais para publicidade de terceiros.",
+      body: "Usamos fornecedores que tratam dados em nosso nome, incluindo Vercel (hospedagem), Supabase opcional (autenticação e banco) e xAI / Grok (respostas do concierge: as mensagens que você envia podem ser encaminhadas só para gerar a resposta). Pagamentos, se habilitados, passam por Stripe. Não vendemos seus dados pessoais para publicidade de terceiros.",
     },
     {
       heading: "6. Conservação",

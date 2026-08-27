@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { at, type AppTab } from "@/lib/app-copy";
 import { pathFor, type Locale } from "@/lib/locale";
+import { useLocation } from "@/lib/location";
 import { HtmlLang } from "../HtmlLang";
 import { LanguageSwitcher } from "../LanguageSwitcher";
 import { AccountChip } from "../AccountChip";
@@ -37,6 +38,7 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   const c = at(locale);
+  const { here, located } = useLocation();
 
   return (
     <div className="app-shell min-h-dvh bg-navy text-foam">
@@ -82,7 +84,9 @@ export function AppShell({
           />
           <div>
             <p className="text-sm font-bold leading-none">{c.appName}</p>
-            <p className="mt-1 text-xs text-kaenz">{c.location}</p>
+            <p className="mt-1 text-xs text-kaenz">
+              {located ? here.label : c.location}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-3 text-xs font-semibold">

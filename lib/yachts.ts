@@ -216,16 +216,4 @@ export function formatUsd(n: number) {
   }).format(n);
 }
 
-export function estimateFare(
-  yacht: Yacht,
-  kind: "commute" | "tour" | "special",
-) {
-  const hours =
-    kind === "commute" ? Math.max(2, yacht.hoursMin - 2) : yacht.hoursMin;
-  const multiplier = kind === "special" ? 1.35 : kind === "commute" ? 0.55 : 1;
-  const total = Math.round(yacht.priceFrom * multiplier);
-  const owner = Math.round(total * 0.38);
-  const captain = Math.round(total * 0.3);
-  const platform = total - owner - captain;
-  return { hours, total, platform, owner, captain };
-}
+

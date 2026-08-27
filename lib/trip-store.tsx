@@ -7,13 +7,13 @@ import {
   useMemo,
   useState,
 } from "react";
-import { marinaShares } from "./marina-listings";
+import { defaultHoursFor, estimateFare, type TripKind } from "./pricing";
 import { placeById, places, type Place } from "./places";
-import { estimateFare, yachtById, yachts, type Yacht } from "./yachts";
+import { yachtById, yachts, type Yacht } from "./yachts";
 
-export type TripKind = "commute" | "tour" | "special";
+export type { TripKind };
 export type TripStatus = "draft" | "requested" | "confirmed";
-export type PayMethod = "card" | "solana";
+export type PayMethod = "stripe";
 
 export type TripDraft = {
   kind: TripKind;
@@ -22,6 +22,7 @@ export type TripDraft = {
   yachtId: string;
   date: string;
   time: string;
+  hours: number;
   guests: number;
   name: string;
   email: string;
@@ -41,11 +42,12 @@ const empty: TripDraft = {
   yachtId: "velocity-38",
   date: "",
   time: "",
+  hours: defaultHoursFor("commute"),
   guests: 4,
   name: "",
   email: "",
   phone: "",
-  payMethod: "card",
+  payMethod: "stripe",
   status: "draft",
   gratuityPct: 0,
 };
@@ -55,11 +57,7 @@ type Ctx = {
   setTrip: (patch: Partial<TripDraft>) => void;
   reset: () => void;
   yacht: Yacht | undefined;
-  fare:
-    | (ReturnType<typeof estimateFare> & {
-        marina: ReturnType<typeof marinaShares>;
-      })
-    | null;
+  fare: ReturnType<typeof estimateFare> | null;
   originName: string;
   destinationName: string;
   originPlace: Place | undefined;
@@ -81,7 +79,17 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(KEY);
-      if (raw) setState({ ...empty, ...JSON.parse(raw) });
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<TripDraft>;
+        const kind = parsed.kind || empty.kind;
+        setState({
+          ...empty,
+          ...parsed,
+          kind,
+          hours: parsed.hours || defaultHoursFor(kind),
+          payMethod: "stripe",
+        });
+      }
     } catch {
       /* ignore */
     }
@@ -112,18 +120,15 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
     const yacht = yachtById(trip.yachtId) || listings.find((item) => item.id === trip.yachtId);
     const originPlace = findPlace(trip.originId);
     const destinationPlace = findPlace(trip.destinationId);
-    const base =
-      yacht && yacht.priceFrom > 0 ? estimateFare(yacht, trip.kind) : null;
-    const marina = base
-      ? marinaShares(base.total, originPlace, destinationPlace)
-      : null;
     const fare =
-      base && marina
-        ? {
-            ...base,
-            marina,
-            platform: Math.max(0, base.total - base.owner - base.captain - marina.total),
-          }
+      yacht && yacht.priceFrom > 0
+        ? estimateFare(yacht, trip.kind, {
+            hours: trip.hours || defaultHoursFor(trip.kind, yacht),
+            guests: trip.guests,
+            date: trip.date,
+            origin: originPlace,
+            destination: destinationPlace,
+          })
         : null;
     return {
       trip,

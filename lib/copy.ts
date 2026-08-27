@@ -2,9 +2,9 @@ import type { Locale } from "./locale";
 
 export const copy = {
   en: {
-    metaTitle: "Kaenz: Leave the Car and travel by Yacht!!",
+    metaTitle: "Kaenz: Commute, Tour & Special Occasion by yacht",
     metaDescription:
-      "Kaenz: “We believe that water is the smartest, most beautiful, and most fun way to get around South Florida.”",
+      "Kaenz is an end-to-end yacht platform — not a charter operator — for Commute, Tour, and Special Occasion trips worldwide. Price by trip type, duration, yacht, guests, and date. Pay with Stripe.",
     brand: "Kaenz",
     nav: {
       app: "App",
@@ -18,12 +18,12 @@ export const copy = {
       signup: "Sign up",
       logout: "Log out",
     },
-    heroTitle: "Skip the traffic. Cruise Miami by Yacht!",
+    heroTitle: "Skip the traffic. Travel by yacht.",
     heroCta: "Open app",
     heroSecondary: "Book a yacht",
     solveEyebrow: "What Do We Solve?",
     solveLead:
-      "We believe that water is the highway of the future in Florida.",
+      "Water is the smartest way to commute, tour, and celebrate — in South Florida and around the world.",
     pillars: [
       {
         title: "Buy Time",
@@ -38,9 +38,29 @@ export const copy = {
         body: "There are thousands of cruising miles, sandbars and skylines to enjoy.",
       },
     ],
-    uniqueTitle: "Unique Service!",
+    uniqueTitle: "A platform, not a charter.",
     uniqueBody:
-      "The Uber of yachts in Miami-Fort Lauderdale. Book a private yacht with a verified local captain in minutes and get there faster than by car. Avoid bridges, traffic jams, and stress. Enjoy skylines, sandbars, and sunsets while we take care of everything.",
+      "Kaenz is an end-to-end platform for Commute, Tour, and Special Occasion yacht trips in marinas and ports worldwide. Independent owners, captains, and marinas run each trip. An algorithm sets the price from trip type, duration, yacht type, guests, and date — then you pay with Stripe.",
+    tripTypesTitle: "Commute, Tour & Special Occasion",
+    tripTypesLead:
+      "One platform for getting there, staying on the water, and celebrating — wherever Kaenz has a marina or port.",
+    tripTypes: [
+      {
+        title: "Commute",
+        body: "Beat bridges and traffic. A captained yacht hop that gets you there faster than the car.",
+      },
+      {
+        title: "Tour",
+        body: "Sandbars, skyline cruises, dock-and-dine, and hours on the water in the destination you choose.",
+      },
+      {
+        title: "Special occasion",
+        body: "Sunsets, proposals, clients on deck, and celebrations with a verified captain worldwide.",
+      },
+    ],
+    pricingTitle: "How the price is set",
+    pricingBody:
+      "An algorithm prices every trip from trip type, duration, yacht type, number of passengers, and date. You pay with Stripe. The fare splits: Yacht owner 38%, Captain 30%, Kaenz 25%, pickup marina 3.5%, dropoff marina 3.5%. Optional captain gratuity (15–20%) is added on top and goes directly to the captain.",
     uniqueTerms: "Read the Terms and Conditions.",
     testimonialsTitle: "What Do Our Customers Think?",
     testimonials: [
@@ -68,7 +88,7 @@ export const copy = {
     joinTitle: "Do you Own a Yacht and Are you a Captain?",
     joinCta: "Join Kaenz",
     joinLead:
-      "List your yacht or offer captain services. Independent owners and USCG-licensed captains keep 70% of every trip.",
+      "List your yacht or offer captain services. Independent owners, captains, and marinas are paid through Stripe on every trip.",
     fleetTitle: "Choose your yacht",
     fleetLead: "Private, captained, ready when you are.",
     from: "From",
@@ -77,11 +97,13 @@ export const copy = {
     bookNow: "Book now",
     bookTitle: "Book a private yacht",
     bookLead:
-      "Reserve in minutes. A verified local captain is included on every trip.",
+      "Request a Commute, Tour, or Special Occasion. A verified captain is included. Stripe checkout, priced by our algorithm.",
     form: {
       name: "Full name",
       email: "Email",
       phone: "Phone",
+      kind: "Trip type",
+      duration: "Duration (hours)",
       yacht: "Yacht",
       origin: "Pickup marina",
       destination: "Destination",
@@ -95,12 +117,12 @@ export const copy = {
     },
     conciergeTitle: "Kaenz Concierge",
     conciergeLead:
-      "Plan a South Florida yacht trip with Grok. Routes, sandbars, timing, and the right boat.",
+      "Plan a Commute, Tour, or Special Occasion by yacht — worldwide. Routes, timing, and the right boat.",
     conciergePlaceholder: "Where do you want to go, and when?",
     conciergeSend: "Send",
     joinPageTitle: "Join Kaenz",
     joinPageLead:
-      "Kaenz is a marketplace connecting clients, yacht owners, and captains. We are a technology platform — trips are provided by independent owners and captains.",
+      "Kaenz is an end-to-end platform — not a charter operator — connecting clients, yacht owners, captains, and marinas for Commute, Tour, and Special Occasion trips worldwide.",
     owner: "Yacht owner",
     captain: "Captain",
     both: "Owner & captain",
@@ -120,17 +142,19 @@ export const copy = {
     hubsLabel: "marinas and ports for yacht arrivals and departures",
     mapZoomIn: "Zoom in",
     mapZoomOut: "Zoom out",
+    mapNearMe: "Near me",
     role: "Role",
-    joinFee: "Kaenz fee: 30% of the booking. Owner 40%. Captain 30%.",
+    joinFee:
+      "Paid with Stripe. Owner 38%. Captain 30%. Kaenz 25%. Pickup marina 3.5%. Dropoff marina 3.5%. Optional captain gratuity (15–20%) goes directly to the captain.",
     joinCaptains:
-      "Captains: current USCG OUPV Six-Pack or higher, plus background check.",
+      "Captains: current USCG OUPV Six-Pack or equivalent local license, plus background check.",
     joinOwners:
-      "Owners: Florida registration, HIN, and commercial marine insurance (min. $1,000,000).",
+      "Owners: yacht registration, HIN, and commercial marine insurance (min. $1,000,000).",
     formError: "Could not send. Please try again.",
     joinSuccess:
       "Application received. We will contact you to verify license and yacht.",
     conciergeHello:
-      "I’m the Kaenz concierge. Tell me origin, destination, party size, and time. I’ll match a yacht and a route that’s faster than the car.",
+      "I’m the Kaenz concierge. Tell me Commute, Tour, or Special Occasion — origin, destination, guests, duration, and date. I’ll match a yacht worldwide.",
     conciergeMissingKey:
       "Missing XAI_API_KEY on the server. Add it to enable Grok.",
     conciergeUnavailable:
@@ -156,9 +180,9 @@ export const copy = {
     googleDenied: "Gmail sign-in was cancelled. Try again, or use email and password.",
   },
   es: {
-    metaTitle: "Kaenz: ¡Deja el Auto y viaja en Yate!",
+    metaTitle: "Kaenz: Commute, Tour y Ocasión especial en yate",
     metaDescription:
-      "Kaenz: “Creemos que el agua es la forma más inteligente, bella y divertida de moverse por South Florida.”",
+      "Kaenz es una plataforma integral de yates — no un operador de chárter — para Commute, Tour y Ocasión especial en el mundo. El precio sale del tipo de viaje, duración, yate, pasajeros y fecha. Pagas con Stripe.",
     brand: "Kaenz",
     nav: {
       app: "App",
@@ -172,12 +196,12 @@ export const copy = {
       signup: "Crear cuenta",
       logout: "Salir",
     },
-    heroTitle: "¡Salta el tráfico. Navega Miami en Yate!",
+    heroTitle: "Salta el tráfico. Viaja en yate.",
     heroCta: "Abrir app",
     heroSecondary: "Reservar un yate",
     solveEyebrow: "¿Qué Resolvemos?",
     solveLead:
-      "Creemos que el agua es la autopista del futuro en Florida.",
+      "El agua es la forma más inteligente de hacer commute, tour y celebrar — en South Florida y en el mundo.",
     pillars: [
       {
         title: "Gana Tiempo",
@@ -192,9 +216,29 @@ export const copy = {
         body: "Hay miles de millas navegables, sandbars y skyline para disfrutar.",
       },
     ],
-    uniqueTitle: "¡Servicio Único!",
+    uniqueTitle: "Una plataforma, no un chárter.",
     uniqueBody:
-      "El Uber de los yates en Miami-Fort Lauderdale. Reserva en minutos un yate privado con capitán local verificado y llega más rápido que en auto. Evita puentes, atascos y estrés. Disfruta skyline, sandbars y atardeceres mientras nosotros nos ocupamos de todo.",
+      "Kaenz es una plataforma integral para viajes en yate de Commute, Tour y Ocasión especial en marinas y puertos del mundo. Dueños, capitanes y marinas independientes operan cada viaje. Un algoritmo fija el precio según tipo de viaje, duración, tipo de yate, pasajeros y fecha — y pagas con Stripe.",
+    tripTypesTitle: "Commute, Tour y Ocasión especial",
+    tripTypesLead:
+      "Una plataforma para llegar, quedarte en el agua y celebrar — donde Kaenz tenga marina o puerto.",
+    tripTypes: [
+      {
+        title: "Commute",
+        body: "Gánale a puentes y tráfico. Un salto en yate con capitán más rápido que el auto.",
+      },
+      {
+        title: "Tour",
+        body: "Sandbars, skyline, dock-and-dine y horas en el agua en el destino que elijas.",
+      },
+      {
+        title: "Ocasión especial",
+        body: "Atardeceres, propuestas, clientes a bordo y celebraciones con capitán verificado.",
+      },
+    ],
+    pricingTitle: "Cómo se calcula el precio",
+    pricingBody:
+      "Un algoritmo fija cada viaje según tipo, duración, tipo de yate, número de pasajeros y fecha. Pagas con Stripe. El pago se reparte: dueño del yate 38%, capitán 30%, Kaenz 25%, marina de origen 3.5%, marina de destino 3.5%. La gratificación al capitán (15–20%) es opcional, va encima del pago y llega directo al capitán.",
     uniqueTerms: "Lee los Términos y Condiciones.",
     testimonialsTitle: "¿Qué Piensan Nuestros Clientes?",
     testimonials: [
@@ -222,7 +266,7 @@ export const copy = {
     joinTitle: "¿Tienes un Yate y eres Capitán?",
     joinCta: "Únete a Kaenz",
     joinLead:
-      "Lista tu yate u ofrece servicios de capitán. Propietarios independientes y capitanes con licencia USCG se quedan el 70% de cada viaje.",
+      "Lista tu yate u ofrece servicios de capitán. Dueños, capitanes y marinas independientes se pagan con Stripe en cada viaje.",
     fleetTitle: "Elige tu yate",
     fleetLead: "Privado, con capitán, listo cuando tú lo estés.",
     from: "Desde",
@@ -231,11 +275,13 @@ export const copy = {
     bookNow: "Reservar",
     bookTitle: "Reserva un yate privado",
     bookLead:
-      "Reserva en minutos. Cada viaje incluye un capitán local verificado.",
+      "Solicita Commute, Tour u Ocasión especial. Capitán verificado incluido. Pago con Stripe, precio del algoritmo.",
     form: {
       name: "Nombre completo",
       email: "Correo",
       phone: "Teléfono",
+      kind: "Tipo de viaje",
+      duration: "Duración (horas)",
       yacht: "Yate",
       origin: "Marina de salida",
       destination: "Destino",
@@ -249,12 +295,12 @@ export const copy = {
     },
     conciergeTitle: "Concierge Kaenz",
     conciergeLead:
-      "Planifica un viaje en yate por South Florida con Grok. Rutas, sandbars, horarios y el barco correcto.",
+      "Planifica Commute, Tour u Ocasión especial en yate — en el mundo. Rutas, horarios y el barco correcto.",
     conciergePlaceholder: "¿A dónde quieres ir, y cuándo?",
     conciergeSend: "Enviar",
     joinPageTitle: "Únete a Kaenz",
     joinPageLead:
-      "Kaenz es un marketplace que conecta clientes, dueños de yates y capitanes. Somos una plataforma tecnológica: los viajes los dan propietarios y capitanes independientes.",
+      "Kaenz es una plataforma integral — no un operador de chárter — que conecta clientes, dueños, capitanes y marinas para Commute, Tour y Ocasión especial en el mundo.",
     owner: "Dueño de yate",
     captain: "Capitán",
     both: "Dueño y capitán",
@@ -274,17 +320,19 @@ export const copy = {
     hubsLabel: "marinas y puertos para llegadas y salidas en yate",
     mapZoomIn: "Acercar",
     mapZoomOut: "Alejar",
+    mapNearMe: "Cerca de mí",
     role: "Rol",
-    joinFee: "Tarifa Kaenz: 30% del booking. Dueño 40%. Capitán 30%.",
+    joinFee:
+      "Se cobra con Stripe. Dueño 38%. Capitán 30%. Kaenz 25%. Marina de origen 3.5%. Marina de destino 3.5%. Gratificación opcional al capitán (15–20%) va directo al capitán.",
     joinCaptains:
-      "Capitanes: credencial USCG OUPV Six-Pack o superior y verificación de antecedentes.",
+      "Capitanes: credencial USCG OUPV Six-Pack o licencia local equivalente, y verificación de antecedentes.",
     joinOwners:
-      "Dueños: registro de Florida, HIN y seguro marítimo comercial (mín. $1,000,000).",
+      "Dueños: registro del yate, HIN y seguro marítimo comercial (mín. $1,000,000).",
     formError: "No se pudo enviar. Inténtalo de nuevo.",
     joinSuccess:
       "Solicitud enviada. Te contactamos para verificar licencia y yate.",
     conciergeHello:
-      "Soy el concierge de Kaenz. Dime origen, destino, número de personas y hora. Te propongo yate y ruta más rápida que el auto.",
+      "Soy el concierge de Kaenz. Dime Commute, Tour u Ocasión especial — origen, destino, pasajeros, duración y fecha. Te propongo un yate en el mundo.",
     conciergeMissingKey:
       "Falta XAI_API_KEY en el servidor. Añádela para activar Grok.",
     conciergeUnavailable:
@@ -310,9 +358,9 @@ export const copy = {
     googleDenied: "Cancelaste el acceso con Gmail. Inténtalo de nuevo o usa email y contraseña.",
   },
   fr: {
-    metaTitle: "Kaenz : Laissez la voiture, voyagez en yacht !",
+    metaTitle: "Kaenz : trajet, croisière et occasion spéciale en yacht",
     metaDescription:
-      "Kaenz : « Nous croyons que l’eau est la façon la plus intelligente, la plus belle et la plus amusante de se déplacer en South Florida. »",
+      "Kaenz est une plateforme yacht de bout en bout — pas un opérateur de charter — pour trajets, croisières et occasions spéciales dans le monde. Le prix dépend du type de voyage, de la durée, du yacht, des passagers et de la date. Paiement Stripe.",
     brand: "Kaenz",
     nav: {
       app: "App",
@@ -326,12 +374,12 @@ export const copy = {
       signup: "Créer un compte",
       logout: "Sortir",
     },
-    heroTitle: "Évitez le trafic. Naviguez à Miami en yacht !",
+    heroTitle: "Évitez le trafic. Voyagez en yacht.",
     heroCta: "Ouvrir l’app",
     heroSecondary: "Réserver un yacht",
     solveEyebrow: "Que résolvons-nous ?",
     solveLead:
-      "Nous croyons que l’eau est l’autoroute du futur en Floride.",
+      "L’eau est la façon la plus intelligente de se déplacer, de croiser et de célébrer — en South Florida et dans le monde.",
     pillars: [
       {
         title: "Gagnez du temps",
@@ -346,9 +394,29 @@ export const copy = {
         body: "Des milliers de milles navigables, de sandbars et de skylines à savourer.",
       },
     ],
-    uniqueTitle: "Un service unique !",
+    uniqueTitle: "Une plateforme, pas un charter.",
     uniqueBody:
-      "L’Uber des yachts à Miami–Fort Lauderdale. Réservez en minutes un yacht privé avec un capitaine local vérifié et arrivez plus vite qu’en voiture. Évitez ponts, embouteillages et stress. Profitez du skyline, des sandbars et des couchers de soleil pendant que nous gérons tout.",
+      "Kaenz est une plateforme de bout en bout pour des trajets, croisières et occasions spéciales en yacht dans des marinas et ports du monde. Propriétaires, capitaines et marinas indépendants opèrent chaque trajet. Un algorithme fixe le prix selon le type de voyage, la durée, le yacht, les passagers et la date — paiement par Stripe.",
+    tripTypesTitle: "Trajet, croisière et occasion spéciale",
+    tripTypesLead:
+      "Une plateforme pour arriver, rester sur l’eau et célébrer — partout où Kaenz a une marina ou un port.",
+    tripTypes: [
+      {
+        title: "Trajet",
+        body: "Gagnez sur les ponts et le trafic. Un saut en yacht avec capitaine plus rapide que la voiture.",
+      },
+      {
+        title: "Croisière",
+        body: "Sandbars, skyline, dock-and-dine et des heures sur l’eau à la destination choisie.",
+      },
+      {
+        title: "Occasion spéciale",
+        body: "Couchers de soleil, demandes, clients à bord et célébrations avec un capitaine vérifié.",
+      },
+    ],
+    pricingTitle: "Comment le prix est fixé",
+    pricingBody:
+      "Un algorithme tarife chaque trajet selon le type, la durée, le yacht, le nombre de passagers et la date. Paiement Stripe. Répartition : propriétaire 38 %, capitaine 30 %, Kaenz 25 %, marina de départ 3,5 %, marina d’arrivée 3,5 %. Pourboire capitaine optionnel (15–20 %) en plus, versé directement au capitaine.",
     uniqueTerms: "Lire les conditions générales.",
     testimonialsTitle: "Que pensent nos clients ?",
     testimonials: [
@@ -377,7 +445,7 @@ export const copy = {
     joinTitle: "Vous possédez un yacht et vous êtes capitaine ?",
     joinCta: "Rejoindre Kaenz",
     joinLead:
-      "Inscrivez votre yacht ou proposez vos services de capitaine. Propriétaires indépendants et capitaines licenciés USCG conservent 70 % de chaque trajet.",
+      "Inscrivez votre yacht ou proposez vos services de capitaine. Propriétaires, capitaines et marinas indépendants sont payés via Stripe à chaque trajet.",
     fleetTitle: "Choisissez votre yacht",
     fleetLead: "Privé, avec capitaine, prêt quand vous l’êtes.",
     from: "À partir de",
@@ -386,11 +454,13 @@ export const copy = {
     bookNow: "Réserver",
     bookTitle: "Réserver un yacht privé",
     bookLead:
-      "Réservez en minutes. Un capitaine local vérifié est inclus à chaque trajet.",
+      "Demandez un trajet, une croisière ou une occasion spéciale. Capitaine vérifié inclus. Paiement Stripe, prix de l’algorithme.",
     form: {
       name: "Nom complet",
       email: "E-mail",
       phone: "Téléphone",
+      kind: "Type de voyage",
+      duration: "Durée (heures)",
       yacht: "Yacht",
       origin: "Marina de départ",
       destination: "Destination",
@@ -404,12 +474,12 @@ export const copy = {
     },
     conciergeTitle: "Concierge Kaenz",
     conciergeLead:
-      "Planifiez un trajet en yacht en South Florida avec Grok. Itinéraires, sandbars, horaires et le bon bateau.",
+      "Planifiez un trajet, une croisière ou une occasion spéciale en yacht — dans le monde. Itinéraires, horaires et le bon bateau.",
     conciergePlaceholder: "Où voulez-vous aller, et quand ?",
     conciergeSend: "Envoyer",
     joinPageTitle: "Rejoindre Kaenz",
     joinPageLead:
-      "Kaenz est une marketplace qui relie clients, propriétaires de yachts et capitaines. Nous sommes une plateforme technologique : les trajets sont fournis par des propriétaires et capitaines indépendants.",
+      "Kaenz est une plateforme de bout en bout — pas un opérateur de charter — qui relie clients, propriétaires, capitaines et marinas pour trajets, croisières et occasions spéciales dans le monde.",
     owner: "Propriétaire de yacht",
     captain: "Capitaine",
     both: "Propriétaire et capitaine",
@@ -429,17 +499,19 @@ export const copy = {
     hubsLabel: "marinas et ports pour arrivées et départs en yacht",
     mapZoomIn: "Zoom avant",
     mapZoomOut: "Zoom arrière",
+    mapNearMe: "Près de moi",
     role: "Rôle",
-    joinFee: "Commission Kaenz : 30 % de la réservation. Propriétaire 40 %. Capitaine 30 %.",
+    joinFee:
+      "Paiement Stripe. Propriétaire 38 %. Capitaine 30 %. Kaenz 25 %. Marina de départ 3,5 %. Marina d’arrivée 3,5 %. Pourboire capitaine optionnel (15–20 %) versé directement au capitaine.",
     joinCaptains:
-      "Capitaines : credencial USCG OUPV Six-Pack ou supérieure, plus vérification des antécédents.",
+      "Capitaines : credencial USCG OUPV Six-Pack ou licence locale équivalente, plus vérification des antécédents.",
     joinOwners:
-      "Propriétaires : immatriculation de Floride, HIN et assurance maritime commerciale (min. 1 000 000 $).",
+      "Propriétaires : immatriculation du yacht, HIN et assurance maritime commerciale (min. 1 000 000 $).",
     formError: "Envoi impossible. Réessayez.",
     joinSuccess:
       "Candidature reçue. Nous vous contactons pour vérifier licence et yacht.",
     conciergeHello:
-      "Je suis le concierge Kaenz. Indiquez origine, destination, nombre de personnes et horaire. Je vous propose un yacht et un itinéraire plus rapide que la voiture.",
+      "Je suis le concierge Kaenz. Dites-moi trajet, croisière ou occasion spéciale — origine, destination, passagers, durée et date. Je vous propose un yacht dans le monde.",
     conciergeMissingKey:
       "XAI_API_KEY manquante sur le serveur. Ajoutez-la pour activer Grok.",
     conciergeUnavailable:
@@ -465,9 +537,9 @@ export const copy = {
     googleDenied: "Connexion Gmail annulée. Réessayez, ou utilisez e-mail et mot de passe.",
   },
   it: {
-    metaTitle: "Kaenz: Lascia l’auto e viaggia in yacht!",
+    metaTitle: "Kaenz: tragitto, tour e occasione speciale in yacht",
     metaDescription:
-      "Kaenz: «Crediamo che l’acqua sia il modo più intelligente, bello e divertente per muoversi in South Florida.»",
+      "Kaenz è una piattaforma yacht end-to-end — non un operatore di charter — per tragitto, tour e occasione speciale nel mondo. Il prezzo dipende da tipo di viaggio, durata, yacht, passeggeri e data. Paghi con Stripe.",
     brand: "Kaenz",
     nav: {
       app: "App",
@@ -481,12 +553,12 @@ export const copy = {
       signup: "Crea account",
       logout: "Esci",
     },
-    heroTitle: "Salta il traffico. Naviga Miami in yacht!",
+    heroTitle: "Salta il traffico. Viaggia in yacht.",
     heroCta: "Apri l’app",
     heroSecondary: "Prenota uno yacht",
     solveEyebrow: "Cosa risolviamo?",
     solveLead:
-      "Crediamo che l’acqua sia l’autostrada del futuro in Florida.",
+      "L’acqua è il modo più intelligente per spostarsi, fare un tour e festeggiare — in South Florida e nel mondo.",
     pillars: [
       {
         title: "Guadagna tempo",
@@ -501,9 +573,29 @@ export const copy = {
         body: "Ci sono migliaia di miglia navigabili, sandbar e skyline da godere.",
       },
     ],
-    uniqueTitle: "Servizio unico!",
+    uniqueTitle: "Una piattaforma, non un charter.",
     uniqueBody:
-      "L’Uber degli yacht a Miami–Fort Lauderdale. Prenota in minuti uno yacht privato con capitano locale verificato e arrivi più veloce che in auto. Evita ponti, code e stress. Goditi skyline, sandbar e tramonti mentre pensiamo a tutto noi.",
+      "Kaenz è una piattaforma end-to-end per tragitto, tour e occasione speciale in yacht in marine e porti del mondo. Proprietari, capitani e marine indipendenti gestiscono ogni viaggio. Un algoritmo fissa il prezzo da tipo di viaggio, durata, yacht, passeggeri e data — paghi con Stripe.",
+    tripTypesTitle: "Tragitto, tour e occasione speciale",
+    tripTypesLead:
+      "Una piattaforma per arrivare, restare in acqua e festeggiare — ovunque Kaenz abbia una marina o un porto.",
+    tripTypes: [
+      {
+        title: "Tragitto",
+        body: "Batti ponti e traffico. Un salto in yacht con capitano più veloce dell’auto.",
+      },
+      {
+        title: "Tour",
+        body: "Sandbar, skyline, dock-and-dine e ore in acqua nella destinazione che scegli.",
+      },
+      {
+        title: "Occasione speciale",
+        body: "Tramonti, proposte, clienti a bordo e celebrazioni con un capitano verificato.",
+      },
+    ],
+    pricingTitle: "Come si calcola il prezzo",
+    pricingBody:
+      "Un algoritmo tarifa ogni viaggio da tipo, durata, yacht, numero di passeggeri e data. Paghi con Stripe. Ripartizione: proprietario 38%, capitano 30%, Kaenz 25%, marina di partenza 3,5%, marina di arrivo 3,5%. Mancia capitano opzionale (15–20%) in più, versata direttamente al capitano.",
     uniqueTerms: "Leggi i Termini e Condizioni.",
     testimonialsTitle: "Cosa pensano i nostri clienti?",
     testimonials: [
@@ -532,7 +624,7 @@ export const copy = {
     joinTitle: "Possiedi uno yacht e sei un capitano?",
     joinCta: "Unisciti a Kaenz",
     joinLead:
-      "Metti in lista il tuo yacht o offri servizi da capitano. Proprietari indipendenti e capitani con licenza USCG tengono il 70% di ogni viaggio.",
+      "Metti in lista il tuo yacht o offri servizi da capitano. Proprietari, capitani e marine indipendenti sono pagati con Stripe a ogni viaggio.",
     fleetTitle: "Scegli il tuo yacht",
     fleetLead: "Privato, con capitano, pronto quando lo sei tu.",
     from: "Da",
@@ -541,11 +633,13 @@ export const copy = {
     bookNow: "Prenota",
     bookTitle: "Prenota uno yacht privato",
     bookLead:
-      "Prenota in minuti. Ogni viaggio include un capitano locale verificato.",
+      "Richiedi un tragitto, un tour o un’occasione speciale. Capitano verificato incluso. Pagamento Stripe, prezzo dell’algoritmo.",
     form: {
       name: "Nome completo",
       email: "Email",
       phone: "Telefono",
+      kind: "Tipo di viaggio",
+      duration: "Durata (ore)",
       yacht: "Yacht",
       origin: "Marina di partenza",
       destination: "Destinazione",
@@ -559,12 +653,12 @@ export const copy = {
     },
     conciergeTitle: "Concierge Kaenz",
     conciergeLead:
-      "Pianifica un viaggio in yacht in South Florida con Grok. Rotte, sandbar, orari e la barca giusta.",
+      "Pianifica un tragitto, un tour o un’occasione speciale in yacht — nel mondo. Rotte, orari e la barca giusta.",
     conciergePlaceholder: "Dove vuoi andare, e quando?",
     conciergeSend: "Invia",
     joinPageTitle: "Unisciti a Kaenz",
     joinPageLead:
-      "Kaenz è un marketplace che collega clienti, proprietari di yacht e capitani. Siamo una piattaforma tecnologica: i viaggi li forniscono proprietari e capitani indipendenti.",
+      "Kaenz è una piattaforma end-to-end — non un operatore di charter — che collega clienti, proprietari, capitani e marine per tragitto, tour e occasione speciale nel mondo.",
     owner: "Proprietario di yacht",
     captain: "Capitano",
     both: "Proprietario e capitano",
@@ -584,17 +678,19 @@ export const copy = {
     hubsLabel: "marine e porti per arrivi e partenze in yacht",
     mapZoomIn: "Ingrandisci",
     mapZoomOut: "Riduci",
+    mapNearMe: "Vicino a me",
     role: "Ruolo",
-    joinFee: "Commissione Kaenz: 30% della prenotazione. Proprietario 40%. Capitano 30%.",
+    joinFee:
+      "Pagamento con Stripe. Proprietario 38%. Capitano 30%. Kaenz 25%. Marina di partenza 3,5%. Marina di arrivo 3,5%. Mancia capitano opzionale (15–20%) versata direttamente al capitano.",
     joinCaptains:
-      "Capitani: credenziale USCG OUPV Six-Pack o superiore, più verifica dei precedenti.",
+      "Capitani: credenziale USCG OUPV Six-Pack o licenza locale equivalente, più verifica dei precedenti.",
     joinOwners:
-      "Proprietari: registrazione della Florida, HIN e assicurazione marittima commerciale (min. $1,000,000).",
+      "Proprietari: registrazione dello yacht, HIN e assicurazione marittima commerciale (min. $1,000,000).",
     formError: "Invio non riuscito. Riprova.",
     joinSuccess:
       "Candidatura ricevuta. Ti contatteremo per verificare licenza e yacht.",
     conciergeHello:
-      "Sono il concierge Kaenz. Dimmi origine, destinazione, numero di persone e orario. Ti propongo yacht e rotta più veloce dell’auto.",
+      "Sono il concierge Kaenz. Dimmi tragitto, tour o occasione speciale — origine, destinazione, passeggeri, durata e data. Ti propongo uno yacht nel mondo.",
     conciergeMissingKey:
       "Manca XAI_API_KEY sul server. Aggiungila per attivare Grok.",
     conciergeUnavailable:
@@ -620,9 +716,9 @@ export const copy = {
     googleDenied: "Accesso Gmail annullato. Riprova, oppure usa email e password.",
   },
   pt: {
-    metaTitle: "Kaenz: Deixe o carro e viaje de iate!",
+    metaTitle: "Kaenz: trajeto, passeio e ocasião especial de iate",
     metaDescription:
-      "Kaenz: “Acreditamos que a água é o jeito mais inteligente, bonito e divertido de se deslocar pelo South Florida.”",
+      "A Kaenz é uma plataforma integral de iates — não uma operadora de charter — para Trajeto, Passeio e Ocasião especial no mundo. O preço sai do tipo de viagem, duração, iate, passageiros e data. Você paga com Stripe.",
     brand: "Kaenz",
     nav: {
       app: "App",
@@ -636,12 +732,12 @@ export const copy = {
       signup: "Criar conta",
       logout: "Sair",
     },
-    heroTitle: "Pule o trânsito. Navegue Miami de iate!",
+    heroTitle: "Pule o trânsito. Viaje de iate.",
     heroCta: "Abrir app",
     heroSecondary: "Reservar um iate",
     solveEyebrow: "O que resolvemos?",
     solveLead:
-      "Acreditamos que a água é a autoestrada do futuro na Flórida.",
+      "A água é o jeito mais inteligente de se deslocar, passear e celebrar — no South Florida e no mundo.",
     pillars: [
       {
         title: "Ganhe tempo",
@@ -656,9 +752,29 @@ export const copy = {
         body: "Há milhares de milhas navegáveis, sandbars e skylines para curtir.",
       },
     ],
-    uniqueTitle: "Serviço único!",
+    uniqueTitle: "Uma plataforma, não um charter.",
     uniqueBody:
-      "O Uber dos iates em Miami–Fort Lauderdale. Reserve em minutos um iate privado com capitão local verificado e chegue mais rápido do que de carro. Evite pontes, filas e estresse. Curta skylines, sandbars e pores do sol enquanto cuidamos de tudo.",
+      "A Kaenz é uma plataforma integral para viagens de iate de Trajeto, Passeio e Ocasião especial em marinas e portos do mundo. Donos, capitães e marinas independentes operam cada viagem. Um algoritmo define o preço pelo tipo de viagem, duração, tipo de iate, passageiros e data — e você paga com Stripe.",
+    tripTypesTitle: "Trajeto, passeio e ocasião especial",
+    tripTypesLead:
+      "Uma plataforma para chegar, ficar na água e celebrar — onde a Kaenz tiver marina ou porto.",
+    tripTypes: [
+      {
+        title: "Trajeto",
+        body: "Ganhe das pontes e do trânsito. Um salto de iate com capitão mais rápido que o carro.",
+      },
+      {
+        title: "Passeio",
+        body: "Sandbars, skyline, dock-and-dine e horas na água no destino que você escolher.",
+      },
+      {
+        title: "Ocasião especial",
+        body: "Pores do sol, pedidos, clientes a bordo e celebrações com capitão verificado.",
+      },
+    ],
+    pricingTitle: "Como o preço é definido",
+    pricingBody:
+      "Um algoritmo precifica cada viagem pelo tipo, duração, iate, número de passageiros e data. Você paga com Stripe. A divisão: dono do iate 38%, capitão 30%, Kaenz 25%, marina de partida 3,5%, marina de chegada 3,5%. Gorjeta opcional ao capitão (15–20%) entra por cima e vai direto ao capitão.",
     uniqueTerms: "Leia os Termos e Condições.",
     testimonialsTitle: "O que pensam os nossos clientes?",
     testimonials: [
@@ -686,7 +802,7 @@ export const copy = {
     joinTitle: "Você tem um iate e é capitão?",
     joinCta: "Junte-se à Kaenz",
     joinLead:
-      "Anuncie seu iate ou ofereça serviços de capitão. Proprietários independentes e capitães com licença USCG ficam com 70% de cada viagem.",
+      "Anuncie seu iate ou ofereça serviços de capitão. Donos, capitães e marinas independentes são pagos via Stripe em cada viagem.",
     fleetTitle: "Escolha o seu iate",
     fleetLead: "Privado, com capitão, pronto quando você estiver.",
     from: "A partir de",
@@ -695,11 +811,13 @@ export const copy = {
     bookNow: "Reservar",
     bookTitle: "Reserve um iate privado",
     bookLead:
-      "Reserve em minutos. Toda viagem inclui um capitão local verificado.",
+      "Solicite Trajeto, Passeio ou Ocasião especial. Capitão verificado incluso. Pagamento Stripe, preço do algoritmo.",
     form: {
       name: "Nome completo",
       email: "E-mail",
       phone: "Telefone",
+      kind: "Tipo de viagem",
+      duration: "Duração (horas)",
       yacht: "Iate",
       origin: "Marina de partida",
       destination: "Destino",
@@ -713,12 +831,12 @@ export const copy = {
     },
     conciergeTitle: "Concierge Kaenz",
     conciergeLead:
-      "Planeje uma viagem de iate no South Florida com o Grok. Rotas, sandbars, horários e o barco certo.",
+      "Planeje Trajeto, Passeio ou Ocasião especial de iate — no mundo. Rotas, horários e o barco certo.",
     conciergePlaceholder: "Para onde você quer ir, e quando?",
     conciergeSend: "Enviar",
     joinPageTitle: "Junte-se à Kaenz",
     joinPageLead:
-      "A Kaenz é um marketplace que conecta clientes, donos de iates e capitães. Somos uma plataforma tecnológica: as viagens são feitas por donos e capitães independentes.",
+      "A Kaenz é uma plataforma integral — não uma operadora de charter — que conecta clientes, donos, capitães e marinas para Trajeto, Passeio e Ocasião especial no mundo.",
     owner: "Dono de iate",
     captain: "Capitão",
     both: "Dono e capitão",
@@ -738,17 +856,19 @@ export const copy = {
     hubsLabel: "marinas e portos para chegadas e partidas de iate",
     mapZoomIn: "Aproximar",
     mapZoomOut: "Afastar",
+    mapNearMe: "Perto de mim",
     role: "Função",
-    joinFee: "Comissão Kaenz: 30% da reserva. Dono 40%. Capitão 30%.",
+    joinFee:
+      "Cobrado com Stripe. Dono 38%. Capitão 30%. Kaenz 25%. Marina de partida 3,5%. Marina de chegada 3,5%. Gorjeta opcional ao capitão (15–20%) vai direto ao capitão.",
     joinCaptains:
-      "Capitães: credencial USCG OUPV Six-Pack ou superior, mais verificação de antecedentes.",
+      "Capitães: credencial USCG OUPV Six-Pack ou licença local equivalente, mais verificação de antecedentes.",
     joinOwners:
-      "Donos: registro da Flórida, HIN e seguro marítimo comercial (mín. US$ 1.000.000).",
+      "Donos: registro do iate, HIN e seguro marítimo comercial (mín. US$ 1.000.000).",
     formError: "Não foi possível enviar. Tente de novo.",
     joinSuccess:
       "Candidatura recebida. Vamos contactá-lo para verificar licença e iate.",
     conciergeHello:
-      "Sou o concierge Kaenz. Diga origem, destino, número de pessoas e horário. Eu combino um iate e uma rota mais rápida do que o carro.",
+      "Sou o concierge Kaenz. Diga Trajeto, Passeio ou Ocasião especial — origem, destino, passageiros, duração e data. Eu combino um iate no mundo.",
     conciergeMissingKey:
       "Falta XAI_API_KEY no servidor. Adicione-a para ativar o Grok.",
     conciergeUnavailable:

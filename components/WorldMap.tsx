@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import { t } from "@/lib/copy";
 import { at } from "@/lib/app-copy";
+import { mapViewFor } from "@/lib/geo";
 import type { Locale } from "@/lib/locale";
+import { useLocation } from "@/lib/location";
 import { mapHubs, placeCountry, type Place } from "@/lib/places";
 
 const FLORIDA: [number, number] = [26.05, -80.14];
@@ -29,16 +31,20 @@ export function WorldMap({
 }) {
   const c = t(locale);
   const a = at(locale);
+  const { here, located, locate } = useLocation();
   const host = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
   const leafletRef = useRef<typeof import("leaflet") | null>(null);
   const markersRef = useRef<
     { place: Place; marker: import("leaflet").Marker }[]
   >([]);
+  const youRef = useRef<import("leaflet").Marker | null>(null);
   const zoomRef = useRef<import("leaflet").Control.Zoom | null>(null);
   const localeRef = useRef(locale);
   localeRef.current = locale;
   const [selected, setSelected] = useState<Place | null>(null);
+  const [view, setView] = useState<"world" | "florida" | "you">("world");
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -97,6 +103,7 @@ export function WorldMap({
         placed.push({ place, marker });
       }
       markersRef.current = placed;
+      setReady(true);
     }
 
     void mount();
@@ -105,7 +112,9 @@ export function WorldMap({
       map?.remove();
       mapRef.current = null;
       markersRef.current = [];
+      youRef.current = null;
       zoomRef.current = null;
+      setReady(false);
     };
     // Map instance is created once; locale chrome updates in the next effect.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -132,9 +141,47 @@ export function WorldMap({
     zoomRef.current = zoom;
   }, [locale]);
 
-  function fly(center: [number, number], zoom: number) {
+  useEffect(() => {
+    const L = leafletRef.current;
+    const map = mapRef.current;
+    if (!L || !map || !located) return;
+
+    const pin = L.divIcon({
+      className: "kaenz-pin kaenz-pin-you",
+      iconSize: [16, 16],
+      iconAnchor: [8, 8],
+    });
+    if (youRef.current) {
+      youRef.current.setLatLng([here.lat, here.lng]);
+    } else {
+      const marker = L.marker([here.lat, here.lng], { icon: pin, zIndexOffset: 800 });
+      marker.bindTooltip(here.label, { direction: "top", offset: [0, -8] });
+      marker.addTo(map);
+      youRef.current = marker;
+    }
+
+    if (view !== "world" && view !== "florida") {
+      const next = mapViewFor(here.lat, here.lng);
+      map.flyTo(next.center, next.zoom, { duration: 0.9 });
+    } else if (view === "world") {
+      const next = mapViewFor(here.lat, here.lng);
+      map.flyTo(next.center, next.zoom, { duration: 0.9 });
+      setView("you");
+    }
+    // Recenter when GPS lands or the map finishes mounting.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [located, here.lat, here.lng, here.label, ready]);
+
+  function fly(center: [number, number], zoom: number, next: "world" | "florida" | "you") {
     mapRef.current?.flyTo(center, zoom, { duration: 0.9 });
     setSelected(null);
+    setView(next);
+  }
+
+  function flyToYou() {
+    locate();
+    const next = mapViewFor(here.lat, here.lng);
+    fly(next.center, next.zoom, "you");
   }
 
   return (
@@ -157,15 +204,26 @@ export function WorldMap({
           </span>
           <button
             type="button"
-            onClick={() => fly(WORLD, 2)}
+            onClick={flyToYou}
+            className={`rounded-full px-3 py-1 text-xs font-bold ${
+              view === "you"
+                ? "bg-kaenz text-white"
+                : "border border-kaenz/50 text-kaenz"
+            }`}
+          >
+            {c.mapNearMe}
+          </button>
+          <button
+            type="button"
+            onClick={() => fly(WORLD, 2, "world")}
             className="rounded-full border border-white/20 px-3 py-1 text-xs font-bold text-white/90 hover:border-kaenz"
           >
             {c.mapWorld}
           </button>
           <button
             type="button"
-            onClick={() => fly(FLORIDA, 10)}
-            className="rounded-full bg-kaenz px-3 py-1 text-xs font-bold text-white"
+            onClick={() => fly(FLORIDA, 10, "florida")}
+            className="rounded-full border border-white/20 px-3 py-1 text-xs font-bold text-white/90 hover:border-kaenz"
           >
             {c.mapFlorida}
           </button>

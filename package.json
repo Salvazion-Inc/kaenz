@@ -2,7 +2,7 @@
   "name": "kaenz",
   "version": "1.0.0",
   "private": true,
-  "description": "Kaenz — the Uber of yachts in Miami–Fort Lauderdale. Leave the car and travel by yacht.",
+  "description": "Kaenz — end-to-end yacht platform for Commute, Tour, and Special Occasion trips worldwide.",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",

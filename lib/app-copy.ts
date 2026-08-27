@@ -3,7 +3,7 @@ import type { Locale } from "./locale";
 export const appCopy = {
   en: {
     appName: "Kaenz",
-    location: "South Florida",
+    location: "Worldwide",
     tabs: {
       places: "Places",
       yachts: "Yachts",
@@ -11,10 +11,21 @@ export const appCopy = {
       trip: "Your Trip",
       crew: "Crew",
     },
-    placesLead: "Marinas and ports worldwide for yacht pickup and dropoff.",
+    placesLead:
+      "Marinas, ports, and featured places worldwide — sorted around your GPS.",
     searchPlaces: "Search marinas, ports, sandbars…",
     kinds: { all: "All", marina: "Marinas", port: "Ports", place: "Places" },
     featuredPlaces: "Featured Places",
+    featuredNearYou: "Near you",
+    featuredSwipe: "Swipe sideways to see every place we created, nearest first.",
+    locating: "Finding your location…",
+    duration: "Duration (hours)",
+    hoursUnit: "hours",
+    fareHow:
+      "Price from trip type, duration, yacht type, guests, and date. Paid with Stripe.",
+    stripePay: "Pay with Stripe",
+    gratuityHint:
+      "Optional 15–20% of the fare, paid directly to the captain.",
     featured: {
       sandbar: "Sandbars and Anchors",
       beach: "Beaches and Parks",
@@ -64,7 +75,7 @@ export const appCopy = {
     marinaPickupShare: "Pickup marina (3.5%)",
     marinaDropoffShare: "Dropoff marina (3.5%)",
     marinaRoundShare: "Marina round trip (7%)",
-    platformShare: "Kaenz (32%)",
+    platformShare: "Kaenz (25%)",
     gratuity: "Optional gratuity",
     gratuityNone: "No gratuity",
     total: "Total",
@@ -81,7 +92,8 @@ export const appCopy = {
     statusRequested: "Request sent",
     statusConfirmed: "Captain confirmed",
     statusUnderway: "Underway",
-    demoPay: "Demo checkout — Kaenz does not charge your card in this preview.",
+    demoPay:
+      "Stripe checkout — Kaenz does not charge your card in this preview. Captain gratuity is optional and paid directly to the captain.",
     crewLead: "Share with interesting people in this social experience.",
     goingTo: "Going to",
     joinCrew: "Join this crew",
@@ -176,7 +188,7 @@ export const appCopy = {
   },
   es: {
     appName: "Kaenz",
-    location: "South Florida",
+    location: "En el mundo",
     tabs: {
       places: "Lugares",
       yachts: "Yates",
@@ -184,10 +196,21 @@ export const appCopy = {
       trip: "Tu Viaje",
       crew: "Tripulación",
     },
-    placesLead: "Marinas y puertos del mundo para origen y destino en yate.",
+    placesLead:
+      "Marinas, puertos y lugares destacados del mundo — ordenados según tu GPS.",
     searchPlaces: "Busca marinas, puertos, sandbars…",
     kinds: { all: "Todos", marina: "Marinas", port: "Puertos", place: "Lugares" },
     featuredPlaces: "Lugares destacados",
+    featuredNearYou: "Cerca de ti",
+    featuredSwipe: "Desliza de lado para ver todos los lugares que creamos, los más cercanos primero.",
+    locating: "Buscando tu ubicación…",
+    duration: "Duración (horas)",
+    hoursUnit: "horas",
+    fareHow:
+      "El precio sale del tipo de viaje, duración, tipo de yate, pasajeros y fecha. Se cobra con Stripe.",
+    stripePay: "Pagar con Stripe",
+    gratuityHint:
+      "Opcional 15–20% de la tarifa, pagada directo al capitán.",
     featured: {
       sandbar: "Sandbars y anclajes",
       beach: "Playas y parques",
@@ -237,7 +260,7 @@ export const appCopy = {
     marinaPickupShare: "Marina de origen (3.5%)",
     marinaDropoffShare: "Marina de destino (3.5%)",
     marinaRoundShare: "Marina ida y vuelta (7%)",
-    platformShare: "Kaenz (32%)",
+    platformShare: "Kaenz (25%)",
     gratuity: "Gratificación opcional",
     gratuityNone: "Sin gratificación",
     total: "Total",
@@ -254,7 +277,8 @@ export const appCopy = {
     statusRequested: "Solicitud enviada",
     statusConfirmed: "Capitán confirmó",
     statusUnderway: "En marcha",
-    demoPay: "Pago demo — Kaenz no cobra tu tarjeta en esta vista previa.",
+    demoPay:
+      "Pago con Stripe — Kaenz no cobra tu tarjeta en esta vista previa. La gratificación al capitán es opcional y va directo al capitán.",
     crewLead: "Comparte con gente interesante en esta experiencia social.",
     goingTo: "Va a",
     joinCrew: "Unirme a esta crew",
@@ -349,7 +373,7 @@ export const appCopy = {
   },
   fr: {
     appName: "Kaenz",
-    location: "South Florida",
+    location: "Dans le monde",
     tabs: {
       places: "Lieux",
       yachts: "Yachts",
@@ -357,10 +381,21 @@ export const appCopy = {
       trip: "Votre trajet",
       crew: "Équipage",
     },
-    placesLead: "Marinas et ports du monde pour départ et arrivée en yacht.",
+    placesLead:
+      "Marinas, ports et lieux en vedette du monde — classés selon votre GPS.",
     searchPlaces: "Rechercher marinas, ports, sandbars…",
     kinds: { all: "Tous", marina: "Marinas", port: "Ports", place: "Lieux" },
     featuredPlaces: "Lieux en vedette",
+    featuredNearYou: "Près de vous",
+    featuredSwipe: "Faites glisser pour voir tous les lieux créés, les plus proches d’abord.",
+    locating: "Recherche de votre position…",
+    duration: "Durée (heures)",
+    hoursUnit: "heures",
+    fareHow:
+      "Prix selon le type de voyage, la durée, le yacht, les passagers et la date. Paiement Stripe.",
+    stripePay: "Payer avec Stripe",
+    gratuityHint:
+      "Optionnel 15–20 % du tarif, versé directement au capitaine.",
     featured: {
       sandbar: "Sandbars et mouillages",
       beach: "Plages et parcs",
@@ -410,7 +445,7 @@ export const appCopy = {
     marinaPickupShare: "Marina de départ (3,5 %)",
     marinaDropoffShare: "Marina d’arrivée (3,5 %)",
     marinaRoundShare: "Marina aller-retour (7 %)",
-    platformShare: "Kaenz (32 %)",
+    platformShare: "Kaenz (25 %)",
     gratuity: "Pourboire optionnel",
     gratuityNone: "Sans pourboire",
     total: "Total",
@@ -427,7 +462,8 @@ export const appCopy = {
     statusRequested: "Demande envoyée",
     statusConfirmed: "Capitaine confirmé",
     statusUnderway: "En route",
-    demoPay: "Paiement démo — Kaenz ne débitera pas votre carte dans cet aperçu.",
+    demoPay:
+      "Paiement Stripe — Kaenz ne débitera pas votre carte dans cet aperçu. Le pourboire capitaine est optionnel et versé directement au capitaine.",
     crewLead: "Partagez avec des personnes intéressantes dans cette expérience sociale.",
     goingTo: "Va vers",
     joinCrew: "Rejoindre cet équipage",
@@ -522,7 +558,7 @@ export const appCopy = {
   },
   it: {
     appName: "Kaenz",
-    location: "South Florida",
+    location: "Nel mondo",
     tabs: {
       places: "Luoghi",
       yachts: "Yacht",
@@ -530,10 +566,21 @@ export const appCopy = {
       trip: "Il tuo viaggio",
       crew: "Equipaggio",
     },
-    placesLead: "Marine e porti del mondo per partenza e arrivo in yacht.",
+    placesLead:
+      "Marine, porti e luoghi in evidenza nel mondo — ordinati secondo il tuo GPS.",
     searchPlaces: "Cerca marine, porti, sandbar…",
     kinds: { all: "Tutti", marina: "Marine", port: "Porti", place: "Luoghi" },
     featuredPlaces: "Luoghi in evidenza",
+    featuredNearYou: "Vicino a te",
+    featuredSwipe: "Scorri di lato per vedere tutti i luoghi creati, i più vicini per primi.",
+    locating: "Cerco la tua posizione…",
+    duration: "Durata (ore)",
+    hoursUnit: "ore",
+    fareHow:
+      "Prezzo da tipo di viaggio, durata, yacht, passeggeri e data. Paghi con Stripe.",
+    stripePay: "Paga con Stripe",
+    gratuityHint:
+      "Opzionale 15–20% della tariffa, versata direttamente al capitano.",
     featured: {
       sandbar: "Sandbar e ancoraggi",
       beach: "Spiagge e parchi",
@@ -583,7 +630,7 @@ export const appCopy = {
     marinaPickupShare: "Marina di partenza (3,5%)",
     marinaDropoffShare: "Marina di arrivo (3,5%)",
     marinaRoundShare: "Marina andata e ritorno (7%)",
-    platformShare: "Kaenz (32%)",
+    platformShare: "Kaenz (25%)",
     gratuity: "Mancia opzionale",
     gratuityNone: "Nessuna mancia",
     total: "Totale",
@@ -600,7 +647,8 @@ export const appCopy = {
     statusRequested: "Richiesta inviata",
     statusConfirmed: "Capitano confermato",
     statusUnderway: "In navigazione",
-    demoPay: "Pagamento demo — Kaenz non addebita la carta in questa anteprima.",
+    demoPay:
+      "Pagamento Stripe — Kaenz non addebita la carta in questa anteprima. La mancia al capitano è opzionale e va diretta al capitano.",
     crewLead: "Condividi con persone interessanti in questa esperienza sociale.",
     goingTo: "Va a",
     joinCrew: "Unisciti a questo equipaggio",
@@ -695,7 +743,7 @@ export const appCopy = {
   },
   pt: {
     appName: "Kaenz",
-    location: "South Florida",
+    location: "No mundo",
     tabs: {
       places: "Lugares",
       yachts: "Iates",
@@ -703,10 +751,21 @@ export const appCopy = {
       trip: "Sua viagem",
       crew: "Tripulação",
     },
-    placesLead: "Marinas e portos do mundo para partida e chegada de iate.",
+    placesLead:
+      "Marinas, portos e lugares em destaque no mundo — ordenados pelo seu GPS.",
     searchPlaces: "Buscar marinas, portos, sandbars…",
     kinds: { all: "Todos", marina: "Marinas", port: "Portos", place: "Lugares" },
     featuredPlaces: "Lugares em destaque",
+    featuredNearYou: "Perto de você",
+    featuredSwipe: "Deslize para o lado para ver todos os lugares que criamos, os mais próximos primeiro.",
+    locating: "Buscando sua localização…",
+    duration: "Duração (horas)",
+    hoursUnit: "horas",
+    fareHow:
+      "Preço pelo tipo de viagem, duração, iate, passageiros e data. Cobrado com Stripe.",
+    stripePay: "Pagar com Stripe",
+    gratuityHint:
+      "Opcional 15–20% da tarifa, paga direto ao capitão.",
     featured: {
       sandbar: "Sandbars e fundeadouros",
       beach: "Praias e parques",
@@ -756,7 +815,7 @@ export const appCopy = {
     marinaPickupShare: "Marina de partida (3,5%)",
     marinaDropoffShare: "Marina de chegada (3,5%)",
     marinaRoundShare: "Marina ida e volta (7%)",
-    platformShare: "Kaenz (32%)",
+    platformShare: "Kaenz (25%)",
     gratuity: "Gorjeta opcional",
     gratuityNone: "Sem gorjeta",
     total: "Total",
@@ -773,7 +832,8 @@ export const appCopy = {
     statusRequested: "Pedido enviado",
     statusConfirmed: "Capitão confirmou",
     statusUnderway: "Em andamento",
-    demoPay: "Pagamento demo — a Kaenz não cobra o cartão nesta prévia.",
+    demoPay:
+      "Pagamento Stripe — a Kaenz não cobra o cartão nesta prévia. A gorjeta ao capitão é opcional e vai direto ao capitão.",
     crewLead: "Compartilhe com pessoas interessantes nesta experiência social.",
     goingTo: "Vai para",
     joinCrew: "Entrar nesta tripulação",

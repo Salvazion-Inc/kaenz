@@ -7,11 +7,11 @@ export const termsEn = {
   sections: [
     {
       heading: "1. Definitions",
-      body: "Client / User: Any person who books or participates in a yacht trip through the Platform. Yacht Owner: Any person or entity who lists a yacht for charter on the Platform. Captain: Any licensed captain who provides navigation and safety services for a booked trip. Platform / Kaenz Yacht: The marketplace technology connecting Clients, Yacht Owners, and Captains. Trip: A private, crewed yacht experience booked through the Platform (with captain).",
+      body: "Client / User: Any person who books or participates in a yacht trip through the Platform. Yacht Owner: Any person or entity who lists a yacht on the Platform. Captain: Any licensed captain who provides navigation and safety services for a booked trip. Platform / Kaenz: An end-to-end technology platform connecting Clients, Yacht Owners, Captains, and Marinas for Commute, Tour, and Special Occasion trips worldwide. Trip: A private, crewed yacht experience booked through the Platform (with captain).",
     },
     {
       heading: "2. Our Role",
-      body: "Kaenz Yacht is a technology platform only. We are not a charter operator, boat owner, or employer of captains. We do not own, operate, or control any yachts or captains. All trips are provided directly by independent Yacht Owners and Captains.",
+      body: "Kaenz is a technology platform only — not a charter operator, boat owner, or employer of captains. We do not own, operate, or control any yachts or captains. All Commute, Tour, and Special Occasion trips are provided directly by independent Yacht Owners and Captains.",
     },
     {
       heading: "3. Eligibility & Account Registration",
@@ -23,7 +23,7 @@ export const termsEn = {
     },
     {
       heading: "5. Bookings, Payments & Fees",
-      body: "All bookings are final once confirmed by the Yacht Owner/Captain. Payments are processed through our secure system (fiat or cryptocurrency on Solana). Cryptocurrency payments are irreversible once sent. Kaenz Yacht fee is 30% of the total booking amount (paid by the Client). The remaining 70% is split between Yacht Owner (40%) and Captain (30%). All prices shown include the Platform fee unless stated otherwise.",
+      body: "All bookings are final once confirmed by the Yacht Owner/Captain. Payments are processed with Stripe. An algorithm sets the client price from trip type (Commute, Tour, or Special Occasion), duration, yacht type, number of passengers, and date. The fare splits as follows: Yacht Owner 38%, Captain 30%, Kaenz 25%, pickup marina 3.5%, dropoff marina 3.5%. An optional Captain Gratuity of 15–20% of the fare may be added on top and is paid directly to the Captain. All prices shown include the Platform fee unless stated otherwise.",
     },
     {
       heading: "6. Cancellations & Refunds",
@@ -75,7 +75,7 @@ export const termsEs = {
     },
     {
       heading: "5. Reservas, Pagos y Tarifas",
-      body: "Las reservas son definitivas al confirmarse. Pagos en fiat o criptomonedas en Solana. La tarifa de Kaenz es el 30% del booking (pagada por el cliente). El 70% restante: dueño 40% y capitán 30%.",
+      body: "Las reservas son definitivas al confirmarse. Los pagos se cobran con Stripe. Un algoritmo fija el precio según tipo de viaje (Commute, Tour u Ocasión especial), duración, tipo de yate, pasajeros y fecha. El pago se reparte: dueño del yate 38%, capitán 30%, Kaenz 25%, marina de origen 3.5%, marina de destino 3.5%. La gratificación al capitán (15–20%) es opcional, se suma al pago y va directo al capitán.",
     },
     {
       heading: "6. Cancelaciones y Reembolsos",
@@ -115,7 +115,7 @@ export const termsFr = {
     },
     {
       heading: "2. Notre rôle",
-      body: "Kaenz Yacht est uniquement une plateforme technologique. Nous ne sommes ni un opérateur de charter, ni un propriétaire de bateaux, ni l’employeur des capitaines. Nous ne possédons, n’exploitons ni ne contrôlons aucun yacht ni capitaine. Tous les trajets sont fournis directement par des Propriétaires et Capitaines indépendants.",
+      body: "Kaenz est uniquement une plateforme technologique — pas un opérateur de charter, ni un propriétaire de bateaux, ni l’employeur des capitaines. Nous ne possédons, n’exploitons ni ne contrôlons aucun yacht ni capitaine. Tous les trajets, croisières et occasions spéciales sont fournis par des Propriétaires et Capitaines indépendants.",
     },
     {
       heading: "3. Éligibilité et inscription",
@@ -127,7 +127,7 @@ export const termsFr = {
     },
     {
       heading: "5. Réservations, paiements et commissions",
-      body: "Toute réservation est définitive une fois confirmée par le Propriétaire/Capitaine. Les paiements transitent par notre système sécurisé (fiat ou cryptomonnaie sur Solana). Les paiements en crypto sont irréversibles. La commission Kaenz Yacht est de 30 % du montant total (payée par le Client). Les 70 % restants se répartissent entre le Propriétaire (40 %) et le Capitaine (30 %). Les prix affichés incluent la commission de la Plateforme, sauf mention contraire.",
+      body: "Toute réservation est définitive une fois confirmée par le Propriétaire/Capitaine. Les paiements passent par Stripe. Un algorithme fixe le prix selon le type de voyage (trajet, croisière ou occasion spéciale), la durée, le yacht, le nombre de passagers et la date. Répartition : propriétaire 38 %, capitaine 30 %, Kaenz 25 %, marina de départ 3,5 %, marina d’arrivée 3,5 %. Un pourboire capitaine optionnel de 15–20 % s’ajoute au tarif et est versé directement au capitaine.",
     },
     {
       heading: "6. Annulations et remboursements",
@@ -167,7 +167,7 @@ export const termsIt = {
     },
     {
       heading: "2. Il nostro ruolo",
-      body: "Kaenz Yacht è solo una piattaforma tecnologica. Non siamo un operatore di charter, un proprietario di imbarcazioni né il datore di lavoro dei capitani. Non possediamo, gestiamo né controlliamo yacht o capitani. Tutti i viaggi sono forniti direttamente da Proprietari e Capitani indipendenti.",
+      body: "Kaenz è solo una piattaforma tecnologica — non un operatore di charter, un proprietario di imbarcazioni né il datore di lavoro dei capitani. Non possediamo, gestiamo né controlliamo yacht o capitani. Tutti i tragitti, tour e occasioni speciali sono forniti da Proprietari e Capitani indipendenti.",
     },
     {
       heading: "3. Idoneità e registrazione",
@@ -179,7 +179,7 @@ export const termsIt = {
     },
     {
       heading: "5. Prenotazioni, pagamenti e commissioni",
-      body: "Tutte le prenotazioni sono definitive una volta confermate dal Proprietario/Capitano. I pagamenti passano dal nostro sistema sicuro (fiat o criptovaluta su Solana). I pagamenti in cripto sono irreversibili. La commissione Kaenz Yacht è il 30% dell’importo totale (pagata dal Cliente). Il restante 70% è suddiviso tra Proprietario (40%) e Capitano (30%). I prezzi mostrati includono la commissione della Piattaforma, salvo diversa indicazione.",
+      body: "Tutte le prenotazioni sono definitive una volta confermate dal Proprietario/Capitano. I pagamenti passano da Stripe. Un algoritmo fissa il prezzo da tipo di viaggio (tragitto, tour o occasione speciale), durata, yacht, passeggeri e data. Ripartizione: proprietario 38%, capitano 30%, Kaenz 25%, marina di partenza 3,5%, marina di arrivo 3,5%. La mancia capitano opzionale (15–20%) si aggiunge alla tariffa e va diretta al capitano.",
     },
     {
       heading: "6. Cancellazioni e rimborsi",
@@ -215,11 +215,11 @@ export const termsPt = {
   sections: [
     {
       heading: "1. Definições",
-      body: "Cliente / Usuário: qualquer pessoa que reserve ou participe de uma viagem de iate pela Plataforma. Dono do iate: quem lista um iate para charter. Capitão: capitão licenciado que navega e cuida da segurança. Plataforma / Kaenz Yacht: o marketplace que conecta clientes, donos e capitães. Viagem: experiência privada com tripulação reservada na Plataforma.",
+      body: "Cliente / Usuário: qualquer pessoa que reserve ou participe de uma viagem de iate pela Plataforma. Dono do iate: quem lista um iate na Plataforma. Capitão: capitão licenciado que navega e cuida da segurança. Plataforma / Kaenz: plataforma integral que conecta clientes, donos, capitães e marinas para Trajeto, Passeio e Ocasião especial no mundo. Viagem: experiência privada com tripulação reservada na Plataforma.",
     },
     {
       heading: "2. Nosso papel",
-      body: "A Kaenz Yacht é apenas uma plataforma tecnológica. Não somos operador de charter, donos de embarcações nem empregadores de capitães. Não possuímos, operamos nem controlamos iates ou capitães. Todas as viagens são feitas por donos e capitães independentes.",
+      body: "A Kaenz é apenas uma plataforma tecnológica — não uma operadora de charter, dona de embarcações nem empregadora de capitães. Não possuímos, operamos nem controlamos iates ou capitães. Todas as viagens de Trajeto, Passeio e Ocasião especial são feitas por donos e capitães independentes.",
     },
     {
       heading: "3. Elegibilidade e registro",
@@ -231,7 +231,7 @@ export const termsPt = {
     },
     {
       heading: "5. Reservas, pagamentos e taxas",
-      body: "As reservas são definitivas após a confirmação do Dono/Capitão. Pagamentos passam pelo nosso sistema seguro (fiat ou criptomoeda em Solana). Pagamentos em cripto são irreversíveis. A taxa da Kaenz Yacht é 30% do valor (paga pelo Cliente). Os 70% restantes: dono 40% e capitão 30%. Os preços incluem a taxa da Plataforma, salvo indicação em contrário.",
+      body: "As reservas são definitivas após a confirmação do Dono/Capitão. Os pagamentos são cobrados com Stripe. Um algoritmo define o preço pelo tipo de viagem (Trajeto, Passeio ou Ocasião especial), duração, tipo de iate, passageiros e data. A divisão: dono 38%, capitão 30%, Kaenz 25%, marina de partida 3,5%, marina de chegada 3,5%. A gorjeta opcional ao capitão (15–20%) entra por cima e vai direto ao capitão.",
     },
     {
       heading: "6. Cancelamentos e reembolsos",

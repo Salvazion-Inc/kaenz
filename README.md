@@ -1,6 +1,6 @@
 # Kaenz
 
-Leave the car and travel by yacht. Kaenz is the Uber of private yachts in Miami–Fort Lauderdale: book a crewed yacht with a verified local captain in minutes.
+Leave the car and travel by yacht. Kaenz is an end-to-end platform — not a charter operator — for Commute, Tour, and Special Occasion trips on yachts worldwide.
 
 This is the **origin platform** rebuilt from [kaenz.com](https://kaenz.com/) (Canva site) as a Next.js app.
 
@@ -17,8 +17,8 @@ This is the **origin platform** rebuilt from [kaenz.com](https://kaenz.com/) (Ca
 - Cyan `#00a1d6`
 - Navy `#050a30`
 - Foam `#f4f6fc`
-- English: *Skip the traffic. Cruise Miami by Yacht!*
-- Spanish: *¡Salta el tráfico. Navega Miami en Yate!*
+- English: *Skip the traffic. Travel by yacht.*
+- Spanish: *Salta el tráfico. Viaja en yate.*
 
 ## Local
 
@@ -32,7 +32,7 @@ Open [http://localhost:3000](http://localhost:3000). Spanish: `/es`.
 
 The Uber-style app (web + installable mobile PWA) lives at `/app` with five tabs:
 
-1. **Places** — marinas, ports, and places in Florida
+1. **Places** — marinas, ports, and featured places worldwide, ordered by GPS
 2. **Yachts** — verified captains near you
 3. **Request** — commute, tour, or special occasion
 4. **Your Trip** — verify request and payment
@@ -57,6 +57,8 @@ Run `supabase/schema.sql` in the SQL editor, then set the env vars on Vercel.
 
 ## Product notes
 
-Kaenz is a marketplace, not a charter operator. Independent owners and captains run trips.
+Kaenz is an end-to-end platform, not a charter operator. Independent owners, captains, and marinas run Commute, Tour, and Special Occasion trips.
 
-Fee split (from published terms): **30% Kaenz / 40% owner / 30% captain**. Payments: fiat or Solana.
+An algorithm prices each trip from trip type, duration, yacht type, guests, and date.
+
+Fee split: **owner 38% / captain 30% / Kaenz 25% / pickup marina 3.5% / dropoff marina 3.5%**. Optional captain gratuity (15–20%) is on top and goes directly to the captain. Payments: Stripe.

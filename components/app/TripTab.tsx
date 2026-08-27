@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { at } from "@/lib/app-copy";
 import { pathFor, type Locale } from "@/lib/locale";
+import { GRATUITY_PCTS, gratuityAmount } from "@/lib/pricing";
 import { formatUsd } from "@/lib/yachts";
 import { useTrip } from "@/lib/trip-store";
 
@@ -18,7 +19,6 @@ export function TripTab({ locale }: { locale: Locale }) {
   const [card, setCard] = useState("");
   const [exp, setExp] = useState("");
   const [cvc, setCvc] = useState("");
-  const [wallet, setWallet] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -31,22 +31,17 @@ export function TripTab({ locale }: { locale: Locale }) {
     e.preventDefault();
     setError("");
     if (!yacht || !fare) return;
-    if (trip.payMethod === "card") {
-      const digits = card.replace(/\s/g, "");
-      if (digits.length < 13 || digits.length > 19) {
-        setError(c.errCard);
-        return;
-      }
-      if (!/^\d{2}\/\d{2}$/.test(exp)) {
-        setError(c.errExp);
-        return;
-      }
-      if (!/^\d{3,4}$/.test(cvc)) {
-        setError(c.errCvc);
-        return;
-      }
-    } else if (wallet.trim().length < 32) {
-      setError(c.errWallet);
+    const digits = card.replace(/\s/g, "");
+    if (digits.length < 13 || digits.length > 19) {
+      setError(c.errCard);
+      return;
+    }
+    if (!/^\d{2}\/\d{2}$/.test(exp)) {
+      setError(c.errExp);
+      return;
+    }
+    if (!/^\d{3,4}$/.test(cvc)) {
+      setError(c.errCvc);
       return;
     }
     setBusy(true);
@@ -64,12 +59,11 @@ export function TripTab({ locale }: { locale: Locale }) {
           trip_date: trip.date,
           trip_time: trip.time,
           guests: trip.guests,
-          notes: `${trip.kind}; ${trip.payMethod}; ${formatUsd(fare.total)}; gratuity ${trip.gratuityPct || 0}%; marina ${formatUsd(fare.marina.total)}`,
+          notes: `${trip.kind}; stripe; ${trip.hours}h; ${trip.guests} guests; ${formatUsd(fare.total)}; gratuity ${trip.gratuityPct || 0}%; marina ${formatUsd(fare.marina.total)}`,
           locale,
           status: "confirmed",
-          amount:
-            fare.total + Math.round((fare.total * (trip.gratuityPct || 0)) / 100),
-          payment_method: trip.payMethod,
+          amount: fare.total + gratuityAmount(fare.total, trip.gratuityPct || 0),
+          payment_method: "stripe",
         }),
       });
       const data = await res.json();
@@ -135,7 +129,8 @@ export function TripTab({ locale }: { locale: Locale }) {
             {originName} → {destinationName}
           </p>
           <p className="mt-2 text-sm text-white/70">
-            {trip.date} · {trip.time} · {trip.guests} {c.guests}
+            {trip.date} · {trip.time} · {trip.hours} {c.hoursUnit} · {trip.guests}{" "}
+            {c.guests}
           </p>
           <div className="mt-4 flex items-center gap-3">
             {yacht.captain.photo.startsWith("http") ? (
@@ -177,7 +172,7 @@ export function TripTab({ locale }: { locale: Locale }) {
             <dt>{c.captainShare}</dt>
             <dd>
               {formatUsd(
-                fare.captain + Math.round((fare.total * (trip.gratuityPct || 0)) / 100),
+                fare.captain + gratuityAmount(fare.total, trip.gratuityPct || 0),
               )}
             </dd>
           </div>
@@ -209,14 +204,14 @@ export function TripTab({ locale }: { locale: Locale }) {
           {trip.gratuityPct ? (
             <div className="flex justify-between text-navy/60">
               <dt>{c.gratuity}</dt>
-              <dd>{formatUsd(Math.round((fare.total * trip.gratuityPct) / 100))}</dd>
+              <dd>{formatUsd(gratuityAmount(fare.total, trip.gratuityPct))}</dd>
             </div>
           ) : null}
           <div className="flex justify-between border-t border-navy/10 pt-2 text-base font-bold">
             <dt>{c.total}</dt>
             <dd>
               {formatUsd(
-                fare.total + Math.round((fare.total * (trip.gratuityPct || 0)) / 100),
+                fare.total + gratuityAmount(fare.total, trip.gratuityPct || 0),
               )}
             </dd>
           </div>
@@ -234,72 +229,51 @@ export function TripTab({ locale }: { locale: Locale }) {
               value={trip.gratuityPct || 0}
               onChange={(e) => setTrip({ gratuityPct: Number(e.target.value) })}
             >
-              <option value={0}>{c.gratuityNone}</option>
-              <option value={15}>15%</option>
-              <option value={18}>18%</option>
-              <option value={20}>20%</option>
+              {GRATUITY_PCTS.map((pct) => (
+                <option key={pct} value={pct}>
+                  {pct === 0 ? c.gratuityNone : `${pct}%`}
+                </option>
+              ))}
             </select>
           </label>
-          <div className="mt-3 flex gap-2">
-            {(["card", "solana"] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setTrip({ payMethod: m })}
-                className={`flex-1 rounded-xl py-2 text-sm font-bold ${
-                  trip.payMethod === m ? "bg-kaenz text-white" : "bg-white/10"
-                }`}
-              >
-                {m === "card" ? c.card : c.solana}
-              </button>
-            ))}
-          </div>
-          {trip.payMethod === "card" ? (
-            <div className="mt-3 space-y-3">
+          <p className="mt-1 text-[11px] text-white/45">{c.gratuityHint}</p>
+          <p className="mt-3 text-xs font-bold uppercase tracking-wide text-kaenz">
+            {c.stripePay}
+          </p>
+          <div className="mt-3 space-y-3">
+            <label className="block text-xs font-bold">
+              {c.cardNumber}
+              <input
+                className={field}
+                inputMode="numeric"
+                autoComplete="cc-number"
+                placeholder="4242 4242 4242 4242"
+                value={card}
+                onChange={(e) => setCard(e.target.value)}
+              />
+            </label>
+            <div className="grid grid-cols-2 gap-3">
               <label className="block text-xs font-bold">
-                {c.cardNumber}
+                {c.expiry}
+                <input
+                  className={field}
+                  placeholder="12/28"
+                  value={exp}
+                  onChange={(e) => setExp(e.target.value)}
+                />
+              </label>
+              <label className="block text-xs font-bold">
+                {c.cvc}
                 <input
                   className={field}
                   inputMode="numeric"
-                  autoComplete="cc-number"
-                  placeholder="4242 4242 4242 4242"
-                  value={card}
-                  onChange={(e) => setCard(e.target.value)}
+                  placeholder="123"
+                  value={cvc}
+                  onChange={(e) => setCvc(e.target.value)}
                 />
               </label>
-              <div className="grid grid-cols-2 gap-3">
-                <label className="block text-xs font-bold">
-                  {c.expiry}
-                  <input
-                    className={field}
-                    placeholder="12/28"
-                    value={exp}
-                    onChange={(e) => setExp(e.target.value)}
-                  />
-                </label>
-                <label className="block text-xs font-bold">
-                  {c.cvc}
-                  <input
-                    className={field}
-                    inputMode="numeric"
-                    placeholder="123"
-                    value={cvc}
-                    onChange={(e) => setCvc(e.target.value)}
-                  />
-                </label>
-              </div>
             </div>
-          ) : (
-            <label className="mt-3 block text-xs font-bold">
-              {c.wallet}
-              <input
-                className={field}
-                placeholder="So11ana…"
-                value={wallet}
-                onChange={(e) => setWallet(e.target.value)}
-              />
-            </label>
-          )}
+          </div>
           {error ? <p className="mt-3 text-sm text-red-400">{error}</p> : null}
           <button
             type="submit"
