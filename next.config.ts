@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "kaenz.com" },
       { protocol: "https", hostname: "www.kaenz.com" },
       { protocol: "https", hostname: "media.canva.com" },
+      { protocol: "https", hostname: "mqkyzkrpoinbvclxurfg.supabase.co" },
     ],
   },
   async redirects() {

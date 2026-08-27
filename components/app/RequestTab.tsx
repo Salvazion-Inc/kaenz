@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { at } from "@/lib/app-copy";
 import { pathFor, type Locale } from "@/lib/locale";
 import { placeCountry, places } from "@/lib/places";
-import { formatUsd, yachts } from "@/lib/yachts";
+import { formatUsd } from "@/lib/yachts";
 import { useTrip, type TripKind } from "@/lib/trip-store";
 
 const field =
@@ -12,7 +12,7 @@ const field =
 
 export function RequestTab({ locale }: { locale: Locale }) {
   const c = at(locale);
-  const { trip, setTrip, fare, yacht } = useTrip();
+  const { trip, setTrip, fare, yacht, fleet } = useTrip();
   const router = useRouter();
   const kinds: TripKind[] = ["commute", "tour", "special"];
 
@@ -115,9 +115,10 @@ export function RequestTab({ locale }: { locale: Locale }) {
             value={trip.yachtId}
             onChange={(e) => setTrip({ yachtId: e.target.value })}
           >
-            {yachts.map((y) => (
+            {fleet.map((y) => (
               <option key={y.id} value={y.id}>
-                {y.name} · {y.captain.name} · {formatUsd(y.priceFrom)}
+                {y.name} · {y.captain.name}
+                {y.priceFrom > 0 ? ` · ${formatUsd(y.priceFrom)}` : ""}
               </option>
             ))}
           </select>

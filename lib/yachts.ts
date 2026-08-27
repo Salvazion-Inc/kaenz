@@ -6,7 +6,7 @@ export type Captain = {
   rating: number;
   trips: number;
   photo: string;
-  verified: true;
+  verified: boolean;
 };
 
 export type Yacht = {
@@ -25,6 +25,12 @@ export type Yacht = {
   etaMin: number;
   captain: Captain;
   blurb: Localized;
+  listing?: boolean;
+  photos?: string[];
+  traits?: Array<"luxurious" | "fast" | "small">;
+  hin?: string;
+  captainLanguages?: Array<"en" | "es" | "pt" | "fr">;
+  captainRegion?: string;
 };
 
 export const yachts: Yacht[] = [
@@ -218,8 +224,8 @@ export function estimateFare(
     kind === "commute" ? Math.max(2, yacht.hoursMin - 2) : yacht.hoursMin;
   const multiplier = kind === "special" ? 1.35 : kind === "commute" ? 0.55 : 1;
   const total = Math.round(yacht.priceFrom * multiplier);
-  const platform = Math.round(total * 0.3);
-  const owner = Math.round(total * 0.4);
-  const captain = total - platform - owner;
+  const owner = Math.round(total * 0.38);
+  const captain = Math.round(total * 0.3);
+  const platform = total - owner - captain;
   return { hours, total, platform, owner, captain };
 }

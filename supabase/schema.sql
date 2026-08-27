@@ -94,3 +94,33 @@ create policy "service insert bookings"
 create policy "service insert applications"
   on public.applications for insert
   with check (true);
+
+create table if not exists public.yacht_listings (
+  id uuid primary key default gen_random_uuid(),
+  slug text unique not null,
+  created_by text,
+  status text not null default 'listed',
+  owner_name text not null,
+  owner_id_url text,
+  owner_wallet text not null,
+  name text not null,
+  hin text not null,
+  guests int not null,
+  traits text[] not null default '{}',
+  home_port text not null,
+  photo_urls text[] not null default '{}',
+  captain_name text not null,
+  captain_id_url text,
+  captain_mmc_url text,
+  captain_photo_url text,
+  captain_languages text[] not null default '{}',
+  captain_region text not null,
+  captain_wallet text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.yacht_listings enable row level security;
+
+create policy "public read listed yachts"
+  on public.yacht_listings for select
+  using (status = 'listed');

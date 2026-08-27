@@ -7,7 +7,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { estimateFare, yachtById, type Yacht } from "./yachts";
+import { estimateFare, yachtById, yachts, type Yacht } from "./yachts";
 import { placeById } from "./places";
 
 export type TripKind = "commute" | "tour" | "special";
@@ -28,6 +28,7 @@ export type TripDraft = {
   payMethod: PayMethod;
   status: TripStatus;
   bookingId?: string;
+  gratuityPct: number;
 };
 
 const KEY = "kaenz-trip-v1";
@@ -45,6 +46,7 @@ const empty: TripDraft = {
   phone: "",
   payMethod: "card",
   status: "draft",
+  gratuityPct: 0,
 };
 
 type Ctx = {
@@ -56,6 +58,7 @@ type Ctx = {
   originName: string;
   destinationName: string;
   ready: boolean;
+  fleet: Yacht[];
 };
 
 const TripCtx = createContext<Ctx | null>(null);
@@ -63,6 +66,7 @@ const TripCtx = createContext<Ctx | null>(null);
 export function TripProvider({ children }: { children: React.ReactNode }) {
   const [trip, setState] = useState<TripDraft>(empty);
   const [hydrated, setHydrated] = useState(false);
+  const [listings, setListings] = useState<Yacht[]>([]);
 
   useEffect(() => {
     try {
@@ -75,13 +79,22 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    fetch("/api/yachts")
+      .then((res) => res.json())
+      .then((data) => setListings(Array.isArray(data.yachts) ? data.yachts : []))
+      .catch(() => setListings([]));
+  }, []);
+
+  useEffect(() => {
     if (!hydrated) return;
     localStorage.setItem(KEY, JSON.stringify(trip));
   }, [trip, hydrated]);
 
   const value = useMemo(() => {
-    const yacht = yachtById(trip.yachtId);
-    const fare = yacht ? estimateFare(yacht, trip.kind) : null;
+    const fleet = [...listings, ...yachts];
+    const yacht = yachtById(trip.yachtId) || listings.find((item) => item.id === trip.yachtId);
+    const fare =
+      yacht && yacht.priceFrom > 0 ? estimateFare(yacht, trip.kind) : null;
     return {
       trip,
       setTrip: (patch: Partial<TripDraft>) =>
@@ -93,8 +106,9 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
       destinationName:
         placeById(trip.destinationId)?.name ?? trip.destinationId,
       ready: hydrated,
+      fleet,
     };
-  }, [trip, hydrated]);
+  }, [trip, hydrated, listings]);
 
   return <TripCtx.Provider value={value}>{children}</TripCtx.Provider>;
 }

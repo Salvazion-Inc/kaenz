@@ -64,10 +64,11 @@ export function TripTab({ locale }: { locale: Locale }) {
           trip_date: trip.date,
           trip_time: trip.time,
           guests: trip.guests,
-          notes: `${trip.kind}; ${trip.payMethod}; ${formatUsd(fare.total)}`,
+          notes: `${trip.kind}; ${trip.payMethod}; ${formatUsd(fare.total)}; gratuity ${trip.gratuityPct || 0}%`,
           locale,
           status: "confirmed",
-          amount: fare.total,
+          amount:
+            fare.total + Math.round((fare.total * (trip.gratuityPct || 0)) / 100),
           payment_method: trip.payMethod,
         }),
       });
@@ -117,7 +118,11 @@ export function TripTab({ locale }: { locale: Locale }) {
 
       <section className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-white/5">
         <div className="relative h-36">
-          <Image src={yacht.image} alt={yacht.name} fill className="object-cover" />
+          {yacht.image.startsWith("http") ? (
+            <img src={yacht.image} alt={yacht.name} className="h-36 w-full object-cover" />
+          ) : (
+            <Image src={yacht.image} alt={yacht.name} fill className="object-cover" />
+          )}
         </div>
         <div className="p-4">
           <p className="text-[10px] font-bold uppercase tracking-widest text-kaenz">
@@ -133,13 +138,21 @@ export function TripTab({ locale }: { locale: Locale }) {
             {trip.date} · {trip.time} · {trip.guests} {c.guests}
           </p>
           <div className="mt-4 flex items-center gap-3">
-            <Image
-              src={yacht.captain.photo}
-              alt={yacht.captain.name}
-              width={44}
-              height={44}
-              className="h-11 w-11 rounded-full object-cover"
-            />
+            {yacht.captain.photo.startsWith("http") ? (
+              <img
+                src={yacht.captain.photo}
+                alt={yacht.captain.name}
+                className="h-11 w-11 rounded-full object-cover"
+              />
+            ) : (
+              <Image
+                src={yacht.captain.photo}
+                alt={yacht.captain.name}
+                width={44}
+                height={44}
+                className="h-11 w-11 rounded-full object-cover"
+              />
+            )}
             <div>
               <p className="text-xs text-white/50">{c.captain}</p>
               <p className="text-sm font-semibold">{yacht.captain.name}</p>
@@ -162,15 +175,29 @@ export function TripTab({ locale }: { locale: Locale }) {
           </div>
           <div className="flex justify-between text-navy/60">
             <dt>{c.captainShare}</dt>
-            <dd>{formatUsd(fare.captain)}</dd>
+            <dd>
+              {formatUsd(
+                fare.captain + Math.round((fare.total * (trip.gratuityPct || 0)) / 100),
+              )}
+            </dd>
           </div>
           <div className="flex justify-between text-navy/60">
             <dt>{c.platformShare}</dt>
             <dd>{formatUsd(fare.platform)}</dd>
           </div>
+          {trip.gratuityPct ? (
+            <div className="flex justify-between text-navy/60">
+              <dt>{c.gratuity}</dt>
+              <dd>{formatUsd(Math.round((fare.total * trip.gratuityPct) / 100))}</dd>
+            </div>
+          ) : null}
           <div className="flex justify-between border-t border-navy/10 pt-2 text-base font-bold">
             <dt>{c.total}</dt>
-            <dd>{formatUsd(fare.total)}</dd>
+            <dd>
+              {formatUsd(
+                fare.total + Math.round((fare.total * (trip.gratuityPct || 0)) / 100),
+              )}
+            </dd>
           </div>
         </dl>
       </section>
@@ -179,6 +206,19 @@ export function TripTab({ locale }: { locale: Locale }) {
         <form onSubmit={pay} className="mt-4 rounded-2xl border border-white/10 p-4">
           <h3 className="font-bold">{c.pay}</h3>
           <p className="mt-1 text-xs text-white/50">{c.demoPay}</p>
+          <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-white/60">
+            {c.gratuity}
+            <select
+              className={field}
+              value={trip.gratuityPct || 0}
+              onChange={(e) => setTrip({ gratuityPct: Number(e.target.value) })}
+            >
+              <option value={0}>{c.gratuityNone}</option>
+              <option value={15}>15%</option>
+              <option value={18}>18%</option>
+              <option value={20}>20%</option>
+            </select>
+          </label>
           <div className="mt-3 flex gap-2">
             {(["card", "solana"] as const).map((m) => (
               <button
