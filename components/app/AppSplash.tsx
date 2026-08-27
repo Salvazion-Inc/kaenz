@@ -34,32 +34,30 @@ export function AppSplash({ children }: { children: React.ReactNode }) {
       {children}
       {visible ? (
         <div
-          className={`fixed inset-0 z-[100] flex items-center justify-center bg-navy transition-opacity duration-500 ${
+          className={`fixed inset-0 z-[100] isolate flex items-center justify-center bg-navy transition-opacity duration-500 ${
             fading ? "pointer-events-none opacity-0" : "opacity-100"
           }`}
           role="status"
           aria-live="polite"
           aria-label="Kaenz"
         >
-          <div className="relative h-[min(72vw,18rem)] w-[min(72vw,18rem)] overflow-hidden rounded-[1.75rem] bg-navy shadow-[0_0_48px_rgba(0,161,214,0.28)]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/brand/logo-splash.png"
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-            <video
-              className="app-splash-video absolute inset-0 h-full w-full object-cover"
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="auto"
-              poster="/brand/logo-splash.png"
-            >
-              <source src="/brand/logo-loading.mp4" type="video/mp4" />
-            </video>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/logo-splash.png"
+            alt=""
+            className="h-[min(88vw,24rem)] w-[min(88vw,24rem)] object-contain mix-blend-lighten"
+          />
+          <video
+            className="app-splash-video absolute h-[min(88vw,24rem)] w-[min(88vw,24rem)] object-contain mix-blend-lighten"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            poster="/brand/logo-splash.png"
+          >
+            <source src="/brand/logo-loading.mp4" type="video/mp4" />
+          </video>
         </div>
       ) : null}
     </>

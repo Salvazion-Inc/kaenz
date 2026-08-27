@@ -75,9 +75,9 @@ export function AppShell({
           <Image
             src="/brand/logo-app.png"
             alt="Kaenz"
-            width={40}
-            height={40}
-            className="rounded-xl ring-1 ring-kaenz/50 md:hidden"
+            width={56}
+            height={56}
+            className="h-14 w-14 shrink-0 rounded-xl ring-1 ring-kaenz/50 md:hidden"
             priority
           />
           <div>
