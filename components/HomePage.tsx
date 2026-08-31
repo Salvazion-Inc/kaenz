@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Footer } from "./Footer";
 import { HtmlLang } from "./HtmlLang";
+import { Logo } from "./Logo";
 import { Nav } from "./Nav";
 import { WorldMap } from "./WorldMap";
 import { t } from "@/lib/copy";
@@ -15,6 +16,12 @@ const FEATURE_HREFS = [
   "/app/crew",
   "/app/account",
 ] as const;
+
+const TESTIMONIAL_PHOTOS: Record<string, string> = {
+  "Mia Lee": "/crew/mia.jpg",
+  "William Brown": "/crew/william.jpg",
+  "Emily Johnson": "/crew/emily.jpg",
+};
 
 export function HomePage({ locale }: { locale: Locale }) {
   const c = t(locale);
@@ -37,8 +44,11 @@ export function HomePage({ locale }: { locale: Locale }) {
         <div className="hero-veil absolute inset-0" />
         <Nav locale={locale} />
         <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5 pb-16 pt-28 text-center">
-          <p className="kaenz-kicker">{c.brand}</p>
-          <h1 className="hero-title mt-4 max-w-5xl text-4xl font-extrabold leading-[1.05] text-white md:text-6xl lg:text-7xl">
+          <Logo
+            size={120}
+            className="h-[5.5rem] w-[5.5rem] mix-blend-screen drop-shadow-[0_8px_28px_rgba(0,161,214,0.45)] md:h-32 md:w-32"
+          />
+          <h1 className="hero-title mt-5 max-w-5xl text-4xl font-extrabold leading-[1.05] text-white md:text-6xl lg:text-7xl">
             {c.heroTitle}
           </h1>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-white/80 md:text-lg">
@@ -211,7 +221,16 @@ export function HomePage({ locale }: { locale: Locale }) {
         <div className="mt-12 grid gap-5 md:grid-cols-3">
           {c.testimonials.map((item) => (
             <blockquote key={item.name} className="kaenz-card p-8">
-              <p className="text-lg leading-relaxed">“{item.quote}”</p>
+              {TESTIMONIAL_PHOTOS[item.name] ? (
+                <Image
+                  src={TESTIMONIAL_PHOTOS[item.name]}
+                  alt={item.name}
+                  width={88}
+                  height={88}
+                  className="h-20 w-20 rounded-full object-cover ring-2 ring-kaenz/50"
+                />
+              ) : null}
+              <p className="mt-5 text-lg leading-relaxed">“{item.quote}”</p>
               <footer className="mt-6 text-sm font-semibold text-kaenz">
                 {item.name} ({item.city})
               </footer>

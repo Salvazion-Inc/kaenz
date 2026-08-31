@@ -6,10 +6,6 @@ import { pathFor, type Locale } from "@/lib/locale";
 
 export function Nav({ locale }: { locale: Locale }) {
   const c = t(locale);
-  const links = [
-    { href: "/fleet", label: c.nav.fleet },
-    { href: "/join", label: c.nav.join },
-  ];
 
   return (
     <header className="absolute inset-x-0 top-0 z-40 px-3 pt-3 md:px-5">
@@ -18,15 +14,6 @@ export function Nav({ locale }: { locale: Locale }) {
           <Logo size={44} />
         </Link>
         <div className="hidden items-center gap-5 text-sm font-semibold text-white/88 md:flex">
-          {links.map((l) => (
-            <Link
-              key={l.href}
-              href={pathFor(locale, l.href)}
-              className="transition hover:text-kaenz"
-            >
-              {l.label}
-            </Link>
-          ))}
           <LanguageSwitcher />
           <Link
             href="/login"
@@ -51,13 +38,6 @@ export function Nav({ locale }: { locale: Locale }) {
           <LanguageSwitcher compact />
         </div>
       </nav>
-      <div className="flex flex-wrap justify-center gap-4 px-4 pb-2 pt-3 text-xs font-semibold text-white/85 md:hidden">
-        {links.map((l) => (
-          <Link key={l.href} href={pathFor(locale, l.href)}>
-            {l.label}
-          </Link>
-        ))}
-      </div>
     </header>
   );
 }
