@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { WorldMap } from "@/components/WorldMap";
 import { at } from "@/lib/app-copy";
 import {
@@ -84,6 +84,11 @@ export function PlacesTab({ locale }: { locale: Locale }) {
   const [adding, setAdding] = useState(false);
   const [notice, setNotice] = useState("");
 
+  useEffect(() => {
+    const add = new URLSearchParams(window.location.search).get("add");
+    if (add === "marina" || add === "port") setAdding(true);
+  }, []);
+
   const gps = located ? here : null;
   const nearYou = useMemo(() => featuredSorted(gps), [gps]);
   const hubs = useMemo(
@@ -117,7 +122,7 @@ export function PlacesTab({ locale }: { locale: Locale }) {
         <button
           type="button"
           onClick={() => setAdding((open) => !open)}
-          className="rounded-full bg-kaenz px-4 py-1.5 text-xs font-bold text-white"
+          className="btn-kaenz !px-4 !py-1.5 text-xs"
         >
           {c.addMarina.cta}
         </button>

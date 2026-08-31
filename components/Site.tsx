@@ -16,7 +16,7 @@ export function Site({
     <div className="min-h-screen bg-navy text-foam">
       <HtmlLang locale={locale} />
       <Nav locale={locale} />
-      <main className={transparentNav ? "" : "pt-24"}>{children}</main>
+      <main className={transparentNav ? "" : "pt-28"}>{children}</main>
       <Footer locale={locale} />
     </div>
   );

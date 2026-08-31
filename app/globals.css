@@ -11,17 +11,18 @@
 
 html {
   scroll-behavior: smooth;
+  font-size: calc(16px * var(--kaenz-text, 1));
 }
 
 body {
-  background: #050a30;
-  color: #f4f6fc;
+  background: var(--color-navy);
+  color: var(--color-foam);
   font-family: var(--font-sans);
 }
 
 ::selection {
-  background: #00a1d6;
-  color: #050a30;
+  background: var(--color-kaenz);
+  color: var(--color-navy);
 }
 
 input,
@@ -31,8 +32,107 @@ textarea {
 }
 
 .hero-title {
-  letter-spacing: 0.03em;
-  text-shadow: 1px 1px 1.2px rgba(5, 10, 48, 0.4);
+  letter-spacing: -0.03em;
+  text-shadow: 0 8px 40px rgba(5, 10, 48, 0.45);
+}
+
+.hero-veil {
+  background:
+    linear-gradient(180deg, rgba(5, 10, 48, 0.28) 0%, rgba(5, 10, 48, 0.18) 40%, rgba(5, 10, 48, 0.72) 100%),
+    radial-gradient(80% 50% at 50% 100%, color-mix(in srgb, var(--color-kaenz) 22%, transparent), transparent);
+}
+
+.nav-island {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: color-mix(in srgb, var(--color-navy) 55%, transparent);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  box-shadow: 0 10px 40px rgba(5, 10, 48, 0.28);
+}
+
+.btn-kaenz {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 9999px;
+  background: var(--color-kaenz);
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  padding: 0.85rem 1.55rem;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.22) inset,
+    0 10px 28px color-mix(in srgb, var(--color-kaenz) 38%, transparent);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.btn-kaenz:hover {
+  background: var(--color-kaenz-deep);
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.22) inset,
+    0 16px 36px color-mix(in srgb, var(--color-kaenz) 48%, transparent);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  font-weight: 700;
+  padding: 0.85rem 1.45rem;
+  backdrop-filter: blur(14px);
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: color-mix(in srgb, var(--color-kaenz) 55%, white);
+  transform: translateY(-1px);
+}
+
+.kaenz-kicker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-kaenz);
+}
+
+.kaenz-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  border-radius: 1.35rem;
+  backdrop-filter: blur(18px);
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+a.kaenz-card:hover,
+button.kaenz-card:hover,
+.kaenz-card-hover:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--color-kaenz) 50%, transparent);
+  box-shadow: 0 22px 50px rgba(5, 10, 48, 0.35);
+}
+
+.app-header-glass {
+  background: color-mix(in srgb, var(--color-navy) 78%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .app-shell {
@@ -104,67 +204,67 @@ textarea {
 }
 
 .leaflet-container {
-  background: #050a30;
+  background: var(--color-navy);
   font-family: inherit;
   height: 100%;
   width: 100%;
 }
 
 .leaflet-control-attribution {
-  background: rgba(5, 10, 48, 0.75) !important;
-  color: rgba(244, 246, 252, 0.55);
+  background: color-mix(in srgb, var(--color-navy) 75%, transparent) !important;
+  color: color-mix(in srgb, var(--color-foam) 55%, transparent);
   font-size: 10px;
 }
 
 .leaflet-control-attribution a {
-  color: #00a1d6;
+  color: var(--color-kaenz);
 }
 
 .leaflet-bar a {
-  background: #0a1450;
-  color: #f4f6fc;
+  background: var(--color-navy-2);
+  color: var(--color-foam);
   border-bottom-color: rgba(255, 255, 255, 0.12);
 }
 
 .leaflet-bar a:hover {
-  background: #00a1d6;
+  background: var(--color-kaenz);
   color: #fff;
 }
 
 .leaflet-tooltip {
-  background: #050a30;
-  border: 1px solid rgba(0, 161, 214, 0.45);
-  color: #f4f6fc;
+  background: var(--color-navy);
+  border: 1px solid color-mix(in srgb, var(--color-kaenz) 45%, transparent);
+  color: var(--color-foam);
   box-shadow: none;
 }
 
 .leaflet-tooltip-top::before {
-  border-top-color: #050a30;
+  border-top-color: var(--color-navy);
 }
 
 .kaenz-pin {
   display: block;
-  background: #00a1d6;
-  border: 2px solid #f4f6fc;
+  background: var(--color-kaenz);
+  border: 2px solid var(--color-foam);
   border-radius: 50%;
-  box-shadow: 0 0 0 3px rgba(0, 161, 214, 0.3);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-kaenz) 30%, transparent);
 }
 
 .kaenz-pin-port {
-  background: #f4f6fc;
-  border-color: #00a1d6;
-  box-shadow: 0 0 0 3px rgba(244, 246, 252, 0.22);
+  background: var(--color-foam);
+  border-color: var(--color-kaenz);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-foam) 22%, transparent);
 }
 
 .leaflet-div-icon.kaenz-pin {
-  background: #00a1d6;
-  border: 2px solid #f4f6fc;
+  background: var(--color-kaenz);
+  border: 2px solid var(--color-foam);
   border-radius: 50%;
 }
 
 .leaflet-div-icon.kaenz-pin-port {
-  background: #f4f6fc;
-  border-color: #00a1d6;
+  background: var(--color-foam);
+  border-color: var(--color-kaenz);
 }
 
 .kaenz-pin-you {

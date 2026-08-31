@@ -7,7 +7,7 @@ export const copy = {
       "Kaenz is an end-to-end yacht platform — not a charter operator — for Commute, Tour, and Special Occasion trips worldwide. Price by trip type, duration, yacht, guests, and date. Pay with Stripe.",
     brand: "Kaenz",
     nav: {
-      app: "App",
+      app: "Platform",
       fleet: "Fleet",
       book: "Book",
       concierge: "Concierge",
@@ -19,8 +19,45 @@ export const copy = {
       logout: "Log out",
     },
     heroTitle: "Skip the traffic. Travel by yacht.",
-    heroCta: "Open app",
+    heroLead:
+      "Commute, tour, and celebrate on the water. Immortalize your trip, give Vibes, list yachts and marinas — all on one platform.",
+    heroCta: "Enter the platform",
     heroSecondary: "Book a yacht",
+    platformEyebrow: "Inside Kaenz",
+    platformTitle: "The platform, end to end",
+    platformLead:
+      "Places, yachts, live trips, Crew selfies, and your account — built for water, people, and Stripe.",
+    platformFeatures: [
+      {
+        title: "Places",
+        body: "Tap marinas and ports on the map. Partners add their marina or port in Places.",
+        cta: "Add a marina",
+      },
+      {
+        title: "Yachts",
+        body: "Verified captains. Owners and captains list a yacht in Yachts and earn on every fare.",
+        cta: "Add your yacht",
+      },
+      {
+        title: "Your Trip",
+        body: "Request, follow live, pay with Stripe, and rate. Fare splits to owner, captain, marinas, and Kaenz.",
+        cta: "Start a trip",
+      },
+      {
+        title: "Crew",
+        body: "Immortalize your trip with a selfie, earn Vibes, and vote the Top 100 Selfies 2026.",
+        cta: "Open Crew",
+      },
+      {
+        title: "Account",
+        body: "Profile photo, text size, and Kaenz colors — navy and cyan, your way.",
+        cta: "Your account",
+      },
+    ],
+    crewSiteTitle: "Immortalize your trip",
+    crewSiteLead:
+      "Upload a selfie from onboard, earn Vibes, and give Vibes to family, partners, friends, colleagues, or your crush in Drive Kaenz TopQ1.",
+    crewSiteCta: "Open Top 100 Selfies",
     solveEyebrow: "What Do We Solve?",
     solveLead:
       "Water is the smartest way to commute, tour, and celebrate — in South Florida and around the world.",
@@ -84,11 +121,12 @@ export const copy = {
     ],
     marinasTitle: "Marinas & Ports",
     marinasBody:
-      "Kaenz connects private yachts at marinas and ports worldwide. Arrive and depart by water — from South Florida to the Med, the Caribbean, and beyond.",
+      "Kaenz connects private yachts at marinas and ports worldwide. Arrive and depart by water — from South Florida to the Med, the Caribbean, and beyond. Open the platform and add your marina or port in Places.",
+    marinasCta: "Open the platform and add your marina",
     joinTitle: "Do you Own a Yacht and Are you a Captain?",
-    joinCta: "Join Kaenz",
+    joinCta: "Open the platform and add your yacht",
     joinLead:
-      "List your yacht or offer captain services. Independent owners, captains, and marinas are paid through Stripe on every trip.",
+      "Open Kaenz, go to Yachts, and list your boat with a verified captain. Independent owners and captains are paid through Stripe on every trip.",
     fleetTitle: "Choose your yacht",
     fleetLead: "Private, captained, ready when you are.",
     from: "From",
@@ -120,9 +158,9 @@ export const copy = {
       "Plan a Commute, Tour, or Special Occasion by yacht — worldwide. Routes, timing, and the right boat.",
     conciergePlaceholder: "Where do you want to go, and when?",
     conciergeSend: "Send",
-    joinPageTitle: "Join Kaenz",
+    joinPageTitle: "Join the Kaenz platform",
     joinPageLead:
-      "Kaenz is an end-to-end platform — not a charter operator — connecting clients, yacht owners, captains, and marinas for Commute, Tour, and Special Occasion trips worldwide.",
+      "Open Kaenz to list what you operate. Owners and captains add a yacht in Yachts. Marinas and ports add their place in Places.",
     owner: "Yacht owner",
     captain: "Captain",
     both: "Owner & captain",
@@ -195,7 +233,7 @@ export const copy = {
       "Kaenz es una plataforma integral de yates — no un operador de chárter — para Commute, Tour y Ocasión especial en el mundo. El precio sale del tipo de viaje, duración, yate, pasajeros y fecha. Pagas con Stripe.",
     brand: "Kaenz",
     nav: {
-      app: "App",
+      app: "Plataforma",
       fleet: "Flota",
       book: "Reservar",
       concierge: "Concierge",
@@ -207,8 +245,45 @@ export const copy = {
       logout: "Salir",
     },
     heroTitle: "Salta el tráfico. Viaja en yate.",
-    heroCta: "Abrir app",
+    heroLead:
+      "Commute, tour y celebra en el agua. Inmortaliza tu viaje, da Vibes, publica yates y marinas — en una sola plataforma.",
+    heroCta: "Entrar a la plataforma",
     heroSecondary: "Reservar un yate",
+    platformEyebrow: "Dentro de Kaenz",
+    platformTitle: "La plataforma, de punta a punta",
+    platformLead:
+      "Lugares, yates, viajes en vivo, selfies de Crew y tu cuenta — agua, gente y Stripe.",
+    platformFeatures: [
+      {
+        title: "Lugares",
+        body: "Toca marinas y puertos en el mapa. Los socios agregan su marina o puerto en Lugares.",
+        cta: "Agregar una marina",
+      },
+      {
+        title: "Yates",
+        body: "Capitanes verificados. Dueños y capitanes publican un yate en Yates y ganan en cada tarifa.",
+        cta: "Agregar tu yate",
+      },
+      {
+        title: "Tu Viaje",
+        body: "Solicita, sigue en vivo, paga con Stripe y evalúa. La tarifa se reparte entre dueño, capitán, marinas y Kaenz.",
+        cta: "Empezar un viaje",
+      },
+      {
+        title: "Crew",
+        body: "Inmortaliza tu viaje con un selfie, gana Vibes y vota el Top 100 Selfies 2026.",
+        cta: "Abrir Crew",
+      },
+      {
+        title: "Cuenta",
+        body: "Foto de perfil, tamaño de letra y colores Kaenz — navy y cian, a tu manera.",
+        cta: "Tu cuenta",
+      },
+    ],
+    crewSiteTitle: "Inmortaliza tu viaje",
+    crewSiteLead:
+      "Sube un selfie a bordo, gana Vibes y dáselos a familia, pareja, amigos, colegas o crush en Drive Kaenz TopQ1.",
+    crewSiteCta: "Abrir Top 100 Selfies",
     solveEyebrow: "¿Qué Resolvemos?",
     solveLead:
       "El agua es la forma más inteligente de hacer commute, tour y celebrar — en South Florida y en el mundo.",
@@ -272,11 +347,12 @@ export const copy = {
     ],
     marinasTitle: "Marinas y Puertos",
     marinasBody:
-      "Kaenz conecta yates privados en marinas y puertos de todo el mundo. Llega y sale por agua — de South Florida al Mediterráneo, el Caribe y más allá.",
+      "Kaenz conecta yates privados en marinas y puertos de todo el mundo. Llega y sale por agua — de South Florida al Mediterráneo, el Caribe y más allá. Abre la plataforma y agrega tu marina o puerto en Lugares.",
+    marinasCta: "Abre la plataforma y agrega tu marina",
     joinTitle: "¿Tienes un Yate y eres Capitán?",
-    joinCta: "Únete a Kaenz",
+    joinCta: "Abre la plataforma y agrega tu yate",
     joinLead:
-      "Lista tu yate u ofrece servicios de capitán. Dueños, capitanes y marinas independientes se pagan con Stripe en cada viaje.",
+      "Abre Kaenz, ve a Yates y publica tu yate con capitán verificado. Dueños y capitanes independientes se pagan con Stripe en cada viaje.",
     fleetTitle: "Elige tu yate",
     fleetLead: "Privado, con capitán, listo cuando tú lo estés.",
     from: "Desde",
@@ -308,9 +384,9 @@ export const copy = {
       "Planifica Commute, Tour u Ocasión especial en yate — en el mundo. Rutas, horarios y el barco correcto.",
     conciergePlaceholder: "¿A dónde quieres ir, y cuándo?",
     conciergeSend: "Enviar",
-    joinPageTitle: "Únete a Kaenz",
+    joinPageTitle: "Únete a la plataforma Kaenz",
     joinPageLead:
-      "Kaenz es una plataforma integral — no un operador de chárter — que conecta clientes, dueños, capitanes y marinas para Commute, Tour y Ocasión especial en el mundo.",
+      "Abre Kaenz para publicar lo que operas. Dueños y capitanes agregan un yate en Yates. Marinas y puertos agregan su lugar en Lugares.",
     owner: "Dueño de yate",
     captain: "Capitán",
     both: "Dueño y capitán",
@@ -383,7 +459,7 @@ export const copy = {
       "Kaenz est une plateforme yacht de bout en bout — pas un opérateur de charter — pour trajets, croisières et occasions spéciales dans le monde. Le prix dépend du type de voyage, de la durée, du yacht, des passagers et de la date. Paiement Stripe.",
     brand: "Kaenz",
     nav: {
-      app: "App",
+      app: "Plateforme",
       fleet: "Flotte",
       book: "Réserver",
       concierge: "Concierge",
@@ -395,8 +471,45 @@ export const copy = {
       logout: "Sortir",
     },
     heroTitle: "Évitez le trafic. Voyagez en yacht.",
-    heroCta: "Ouvrir l’app",
+    heroLead:
+      "Trajets, croisières et célébrations sur l’eau. Immortalisez votre trajet, donnez des Vibes, inscrivez yachts et marinas — une seule plateforme.",
+    heroCta: "Entrer dans la plateforme",
     heroSecondary: "Réserver un yacht",
+    platformEyebrow: "Dans Kaenz",
+    platformTitle: "La plateforme, de bout en bout",
+    platformLead:
+      "Lieux, yachts, trajets en direct, selfies Crew et votre compte — l’eau, les gens, Stripe.",
+    platformFeatures: [
+      {
+        title: "Lieux",
+        body: "Touchez marinas et ports sur la carte. Les partenaires ajoutent leur marina ou port dans Lieux.",
+        cta: "Ajouter une marina",
+      },
+      {
+        title: "Yachts",
+        body: "Capitaines vérifiés. Propriétaires et capitaines inscrivent un yacht dans Yachts et gagnent à chaque tarif.",
+        cta: "Ajouter votre yacht",
+      },
+      {
+        title: "Votre trajet",
+        body: "Demandez, suivez en direct, payez avec Stripe et évaluez. Le tarif se répartit entre propriétaire, capitaine, marinas et Kaenz.",
+        cta: "Démarrer un trajet",
+      },
+      {
+        title: "Crew",
+        body: "Immortalisez votre trajet avec un selfie, gagnez des Vibes et votez le Top 100 Selfies 2026.",
+        cta: "Ouvrir Crew",
+      },
+      {
+        title: "Compte",
+        body: "Photo de profil, taille du texte et couleurs Kaenz — navy et cyan, à votre façon.",
+        cta: "Votre compte",
+      },
+    ],
+    crewSiteTitle: "Immortalisez votre trajet",
+    crewSiteLead:
+      "Téléchargez un selfie à bord, gagnez des Vibes et donnez-les à famille, partenaire, amis, collègues ou crush dans Drive Kaenz TopQ1.",
+    crewSiteCta: "Ouvrir Top 100 Selfies",
     solveEyebrow: "Que résolvons-nous ?",
     solveLead:
       "L’eau est la façon la plus intelligente de se déplacer, de croiser et de célébrer — en South Florida et dans le monde.",
@@ -461,11 +574,12 @@ export const copy = {
     ],
     marinasTitle: "Marinas et ports",
     marinasBody:
-      "Kaenz relie des yachts privés dans des marinas et ports du monde entier. Arrivez et partez par l’eau — de South Florida à la Méditerranée, aux Caraïbes et au-delà.",
+      "Kaenz relie des yachts privés dans des marinas et ports du monde entier. Arrivez et partez par l’eau — de South Florida à la Méditerranée, aux Caraïbes et au-delà. Ouvrez la plateforme et ajoutez votre marina ou port dans Lieux.",
+    marinasCta: "Ouvrir la plateforme et ajouter votre marina",
     joinTitle: "Vous possédez un yacht et vous êtes capitaine ?",
-    joinCta: "Rejoindre Kaenz",
+    joinCta: "Ouvrir la plateforme et ajouter votre yacht",
     joinLead:
-      "Inscrivez votre yacht ou proposez vos services de capitaine. Propriétaires, capitaines et marinas indépendants sont payés via Stripe à chaque trajet.",
+      "Ouvrez Kaenz, allez dans Yachts, et inscrivez votre bateau avec un capitaine vérifié. Propriétaires et capitaines indépendants sont payés via Stripe à chaque trajet.",
     fleetTitle: "Choisissez votre yacht",
     fleetLead: "Privé, avec capitaine, prêt quand vous l’êtes.",
     from: "À partir de",
@@ -497,9 +611,9 @@ export const copy = {
       "Planifiez un trajet, une croisière ou une occasion spéciale en yacht — dans le monde. Itinéraires, horaires et le bon bateau.",
     conciergePlaceholder: "Où voulez-vous aller, et quand ?",
     conciergeSend: "Envoyer",
-    joinPageTitle: "Rejoindre Kaenz",
+    joinPageTitle: "Rejoindre la plateforme Kaenz",
     joinPageLead:
-      "Kaenz est une plateforme de bout en bout — pas un opérateur de charter — qui relie clients, propriétaires, capitaines et marinas pour trajets, croisières et occasions spéciales dans le monde.",
+      "Ouvrez Kaenz pour publier ce que vous opérez. Propriétaires et capitaines ajoutent un yacht dans Yachts. Marinas et ports ajoutent leur lieu dans Lieux.",
     owner: "Propriétaire de yacht",
     captain: "Capitaine",
     both: "Propriétaire et capitaine",
@@ -572,7 +686,7 @@ export const copy = {
       "Kaenz è una piattaforma yacht end-to-end — non un operatore di charter — per tragitto, tour e occasione speciale nel mondo. Il prezzo dipende da tipo di viaggio, durata, yacht, passeggeri e data. Paghi con Stripe.",
     brand: "Kaenz",
     nav: {
-      app: "App",
+      app: "Piattaforma",
       fleet: "Flotta",
       book: "Prenota",
       concierge: "Concierge",
@@ -584,8 +698,45 @@ export const copy = {
       logout: "Esci",
     },
     heroTitle: "Salta il traffico. Viaggia in yacht.",
-    heroCta: "Apri l’app",
+    heroLead:
+      "Spostati, fai un tour e festeggia in acqua. Immortalizza il viaggio, dai Vibes, pubblica yacht e marine — una sola piattaforma.",
+    heroCta: "Entra nella piattaforma",
     heroSecondary: "Prenota uno yacht",
+    platformEyebrow: "Dentro Kaenz",
+    platformTitle: "La piattaforma, da capo a fine",
+    platformLead:
+      "Luoghi, yacht, viaggi live, selfie Crew e il tuo account — acqua, persone e Stripe.",
+    platformFeatures: [
+      {
+        title: "Luoghi",
+        body: "Tocca marine e porti sulla mappa. I partner aggiungono marina o porto in Luoghi.",
+        cta: "Aggiungi una marina",
+      },
+      {
+        title: "Yacht",
+        body: "Capitani verificati. Proprietari e capitani pubblicano uno yacht in Yacht e guadagnano su ogni tariffa.",
+        cta: "Aggiungi il tuo yacht",
+      },
+      {
+        title: "Il tuo viaggio",
+        body: "Richiedi, segui in diretta, paga con Stripe e valuta. La tariffa si ripartisce tra proprietario, capitano, marine e Kaenz.",
+        cta: "Inizia un viaggio",
+      },
+      {
+        title: "Crew",
+        body: "Immortalizza il viaggio con un selfie, guadagna Vibes e vota il Top 100 Selfies 2026.",
+        cta: "Apri Crew",
+      },
+      {
+        title: "Account",
+        body: "Foto profilo, dimensione del testo e colori Kaenz — navy e cyan, a modo tuo.",
+        cta: "Il tuo account",
+      },
+    ],
+    crewSiteTitle: "Immortalizza il tuo viaggio",
+    crewSiteLead:
+      "Carica un selfie a bordo, guadagna Vibes e dalle a famiglia, partner, amici, colleghi o crush in Drive Kaenz TopQ1.",
+    crewSiteCta: "Apri Top 100 Selfies",
     solveEyebrow: "Cosa risolviamo?",
     solveLead:
       "L’acqua è il modo più intelligente per spostarsi, fare un tour e festeggiare — in South Florida e nel mondo.",
@@ -650,11 +801,12 @@ export const copy = {
     ],
     marinasTitle: "Marine e porti",
     marinasBody:
-      "Kaenz collega yacht privati in marine e porti di tutto il mondo. Arriva e parti via acqua — da South Florida al Mediterraneo, ai Caraibi e oltre.",
+      "Kaenz collega yacht privati in marine e porti di tutto il mondo. Arriva e parti via acqua — da South Florida al Mediterraneo, ai Caraibi e oltre. Apri la piattaforma e aggiungi la tua marina o porto in Luoghi.",
+    marinasCta: "Apri la piattaforma e aggiungi la tua marina",
     joinTitle: "Possiedi uno yacht e sei un capitano?",
-    joinCta: "Unisciti a Kaenz",
+    joinCta: "Apri la piattaforma e aggiungi il tuo yacht",
     joinLead:
-      "Metti in lista il tuo yacht o offri servizi da capitano. Proprietari, capitani e marine indipendenti sono pagati con Stripe a ogni viaggio.",
+      "Apri Kaenz, vai in Yacht e pubblica la tua barca con capitano verificato. Proprietari e capitani indipendenti sono pagati con Stripe a ogni viaggio.",
     fleetTitle: "Scegli il tuo yacht",
     fleetLead: "Privato, con capitano, pronto quando lo sei tu.",
     from: "Da",
@@ -686,9 +838,9 @@ export const copy = {
       "Pianifica un tragitto, un tour o un’occasione speciale in yacht — nel mondo. Rotte, orari e la barca giusta.",
     conciergePlaceholder: "Dove vuoi andare, e quando?",
     conciergeSend: "Invia",
-    joinPageTitle: "Unisciti a Kaenz",
+    joinPageTitle: "Unisciti alla piattaforma Kaenz",
     joinPageLead:
-      "Kaenz è una piattaforma end-to-end — non un operatore di charter — che collega clienti, proprietari, capitani e marine per tragitto, tour e occasione speciale nel mondo.",
+      "Apri Kaenz per pubblicare ciò che operi. Proprietari e capitani aggiungono uno yacht in Yacht. Marine e porti aggiungono il loro luogo in Luoghi.",
     owner: "Proprietario di yacht",
     captain: "Capitano",
     both: "Proprietario e capitano",
@@ -761,7 +913,7 @@ export const copy = {
       "A Kaenz é uma plataforma integral de iates — não uma operadora de charter — para Trajeto, Passeio e Ocasião especial no mundo. O preço sai do tipo de viagem, duração, iate, passageiros e data. Você paga com Stripe.",
     brand: "Kaenz",
     nav: {
-      app: "App",
+      app: "Plataforma",
       fleet: "Frota",
       book: "Reservar",
       concierge: "Concierge",
@@ -773,8 +925,45 @@ export const copy = {
       logout: "Sair",
     },
     heroTitle: "Pule o trânsito. Viaje de iate.",
-    heroCta: "Abrir app",
+    heroLead:
+      "Desloque-se, passeie e celebre na água. Imortalize a viagem, dê Vibes, anuncie iates e marinas — numa só plataforma.",
+    heroCta: "Entrar na plataforma",
     heroSecondary: "Reservar um iate",
+    platformEyebrow: "Dentro da Kaenz",
+    platformTitle: "A plataforma, de ponta a ponta",
+    platformLead:
+      "Lugares, iates, viagens ao vivo, selfies da Crew e a sua conta — água, pessoas e Stripe.",
+    platformFeatures: [
+      {
+        title: "Lugares",
+        body: "Toque marinas e portos no mapa. Parceiros adicionam marina ou porto em Lugares.",
+        cta: "Adicionar uma marina",
+      },
+      {
+        title: "Iates",
+        body: "Capitães verificados. Donos e capitães publicam um iate em Iates e ganham em cada tarifa.",
+        cta: "Adicionar o seu iate",
+      },
+      {
+        title: "Sua viagem",
+        body: "Peça, acompanhe ao vivo, pague com Stripe e avalie. A tarifa reparte entre dono, capitão, marinas e Kaenz.",
+        cta: "Começar uma viagem",
+      },
+      {
+        title: "Crew",
+        body: "Imortalize a viagem com um selfie, ganhe Vibes e vote o Top 100 Selfies 2026.",
+        cta: "Abrir Crew",
+      },
+      {
+        title: "Conta",
+        body: "Foto de perfil, tamanho da letra e cores Kaenz — navy e ciano, do seu jeito.",
+        cta: "Sua conta",
+      },
+    ],
+    crewSiteTitle: "Imortalize sua viagem",
+    crewSiteLead:
+      "Envie um selfie a bordo, ganhe Vibes e dê a família, parceiro, amigos, colegas ou crush no Drive Kaenz TopQ1.",
+    crewSiteCta: "Abrir Top 100 Selfies",
     solveEyebrow: "O que resolvemos?",
     solveLead:
       "A água é o jeito mais inteligente de se deslocar, passear e celebrar — no South Florida e no mundo.",
@@ -838,11 +1027,12 @@ export const copy = {
     ],
     marinasTitle: "Marinas e portos",
     marinasBody:
-      "A Kaenz conecta iates privados em marinas e portos do mundo. Chegue e saia pela água — do South Florida ao Mediterrâneo, ao Caribe e além.",
+      "A Kaenz conecta iates privados em marinas e portos do mundo. Chegue e saia pela água — do South Florida ao Mediterrâneo, ao Caribe e além. Abra a plataforma e adicione sua marina ou porto em Lugares.",
+    marinasCta: "Abra a plataforma e adicione sua marina",
     joinTitle: "Você tem um iate e é capitão?",
-    joinCta: "Junte-se à Kaenz",
+    joinCta: "Abra a plataforma e adicione o seu iate",
     joinLead:
-      "Anuncie seu iate ou ofereça serviços de capitão. Donos, capitães e marinas independentes são pagos via Stripe em cada viagem.",
+      "Abra a Kaenz, vá em Iates e publique o seu barco com capitão verificado. Donos e capitães independentes são pagos via Stripe em cada viagem.",
     fleetTitle: "Escolha o seu iate",
     fleetLead: "Privado, com capitão, pronto quando você estiver.",
     from: "A partir de",
@@ -874,9 +1064,9 @@ export const copy = {
       "Planeje Trajeto, Passeio ou Ocasião especial de iate — no mundo. Rotas, horários e o barco certo.",
     conciergePlaceholder: "Para onde você quer ir, e quando?",
     conciergeSend: "Enviar",
-    joinPageTitle: "Junte-se à Kaenz",
+    joinPageTitle: "Junte-se à plataforma Kaenz",
     joinPageLead:
-      "A Kaenz é uma plataforma integral — não uma operadora de charter — que conecta clientes, donos, capitães e marinas para Trajeto, Passeio e Ocasião especial no mundo.",
+      "Abra a Kaenz para publicar o que você opera. Donos e capitães adicionam um iate em Iates. Marinas e portos adicionam o lugar em Lugares.",
     owner: "Dono de iate",
     captain: "Capitão",
     both: "Dono e capitão",

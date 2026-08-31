@@ -45,14 +45,14 @@ export function AppShell({
     <div className="app-shell min-h-dvh bg-navy text-foam">
       <BiometricEnrollPrompt locale={locale} />
       <HtmlLang locale={locale} />
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[4.5rem] flex-col items-center border-r border-white/10 bg-navy-2 py-4 md:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[4.75rem] flex-col items-center border-r border-white/10 bg-navy-2/95 py-4 backdrop-blur-xl md:flex">
         <Link href={pathFor(locale, "/app")} className="mb-6">
           <Image
             src="/brand/logo-app.png"
             alt="Kaenz"
             width={44}
             height={44}
-            className="rounded-xl ring-1 ring-kaenz/45"
+            className="rounded-2xl ring-1 ring-kaenz/45"
           />
         </Link>
         <nav className="flex flex-1 flex-col gap-1">
@@ -62,8 +62,10 @@ export function AppShell({
               <Link
                 key={id}
                 href={pathFor(locale, href)}
-                className={`flex flex-col items-center gap-1 rounded-xl px-2 py-3 text-[10px] font-semibold ${
-                  active ? "bg-kaenz/15 text-kaenz" : "text-white/55 hover:text-white"
+                className={`flex flex-col items-center gap-1 rounded-2xl px-2 py-3 text-[10px] font-semibold transition ${
+                  active
+                    ? "bg-kaenz/18 text-kaenz shadow-[0_0_0_1px_color-mix(in_srgb,var(--color-kaenz)_35%,transparent)]"
+                    : "text-white/55 hover:bg-white/5 hover:text-white"
                 }`}
               >
                 <Icon className="h-6 w-6" />
@@ -74,7 +76,7 @@ export function AppShell({
         </nav>
       </aside>
 
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-white/10 bg-navy/90 px-4 py-3 backdrop-blur md:ml-[4.5rem]">
+      <header className="app-header-glass sticky top-0 z-30 flex items-center justify-between border-b border-white/10 px-4 py-3 md:ml-[4.75rem]">
         <div className="flex items-center gap-3">
           <Image
             src="/brand/logo-app.png"
@@ -100,11 +102,11 @@ export function AppShell({
         </div>
       </header>
 
-      <main className="app-main mx-auto w-full max-w-6xl px-4 pb-28 pt-4 md:ml-[4.5rem] md:pb-10">
+      <main className="app-main mx-auto w-full max-w-6xl px-4 pb-28 pt-5 md:ml-[4.75rem] md:pb-10">
         {children}
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-white/10 bg-navy/95 px-1 pb-[max(0.4rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur md:hidden">
+      <nav className="app-header-glass fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-white/10 px-1 pb-[max(0.4rem,env(safe-area-inset-bottom))] pt-2 md:hidden">
         {TABS.map(({ id, href, Icon }) => {
           const active = tab === id;
           return (

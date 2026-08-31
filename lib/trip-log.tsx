@@ -72,9 +72,8 @@ function mergeTrips(local: LoggedTrip[], server: LoggedTrip[]) {
   );
 }
 
-export async function compressPhoto(file: File) {
+export async function compressPhoto(file: File, max = 1000, quality = 0.65) {
   const bitmap = await createImageBitmap(file);
-  const max = 1000;
   const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.max(1, Math.round(bitmap.width * scale));
@@ -86,7 +85,7 @@ export async function compressPhoto(file: File) {
   }
   ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
-  return canvas.toDataURL("image/jpeg", 0.65);
+  return canvas.toDataURL("image/jpeg", quality);
 }
 
 export function TripLogProvider({ children }: { children: React.ReactNode }) {

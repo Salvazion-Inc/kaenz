@@ -30,6 +30,11 @@ export function YachtsTab({ locale }: { locale: Locale }) {
   const [klass, setKlass] = useState<"all" | YachtTrait>("all");
 
   useEffect(() => {
+    const add = new URLSearchParams(window.location.search).get("add");
+    if (add === "yacht" || add === "1") setAdding(true);
+  }, []);
+
+  useEffect(() => {
     fetch("/api/yachts")
       .then((res) => res.json())
       .then((data) => setListings(Array.isArray(data.yachts) ? data.yachts : []))
@@ -69,7 +74,7 @@ export function YachtsTab({ locale }: { locale: Locale }) {
         <button
           type="button"
           onClick={() => setAdding((open) => !open)}
-          className="rounded-full bg-kaenz px-4 py-1.5 text-xs font-bold text-white"
+          className="btn-kaenz !px-4 !py-1.5 text-xs"
         >
           {c.addYacht.cta}
         </button>

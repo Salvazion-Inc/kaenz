@@ -8,7 +8,8 @@ export function BookPage({ locale }: { locale: Locale }) {
   return (
     <Site locale={locale}>
       <section className="mx-auto max-w-3xl px-5 pb-24">
-        <h1 className="text-4xl font-extrabold">{c.bookTitle}</h1>
+        <p className="kaenz-kicker">{c.nav.book}</p>
+        <h1 className="mt-3 text-4xl font-extrabold tracking-tight">{c.bookTitle}</h1>
         <p className="mt-3 text-white/70">{c.bookLead}</p>
         <div className="mt-10">
           <BookForm locale={locale} />

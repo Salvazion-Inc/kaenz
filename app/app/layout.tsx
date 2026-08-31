@@ -1,4 +1,8 @@
 import { AppSplash } from "@/components/app/AppSplash";
+import {
+  AccountPrefsProvider,
+  APPLY_LOOK_SCRIPT,
+} from "@/lib/account-prefs";
 import { ProfileProvider } from "@/lib/profile-store";
 import { SelfieProvider } from "@/lib/selfie-store";
 import { TripLogProvider } from "@/lib/trip-log";
@@ -26,14 +30,19 @@ export const metadata = {
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <TripProvider>
-      <ProfileProvider>
-        <TripLogProvider>
-          <SelfieProvider>
-            <AppSplash>{children}</AppSplash>
-          </SelfieProvider>
-        </TripLogProvider>
-      </ProfileProvider>
-    </TripProvider>
+    <>
+      <script dangerouslySetInnerHTML={{ __html: APPLY_LOOK_SCRIPT }} />
+      <TripProvider>
+        <ProfileProvider>
+          <AccountPrefsProvider>
+            <TripLogProvider>
+              <SelfieProvider>
+                <AppSplash>{children}</AppSplash>
+              </SelfieProvider>
+            </TripLogProvider>
+          </AccountPrefsProvider>
+        </ProfileProvider>
+      </TripProvider>
+    </>
   );
 }

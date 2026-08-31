@@ -12,7 +12,7 @@ export const appCopy = {
       account: "Account",
     },
     placesLead:
-      "Tap a marina or port on the map. Featured places are below, nearest first.",
+      "Tap a marina or port on the map. Partners add their place here. Featured spots sit below, nearest first.",
     searchPlaces: "Search marinas, ports, sandbars…",
     kinds: { all: "All", marina: "Marinas", port: "Ports", place: "Places" },
     featuredPlaces: "Featured Places",
@@ -47,7 +47,7 @@ export const appCopy = {
     setDropoff: "Set dropoff",
     waterOnly: "Water only",
     yachtsLead:
-      "Yachts with a verified captain, classified Fast, Small, or Luxurious. Capacity is listed. Price is calculated on your request.",
+      "Yachts with a verified captain — Fast, Small, or Luxurious. Owners and captains add a yacht here. Price is calculated on your request.",
     nearby: "Near you",
     verified: "Captain verified",
     guests: "guests",
@@ -144,7 +144,8 @@ export const appCopy = {
     payTrip: "Pay trip",
     demoPay:
       "Stripe Checkout charges the algorithm fare plus optional captain gratuity. The fare then splits to the captain, owner, marinas, and Kaenz.",
-    crewLead: "Share with interesting people in this social experience.",
+    crewLead:
+      "Immortalize your trip with a selfie, earn Vibes, and give Vibes to the Top 100 Selfies 2026.",
     goingTo: "Going to",
     joinCrew: "Join this crew",
     joined: "You’re on this crew",
@@ -196,8 +197,32 @@ export const appCopy = {
     errWallet: "Solana wallet looks incomplete.",
     errConfirm: "Could not confirm. Try again.",
     account: {
-      lead: "Save your details once. Requests and payments use them automatically.",
+      lead: "Profile photo, look and feel, payments, and trip photos — saved once for every request.",
       personal: "Personal details",
+      photo: "Profile photo",
+      photoLead: "This photo appears on your account in the app.",
+      photoAdd: "Add photo",
+      photoChange: "Change photo",
+      photoRemove: "Remove photo",
+      avatarError: "Could not save that photo. Try a smaller image.",
+      appearance: "Look & feel",
+      appearanceLead:
+        "Text size and colors stay in the Kaenz navy-and-cyan system.",
+      fontSize: "Text size",
+      fontSizes: {
+        sm: "S",
+        md: "M",
+        lg: "L",
+        xl: "XL",
+      },
+      colors: "Colors",
+      palettes: {
+        classic: { title: "Kaenz", body: "Cyan on navy — the original." },
+        aqua: { title: "Aqua", body: "Brighter water, same navy hull." },
+        tide: { title: "Tide", body: "Deeper sea cyan." },
+        dusk: { title: "Dusk", body: "Evening navy with a clear cyan mark." },
+        gold: { title: "Gold wake", body: "Navy with a gold accent." },
+      },
       payments: "Payment methods",
       paymentsLead:
         "Kaenz stores the last four digits and expiry only. CVC is never saved.",
@@ -376,7 +401,7 @@ export const appCopy = {
       account: "Cuenta",
     },
     placesLead:
-      "Toca una marina o puerto en el mapa. Los lugares destacados están abajo, los más cercanos primero.",
+      "Toca una marina o puerto en el mapa. Los socios agregan su lugar aquí. Los destacados están abajo, los más cercanos primero.",
     searchPlaces: "Busca marinas, puertos, sandbars…",
     kinds: { all: "Todos", marina: "Marinas", port: "Puertos", place: "Lugares" },
     featuredPlaces: "Lugares destacados",
@@ -411,7 +436,7 @@ export const appCopy = {
     setDropoff: "Destino",
     waterOnly: "Solo agua",
     yachtsLead:
-      "Yates con capitán verificado, clasificados Fast, Small o Luxurious. Se indica la capacidad. El precio se calcula en la solicitud.",
+      "Yates con capitán verificado — Fast, Small o Luxurious. Dueños y capitanes agregan un yate aquí. El precio se calcula en la solicitud.",
     nearby: "Cerca de ti",
     verified: "Capitán verificado",
     guests: "huéspedes",
@@ -508,7 +533,8 @@ export const appCopy = {
     payTrip: "Pagar viaje",
     demoPay:
       "Stripe Checkout cobra la tarifa del algoritmo más la gratificación opcional al capitán. Luego se reparte entre capitán, dueño, marinas y Kaenz.",
-    crewLead: "Comparte con gente interesante en esta experiencia social.",
+    crewLead:
+      "Inmortaliza tu viaje con un selfie, gana Vibes y dáselos en el Top 100 Selfies 2026.",
     goingTo: "Va a",
     joinCrew: "Unirme a esta crew",
     joined: "Ya estás en esta crew",
@@ -560,8 +586,32 @@ export const appCopy = {
     errWallet: "Billetera Solana incompleta.",
     errConfirm: "No se pudo confirmar. Inténtalo de nuevo.",
     account: {
-      lead: "Guarda tus datos una vez. Las solicitudes y los pagos los usan automáticamente.",
+      lead: "Foto de perfil, apariencia, pagos y fotos del viaje — se guardan una vez para cada solicitud.",
       personal: "Datos personales",
+      photo: "Foto de perfil",
+      photoLead: "Esta foto aparece en tu cuenta dentro de la app.",
+      photoAdd: "Agregar foto",
+      photoChange: "Cambiar foto",
+      photoRemove: "Quitar foto",
+      avatarError: "No se pudo guardar la foto. Prueba una imagen más pequeña.",
+      appearance: "Apariencia",
+      appearanceLead:
+        "El tamaño de letra y los colores siguen el navy y el cian de Kaenz.",
+      fontSize: "Tamaño de letra",
+      fontSizes: {
+        sm: "S",
+        md: "M",
+        lg: "L",
+        xl: "XL",
+      },
+      colors: "Colores",
+      palettes: {
+        classic: { title: "Kaenz", body: "Cian sobre navy — el original." },
+        aqua: { title: "Aqua", body: "Agua más brillante, mismo casco navy." },
+        tide: { title: "Marea", body: "Cian de mar más profundo." },
+        dusk: { title: "Dusk", body: "Navy de atardecer con marca cian." },
+        gold: { title: "Estela dorada", body: "Navy con acento dorado." },
+      },
       payments: "Métodos de pago",
       paymentsLead:
         "Kaenz guarda solo los últimos cuatro dígitos y la fecha de vencimiento. El CVC no se almacena.",
@@ -740,7 +790,7 @@ export const appCopy = {
       account: "Compte",
     },
     placesLead:
-      "Touchez une marina ou un port sur la carte. Les lieux en vedette sont en dessous, les plus proches d’abord.",
+      "Touchez une marina ou un port sur la carte. Les partenaires ajoutent leur lieu ici. Les lieux en vedette sont en dessous, les plus proches d’abord.",
     searchPlaces: "Rechercher marinas, ports, sandbars…",
     kinds: { all: "Tous", marina: "Marinas", port: "Ports", place: "Lieux" },
     featuredPlaces: "Lieux en vedette",
@@ -775,7 +825,7 @@ export const appCopy = {
     setDropoff: "Arrivée",
     waterOnly: "Eau seulement",
     yachtsLead:
-      "Yachts avec capitaine vérifié, classés Fast, Small ou Luxurious. La capacité est indiquée. Le prix se calcule sur votre demande.",
+      "Yachts avec capitaine vérifié — Fast, Small ou Luxurious. Propriétaires et capitaines ajoutent un yacht ici. Le prix se calcule sur votre demande.",
     nearby: "Près de vous",
     verified: "Capitaine vérifié",
     guests: "invités",
@@ -872,7 +922,8 @@ export const appCopy = {
     payTrip: "Payer le trajet",
     demoPay:
       "Stripe Checkout encaisse le tarif de l’algorithme plus le pourboire capitaine optionnel. Le tarif est ensuite réparti entre capitaine, propriétaire, marinas et Kaenz.",
-    crewLead: "Partagez avec des personnes intéressantes dans cette expérience sociale.",
+    crewLead:
+      "Immortalisez votre trajet avec un selfie, gagnez des Vibes et donnez-les dans le Top 100 Selfies 2026.",
     goingTo: "Va vers",
     joinCrew: "Rejoindre cet équipage",
     joined: "Vous êtes dans cet équipage",
@@ -924,8 +975,32 @@ export const appCopy = {
     errWallet: "Portefeuille Solana incomplet.",
     errConfirm: "Confirmation impossible. Réessayez.",
     account: {
-      lead: "Enregistrez vos informations une fois. Les demandes et paiements les utilisent automatiquement.",
+      lead: "Photo de profil, apparence, paiements et photos de trajet — enregistrés une fois pour chaque demande.",
       personal: "Informations personnelles",
+      photo: "Photo de profil",
+      photoLead: "Cette photo apparaît sur votre compte dans l’app.",
+      photoAdd: "Ajouter une photo",
+      photoChange: "Changer la photo",
+      photoRemove: "Retirer la photo",
+      avatarError: "Impossible d’enregistrer la photo. Essayez une image plus petite.",
+      appearance: "Apparence",
+      appearanceLead:
+        "La taille du texte et les couleurs restent dans le système navy et cyan Kaenz.",
+      fontSize: "Taille du texte",
+      fontSizes: {
+        sm: "S",
+        md: "M",
+        lg: "L",
+        xl: "XL",
+      },
+      colors: "Couleurs",
+      palettes: {
+        classic: { title: "Kaenz", body: "Cyan sur navy — l’original." },
+        aqua: { title: "Aqua", body: "Eau plus claire, même coque navy." },
+        tide: { title: "Marée", body: "Cyan de mer plus profond." },
+        dusk: { title: "Dusk", body: "Navy du soir avec une marque cyan." },
+        gold: { title: "Sillage doré", body: "Navy avec un accent or." },
+      },
       payments: "Moyens de paiement",
       paymentsLead:
         "Kaenz conserve uniquement les quatre derniers chiffres et la date d’expiration. Le CVC n’est jamais enregistré.",
@@ -1104,7 +1179,7 @@ export const appCopy = {
       account: "Account",
     },
     placesLead:
-      "Tocca una marina o un porto sulla mappa. I luoghi in evidenza sono sotto, i più vicini per primi.",
+      "Tocca una marina o un porto sulla mappa. I partner aggiungono il loro luogo qui. I luoghi in evidenza sono sotto, i più vicini per primi.",
     searchPlaces: "Cerca marine, porti, sandbar…",
     kinds: { all: "Tutti", marina: "Marine", port: "Porti", place: "Luoghi" },
     featuredPlaces: "Luoghi in evidenza",
@@ -1139,7 +1214,7 @@ export const appCopy = {
     setDropoff: "Arrivo",
     waterOnly: "Solo acqua",
     yachtsLead:
-      "Yacht con capitano verificato, classificati Fast, Small o Luxurious. La capacità è indicata. Il prezzo si calcola sulla richiesta.",
+      "Yacht con capitano verificato — Fast, Small o Luxurious. Proprietari e capitani aggiungono uno yacht qui. Il prezzo si calcola sulla richiesta.",
     nearby: "Vicino a te",
     verified: "Capitano verificato",
     guests: "ospiti",
@@ -1236,7 +1311,8 @@ export const appCopy = {
     payTrip: "Paga il viaggio",
     demoPay:
       "Stripe Checkout addebita la tariffa dell’algoritmo più la mancia capitano opzionale. Poi si ripartisce tra capitano, proprietario, marine e Kaenz.",
-    crewLead: "Condividi con persone interessanti in questa esperienza sociale.",
+    crewLead:
+      "Immortalizza il viaggio con un selfie, guadagna Vibes e dalle nel Top 100 Selfies 2026.",
     goingTo: "Va a",
     joinCrew: "Unisciti a questo equipaggio",
     joined: "Sei in questo equipaggio",
@@ -1288,8 +1364,32 @@ export const appCopy = {
     errWallet: "Wallet Solana incompleto.",
     errConfirm: "Conferma non riuscita. Riprova.",
     account: {
-      lead: "Salva i tuoi dati una volta. Richieste e pagamenti li usano automaticamente.",
+      lead: "Foto profilo, aspetto, pagamenti e foto del viaggio — salvati una volta per ogni richiesta.",
       personal: "Dati personali",
+      photo: "Foto profilo",
+      photoLead: "Questa foto appare sul tuo account nell’app.",
+      photoAdd: "Aggiungi foto",
+      photoChange: "Cambia foto",
+      photoRemove: "Rimuovi foto",
+      avatarError: "Impossibile salvare la foto. Prova un’immagine più piccola.",
+      appearance: "Aspetto",
+      appearanceLead:
+        "Dimensione del testo e colori restano nel sistema navy e cyan Kaenz.",
+      fontSize: "Dimensione testo",
+      fontSizes: {
+        sm: "S",
+        md: "M",
+        lg: "L",
+        xl: "XL",
+      },
+      colors: "Colori",
+      palettes: {
+        classic: { title: "Kaenz", body: "Cyan su navy — l’originale." },
+        aqua: { title: "Aqua", body: "Acqua più chiara, stesso scafo navy." },
+        tide: { title: "Marea", body: "Cyan di mare più profondo." },
+        dusk: { title: "Dusk", body: "Navy della sera con segno cyan." },
+        gold: { title: "Scia d’oro", body: "Navy con accento oro." },
+      },
       payments: "Metodi di pagamento",
       paymentsLead:
         "Kaenz conserva solo le ultime quattro cifre e la scadenza. Il CVC non viene mai salvato.",
@@ -1468,7 +1568,7 @@ export const appCopy = {
       account: "Conta",
     },
     placesLead:
-      "Toque uma marina ou porto no mapa. Os lugares em destaque ficam abaixo, os mais próximos primeiro.",
+      "Toque uma marina ou porto no mapa. Parceiros adicionam o lugar aqui. Os destaques ficam abaixo, os mais próximos primeiro.",
     searchPlaces: "Buscar marinas, portos, sandbars…",
     kinds: { all: "Todos", marina: "Marinas", port: "Portos", place: "Lugares" },
     featuredPlaces: "Lugares em destaque",
@@ -1503,7 +1603,7 @@ export const appCopy = {
     setDropoff: "Chegada",
     waterOnly: "Só água",
     yachtsLead:
-      "Iates com capitão verificado, classificados Fast, Small ou Luxurious. A capacidade aparece no anúncio. O preço é calculado no pedido.",
+      "Iates com capitão verificado — Fast, Small ou Luxurious. Donos e capitães adicionam um iate aqui. O preço é calculado no pedido.",
     nearby: "Perto de você",
     verified: "Capitão verificado",
     guests: "convidados",
@@ -1600,7 +1700,8 @@ export const appCopy = {
     payTrip: "Pagar viagem",
     demoPay:
       "O Stripe Checkout cobra a tarifa do algoritmo mais a gorjeta opcional ao capitão. Depois reparte entre capitão, dono, marinas e Kaenz.",
-    crewLead: "Compartilhe com pessoas interessantes nesta experiência social.",
+    crewLead:
+      "Imortalize a viagem com um selfie, ganhe Vibes e dê no Top 100 Selfies 2026.",
     goingTo: "Vai para",
     joinCrew: "Entrar nesta tripulação",
     joined: "Você está nesta tripulação",
@@ -1652,8 +1753,32 @@ export const appCopy = {
     errWallet: "Carteira Solana incompleta.",
     errConfirm: "Não foi possível confirmar. Tente de novo.",
     account: {
-      lead: "Salve seus dados uma vez. Solicitações e pagamentos os usam automaticamente.",
+      lead: "Foto de perfil, aparência, pagamentos e fotos da viagem — salvos uma vez para cada pedido.",
       personal: "Dados pessoais",
+      photo: "Foto de perfil",
+      photoLead: "Esta foto aparece na sua conta no app.",
+      photoAdd: "Adicionar foto",
+      photoChange: "Trocar foto",
+      photoRemove: "Remover foto",
+      avatarError: "Não foi possível salvar a foto. Tente uma imagem menor.",
+      appearance: "Aparência",
+      appearanceLead:
+        "Tamanho da letra e cores seguem o navy e o ciano da Kaenz.",
+      fontSize: "Tamanho da letra",
+      fontSizes: {
+        sm: "S",
+        md: "M",
+        lg: "L",
+        xl: "XL",
+      },
+      colors: "Cores",
+      palettes: {
+        classic: { title: "Kaenz", body: "Ciano sobre navy — o original." },
+        aqua: { title: "Aqua", body: "Água mais clara, mesmo casco navy." },
+        tide: { title: "Maré", body: "Ciano de mar mais fundo." },
+        dusk: { title: "Dusk", body: "Navy do entardecer com marca ciano." },
+        gold: { title: "Esteira dourada", body: "Navy com acento dourado." },
+      },
       payments: "Formas de pagamento",
       paymentsLead:
         "A Kaenz guarda só os últimos quatro dígitos e a validade. O CVC nunca é salvo.",

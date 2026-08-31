@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  FONT_SIZES,
+  PALETTE_IDS,
+  PALETTES,
+  useAccountPrefs,
+} from "@/lib/account-prefs";
 import { at } from "@/lib/app-copy";
 import type { Locale } from "@/lib/locale";
 import { useLocation } from "@/lib/location";
@@ -14,9 +20,12 @@ import {
   type SavedCard,
 } from "@/lib/profile";
 import { useProfile } from "@/lib/profile-store";
+import { compressPhoto } from "@/lib/trip-log";
 import { disableBiometric } from "@/lib/auth/biometric";
 import { BiometricControl } from "../auth/BiometricControl";
+import { ProfileAvatar } from "./ProfileAvatar";
 import { TripCalendar } from "./TripCalendar";
+import { IconCamera } from "./icons";
 
 const field =
   "mt-1.5 w-full rounded-xl border border-navy/10 bg-white px-3 py-2.5 text-sm text-navy outline-none";
@@ -25,6 +34,18 @@ export function AccountTab({ locale }: { locale: Locale }) {
   const c = at(locale);
   const a = c.account;
   const { profile, ready, save } = useProfile();
+  const {
+    photo,
+    font,
+    palette,
+    setPhoto,
+    removePhoto,
+    setFont,
+    setPalette,
+  } = useAccountPrefs();
+  const photoRef = useRef<HTMLInputElement>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoError, setPhotoError] = useState("");
   const { city: gpsCity, here, located, locating, denied, locate } = useLocation();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -131,6 +152,20 @@ export function AccountTab({ locale }: { locale: Locale }) {
     window.location.href = "/login";
   }
 
+  async function onPhoto(file: File | undefined) {
+    if (!file || !file.type.startsWith("image/")) return;
+    setPhotoBusy(true);
+    setPhotoError("");
+    try {
+      const data = await compressPhoto(file, 480, 0.72);
+      if (!setPhoto(data)) setPhotoError(a.avatarError);
+    } catch {
+      setPhotoError(a.avatarError);
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
+
   const credit = !removeCredit ? profile?.creditCard : null;
   const debit = !removeDebit ? profile?.debitCard : null;
 
@@ -144,6 +179,56 @@ export function AccountTab({ locale }: { locale: Locale }) {
           <h2 className="text-sm font-bold uppercase tracking-wide text-kaenz">
             {a.personal}
           </h2>
+          <div className="mt-4 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+            <button
+              type="button"
+              onClick={() => photoRef.current?.click()}
+              className="relative shrink-0"
+              aria-label={photo ? a.photoChange : a.photoAdd}
+            >
+              <ProfileAvatar src={photo} name={fullName} size={88} />
+              <span className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-kaenz text-white">
+                <IconCamera className="h-3.5 w-3.5" />
+              </span>
+            </button>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-white/60">
+                {a.photo}
+              </p>
+              <p className="mt-1 text-xs text-white/55">{a.photoLead}</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => photoRef.current?.click()}
+                  className="rounded-full border border-white/20 px-3 py-1 text-[11px] font-semibold text-white/80"
+                >
+                  {photoBusy ? a.saving : photo ? a.photoChange : a.photoAdd}
+                </button>
+                {photo ? (
+                  <button
+                    type="button"
+                    onClick={removePhoto}
+                    className="rounded-full border border-white/20 px-3 py-1 text-[11px] font-semibold text-white/80"
+                  >
+                    {a.photoRemove}
+                  </button>
+                ) : null}
+              </div>
+              {photoError ? (
+                <p className="mt-2 text-xs text-red-400">{photoError}</p>
+              ) : null}
+            </div>
+            <input
+              ref={photoRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                onPhoto(e.target.files?.[0]);
+                e.currentTarget.value = "";
+              }}
+            />
+          </div>
           <div className="mt-4 space-y-3">
             <label className="block text-xs font-bold uppercase tracking-wide text-white/60">
               {a.fullName}
@@ -214,6 +299,78 @@ export function AccountTab({ locale }: { locale: Locale }) {
                 {a.useGps}
               </button>
             </div>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-kaenz">
+            {a.appearance}
+          </h2>
+          <p className="mt-1 text-xs text-white/50">{a.appearanceLead}</p>
+
+          <p className="mt-4 text-xs font-bold uppercase tracking-wide text-white/60">
+            {a.fontSize}
+          </p>
+          <div className="mt-2 grid grid-cols-4 gap-2">
+            {FONT_SIZES.map((id) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setFont(id)}
+                className={`rounded-xl border py-2.5 font-bold ${
+                  font === id
+                    ? "border-kaenz bg-kaenz/15 text-kaenz"
+                    : "border-white/10 bg-white/5 text-white/80"
+                }`}
+                style={{ fontSize: id === "sm" ? 12 : id === "md" ? 14 : id === "lg" ? 16 : 18 }}
+              >
+                {a.fontSizes[id]}
+              </button>
+            ))}
+          </div>
+
+          <p className="mt-5 text-xs font-bold uppercase tracking-wide text-white/60">
+            {a.colors}
+          </p>
+          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+            {PALETTE_IDS.map((id) => {
+              const swatch = PALETTES[id];
+              const selected = palette === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setPalette(id)}
+                  className={`flex items-center gap-3 rounded-2xl border p-3 text-left ${
+                    selected
+                      ? "border-kaenz bg-kaenz/15"
+                      : "border-white/10 bg-white/5"
+                  }`}
+                >
+                  <span
+                    className="flex h-10 w-10 shrink-0 overflow-hidden rounded-full ring-2 ring-white/20"
+                    aria-hidden
+                  >
+                    <span
+                      className="h-full w-1/2"
+                      style={{ background: swatch.navy }}
+                    />
+                    <span
+                      className="h-full w-1/2"
+                      style={{ background: swatch.kaenz }}
+                    />
+                  </span>
+                  <span>
+                    <span className="block text-sm font-bold">
+                      {a.palettes[id].title}
+                    </span>
+                    <span className="mt-0.5 block text-[11px] text-white/60">
+                      {a.palettes[id].body}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </section>
 
@@ -328,7 +485,7 @@ export function AccountTab({ locale }: { locale: Locale }) {
         <button
           type="submit"
           disabled={status === "saving"}
-          className="w-full rounded-xl bg-kaenz py-3 text-sm font-bold text-white disabled:opacity-60"
+          className="btn-kaenz w-full py-3 text-sm disabled:opacity-60"
         >
           {status === "saving" ? a.saving : a.save}
         </button>

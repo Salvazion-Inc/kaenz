@@ -8,7 +8,10 @@ export function FleetPage({ locale }: { locale: Locale }) {
   return (
     <Site locale={locale}>
       <section className="mx-auto max-w-6xl px-5 pb-24">
-        <h1 className="text-4xl font-extrabold md:text-5xl">{c.fleetTitle}</h1>
+        <p className="kaenz-kicker">{c.nav.fleet}</p>
+        <h1 className="mt-3 text-4xl font-extrabold tracking-tight md:text-5xl">
+          {c.fleetTitle}
+        </h1>
         <p className="mt-3 text-white/70">{c.fleetLead}</p>
         <FleetGrid locale={locale} />
       </section>
