@@ -60,7 +60,7 @@ export const copy = {
     ],
     pricingTitle: "How the price is set",
     pricingBody:
-      "An algorithm prices every trip from trip type, duration, yacht type, number of passengers, and date. You pay with Stripe. The fare splits: Yacht owner 38%, Captain 30%, Kaenz 25%, pickup marina 3.5%, dropoff marina 3.5%. Optional captain gratuity (15–20%) is added on top and goes directly to the captain.",
+      "An algorithm prices every trip from the local charter market, trip type (Commute under 2 hours, Tour 3–6 hours, Special Occasion 4–8 hours), duration, yacht class, guests, and date. You pay with Stripe. The fare splits: Yacht owner 38%, Captain 30%, Kaenz 25%, pickup marina 3.5%, dropoff marina 3.5%. Optional captain gratuity (15–20%) is added on top and goes directly to the captain.",
     uniqueTerms: "Read the Terms and Conditions.",
     testimonialsTitle: "What Do Our Customers Think?",
     testimonials: [
@@ -238,7 +238,7 @@ export const copy = {
     ],
     pricingTitle: "Cómo se calcula el precio",
     pricingBody:
-      "Un algoritmo fija cada viaje según tipo, duración, tipo de yate, número de pasajeros y fecha. Pagas con Stripe. El pago se reparte: dueño del yate 38%, capitán 30%, Kaenz 25%, marina de origen 3.5%, marina de destino 3.5%. La gratificación al capitán (15–20%) es opcional, va encima del pago y llega directo al capitán.",
+      "Un algoritmo fija cada viaje según el mercado local de chárter, tipo (Commute menos de 2 horas, Tour 3–6 horas, Ocasión especial 4–8 horas), duración, clase de yate, pasajeros y fecha. Pagas con Stripe. El pago se reparte: dueño del yate 38%, capitán 30%, Kaenz 25%, marina de origen 3.5%, marina de destino 3.5%. La gratificación al capitán (15–20%) es opcional, va encima del pago y llega directo al capitán.",
     uniqueTerms: "Lee los Términos y Condiciones.",
     testimonialsTitle: "¿Qué Piensan Nuestros Clientes?",
     testimonials: [

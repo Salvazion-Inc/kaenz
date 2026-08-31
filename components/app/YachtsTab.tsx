@@ -5,22 +5,28 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { at } from "@/lib/app-copy";
 import { etaFromKm, haversineKm } from "@/lib/geo";
-import { CAPTAIN_LANG_FLAGS, type CaptainLang } from "@/lib/listings";
+import {
+  CAPTAIN_LANG_FLAGS,
+  YACHT_TRAITS,
+  type CaptainLang,
+  type YachtTrait,
+} from "@/lib/listings";
 import { pathFor, type Locale } from "@/lib/locale";
 import { useLocation } from "@/lib/location";
-import { formatUsd, yachts, type Yacht } from "@/lib/yachts";
+import { yachts, type Yacht } from "@/lib/yachts";
 import { useTrip } from "@/lib/trip-store";
 import { AddYachtForm } from "./AddYachtForm";
 import { IconBadge } from "./icons";
 
 export function YachtsTab({ locale }: { locale: Locale }) {
   const c = at(locale);
-  const { setTrip } = useTrip();
+  const { setTrip, trip } = useTrip();
   const { here, located, locating, locate } = useLocation();
   const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [listings, setListings] = useState<Yacht[]>([]);
   const [notice, setNotice] = useState("");
+  const [klass, setKlass] = useState<"all" | YachtTrait>("all");
 
   useEffect(() => {
     fetch("/api/yachts")
@@ -31,17 +37,20 @@ export function YachtsTab({ locale }: { locale: Locale }) {
 
   const list = useMemo(() => {
     return [...listings, ...yachts]
+      .filter((y) => klass === "all" || y.traits?.includes(klass))
       .map((y) => {
         const hasGeo = Number.isFinite(y.lat) && Number.isFinite(y.lng);
         const km = hasGeo ? haversineKm(here, y) : Number.POSITIVE_INFINITY;
         return { y, km, eta: hasGeo ? etaFromKm(km) : null };
       })
       .sort((a, b) => a.km - b.km);
-  }, [here, listings]);
+  }, [here, listings, klass]);
 
   function request(id: string) {
-    setTrip({ yachtId: id });
-    router.push(pathFor(locale, "/app/request"));
+    if (trip.status === "draft" || trip.status === "rated") {
+      setTrip({ yachtId: id, status: "draft" });
+    }
+    router.push(pathFor(locale, "/app/trip"));
   }
 
   return (
@@ -83,6 +92,34 @@ export function YachtsTab({ locale }: { locale: Locale }) {
         </p>
       ) : null}
 
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => setKlass("all")}
+          className={`rounded-full px-3 py-1 text-[11px] font-bold ${
+            klass === "all"
+              ? "bg-kaenz text-white"
+              : "border border-white/20 text-white/70"
+          }`}
+        >
+          {c.classAll}
+        </button>
+        {YACHT_TRAITS.map((trait) => (
+          <button
+            key={trait}
+            type="button"
+            onClick={() => setKlass(trait)}
+            className={`rounded-full px-3 py-1 text-[11px] font-bold ${
+              klass === trait
+                ? "bg-kaenz text-white"
+                : "border border-white/20 text-white/70"
+            }`}
+          >
+            {c.addYacht[trait]}
+          </button>
+        ))}
+      </div>
+
       <ul className="mt-5 space-y-4">
         {list.map(({ y, eta }) => (
           <li
@@ -122,19 +159,14 @@ export function YachtsTab({ locale }: { locale: Locale }) {
                   <p className="text-xs text-white/60">
                     {y.class}
                     {y.lengthFt ? ` · ${y.lengthFt} ft` : ""}
-                    {` · ${y.guests} ${c.guests}`}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-white/85">
+                    {c.maxGuests}: {y.guests}
                   </p>
                   {y.listing ? (
                     <p className="mt-1 text-xs text-white/50">{y.marina}</p>
                   ) : null}
                 </div>
-                {y.priceFrom > 0 ? (
-                  <p className="text-right text-sm font-bold">
-                    {c.from}
-                    <br />
-                    {formatUsd(y.priceFrom)}
-                  </p>
-                ) : null}
               </div>
               {y.photos && y.photos.length > 1 ? (
                 <div className="mt-3 flex gap-2 overflow-x-auto">
@@ -153,7 +185,7 @@ export function YachtsTab({ locale }: { locale: Locale }) {
                   {y.traits.map((trait) => (
                     <span
                       key={trait}
-                      className="rounded-full border border-white/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white/70"
+                      className="rounded-full border border-kaenz/35 bg-kaenz/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-kaenz"
                     >
                       {c.addYacht[trait]}
                     </span>

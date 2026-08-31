@@ -6,7 +6,7 @@ import { Nav } from "./Nav";
 import { WorldMap } from "./WorldMap";
 import { t } from "@/lib/copy";
 import { pathFor, type Locale } from "@/lib/locale";
-import { formatUsd, yachts } from "@/lib/yachts";
+import { yachts } from "@/lib/yachts";
 
 export function HomePage({ locale }: { locale: Locale }) {
   const c = t(locale);
@@ -143,13 +143,11 @@ export function HomePage({ locale }: { locale: Locale }) {
               </div>
               <div className="p-5">
                 <p className="text-xs uppercase tracking-widest text-kaenz">
-                  {y.class} · {y.lengthFt} ft
+                  {y.traits.map((t) => t[0].toUpperCase() + t.slice(1)).join(" · ")}
+                  {` · ${y.guests} ${c.guests}`}
                 </p>
                 <h3 className="mt-1 text-xl font-bold">{y.name}</h3>
                 <p className="mt-2 text-sm text-white/70">{y.blurb[locale]}</p>
-                <p className="mt-4 font-semibold">
-                  {c.from} {formatUsd(y.priceFrom)}
-                </p>
               </div>
             </Link>
           ))}

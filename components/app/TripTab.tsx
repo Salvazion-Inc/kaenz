@@ -1,74 +1,207 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { at } from "@/lib/app-copy";
-import { pathFor, type Locale } from "@/lib/locale";
-import { GRATUITY_PCTS, gratuityAmount } from "@/lib/pricing";
+import { crew } from "@/lib/crew";
+import { type Locale } from "@/lib/locale";
+import { nowStamp, settleCharge } from "@/lib/pricing";
 import { formatUsd } from "@/lib/yachts";
-import { useTrip } from "@/lib/trip-store";
-
-const field =
-  "mt-1.5 w-full rounded-xl border border-navy/10 bg-white px-3 py-2.5 text-sm text-navy outline-none";
+import { useProfile } from "@/lib/profile-store";
+import { useTripLog } from "@/lib/trip-log";
+import { TRIP_STEPS, useTrip, type TripStep } from "@/lib/trip-store";
+import { FareCard } from "./FareCard";
+import { GratuityPicker } from "./GratuityPicker";
+import { RequestTab } from "./RequestTab";
+import { TripLiveMap } from "./TripLiveMap";
 
 export function TripTab({ locale }: { locale: Locale }) {
   const c = at(locale);
-  const { trip, setTrip, yacht, fare, originName, destinationName, ready } =
-    useTrip();
-  const [card, setCard] = useState("");
-  const [exp, setExp] = useState("");
-  const [cvc, setCvc] = useState("");
+  const {
+    trip,
+    setTrip,
+    yacht,
+    fare,
+    originName,
+    destinationName,
+    originPlace,
+    destinationPlace,
+    ready,
+  } = useTrip();
+  const { profile } = useProfile();
+  const { addTrip } = useTripLog();
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!profile) return;
+    setTrip({
+      name: profile.fullName,
+      email: profile.email,
+      phone: profile.phone,
+    });
+  }, [profile, setTrip]);
+
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const checkout = q.get("checkout");
+    const sessionId = q.get("session_id") || "";
+    if (checkout === "cancel") {
+      setNotice(c.stripeCancel);
+      setTrip({ paymentStatus: "unpaid" });
+      return;
+    }
+    if (!sessionId.startsWith("cs_")) return;
+    let cancelled = false;
+    fetch(`/api/checkout?session_id=${encodeURIComponent(sessionId)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled || !data.paid) return;
+        setTrip({
+          paymentStatus: "paid",
+          payMethod: "stripe",
+          bookingId: String(data.bookingId || trip.bookingId || ""),
+          stripeSessionId: sessionId,
+          stripePaymentIntent: String(data.paymentIntent || ""),
+        });
+        setNotice(c.paidWithStripe);
+      })
+      .catch(() => {
+        if (!cancelled) setError(c.errConfirm);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [c.errConfirm, c.paidWithStripe, c.stripeCancel, setTrip, trip.bookingId]);
+
+  useEffect(() => {
+    if (trip.status === "requested") {
+      const id = window.setTimeout(
+        () => setTrip({ status: "approved" }),
+        3200,
+      );
+      return () => window.clearTimeout(id);
+    }
+    if (trip.status === "approved") {
+      const id = window.setTimeout(
+        () => setTrip({ status: "waiting" }),
+        3800,
+      );
+      return () => window.clearTimeout(id);
+    }
+    if (trip.status === "waiting") {
+      const ids = crew.slice(0, Math.max(1, Math.min(trip.guests, 4))).map(
+        (member) => member.id,
+      );
+      const timer = window.setTimeout(
+        () =>
+          setTrip({
+            status: "underway",
+            tripProgress: 0,
+            onboardCrewIds: ids,
+          }),
+        4200,
+      );
+      return () => window.clearTimeout(timer);
+    }
+  }, [trip.status, trip.guests, setTrip]);
+
+  useEffect(() => {
+    const arrivedNow =
+      trip.status === "underway" && (trip.tripProgress || 0) >= 1;
+    if (arrivedNow && trip.paymentStatus === "paid") {
+      setTrip({ status: "paid" });
+    }
+  }, [trip.status, trip.tripProgress, trip.paymentStatus, setTrip]);
+
+  const onboard = useMemo(() => {
+    const ids = trip.onboardCrewIds || [];
+    return crew.filter((member) => ids.includes(member.id));
+  }, [trip.onboardCrewIds]);
 
   if (!ready) return null;
 
   const complete =
-    trip.name && trip.email && trip.date && trip.time && yacht && fare;
+    yacht && fare && (trip.whenMode === "now" || (trip.date && trip.time));
+  const step =
+    trip.status === "draft" ? null : (trip.status as TripStep);
+  const arrived = trip.status === "underway" && (trip.tripProgress || 0) >= 1;
+  const paid = trip.paymentStatus === "paid" || trip.status === "paid";
+  const showPay =
+    Boolean(complete) &&
+    trip.status !== "draft" &&
+    trip.status !== "rated" &&
+    !paid;
+  const showRate = trip.status === "paid" || (arrived && paid);
 
   async function pay(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (!yacht || !fare) return;
-    const digits = card.replace(/\s/g, "");
-    if (digits.length < 13 || digits.length > 19) {
-      setError(c.errCard);
-      return;
-    }
-    if (!/^\d{2}\/\d{2}$/.test(exp)) {
-      setError(c.errExp);
-      return;
-    }
-    if (!/^\d{3,4}$/.test(cvc)) {
-      setError(c.errCvc);
-      return;
-    }
+    setNotice("");
+    if (!yacht || !fare || !profile) return;
     setBusy(true);
+    const when =
+      trip.whenMode === "now" ? nowStamp() : { date: trip.date, time: trip.time };
     try {
-      const res = await fetch("/api/bookings", {
+      const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          full_name: trip.name,
-          email: trip.email,
-          phone: trip.phone,
-          yacht_slug: trip.yachtId,
+          full_name: profile.fullName,
+          email: profile.email,
+          phone: profile.phone,
+          yachtId: trip.yachtId,
+          originId: trip.originId,
+          destinationId: trip.destinationId,
           origin: originName,
           destination: destinationName,
-          trip_date: trip.date,
-          trip_time: trip.time,
+          date: when.date,
+          time: when.time,
           guests: trip.guests,
-          notes: `${trip.kind}; stripe; ${trip.hours}h; ${trip.guests} guests; ${formatUsd(fare.total)}; gratuity ${trip.gratuityPct || 0}%; marina ${formatUsd(fare.marina.total)}`,
+          hours: trip.hours,
+          kind: trip.kind,
+          whenMode: trip.whenMode,
+          gratuityPct: trip.gratuityPct || 0,
           locale,
-          status: "confirmed",
-          amount: fare.total + gratuityAmount(fare.total, trip.gratuityPct || 0),
-          payment_method: "stripe",
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error");
-      setTrip({ status: "confirmed", bookingId: data.id });
+      if (!res.ok) {
+        if (data.error === "stripe_unconfigured") {
+          setError(c.stripeMissing);
+          return;
+        }
+        throw new Error(data.error || "Error");
+      }
+      setTrip({
+        paymentStatus: "pending",
+        payMethod: "stripe",
+        bookingId: String(data.id || trip.bookingId || ""),
+        stripeSessionId: String(data.sessionId || ""),
+        date: when.date,
+        time: when.time,
+      });
+      addTrip({
+        id: String(data.id || trip.bookingId || `pay-${Date.now()}`),
+        date: when.date,
+        time: when.time,
+        kind: trip.kind,
+        yachtId: trip.yachtId,
+        yachtName: yacht.name,
+        yachtImage: yacht.image,
+        origin: originName,
+        destination: destinationName,
+        guests: trip.guests,
+        hours: trip.hours,
+        status: "requested",
+        photos: [],
+      });
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      throw new Error("checkout");
     } catch {
       setError(c.errConfirm);
     } finally {
@@ -76,38 +209,141 @@ export function TripTab({ locale }: { locale: Locale }) {
     }
   }
 
-  if (!complete) {
-    return (
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
-        <h1 className="text-2xl font-extrabold">{c.tabs.trip}</h1>
-        <p className="mt-3 text-sm text-white/70">{c.noTrip}</p>
-        <Link
-          href={pathFor(locale, "/app/request")}
-          className="mt-6 inline-block rounded-xl bg-kaenz px-6 py-3 text-sm font-bold"
-        >
-          {c.requestCta}
-        </Link>
-      </div>
-    );
+  if (trip.status === "draft" || !complete) {
+    return <RequestTab locale={locale} />;
   }
+
+  const currentIdx = step ? TRIP_STEPS.indexOf(step) : -1;
 
   return (
     <div>
       <h1 className="text-2xl font-extrabold">{c.tabs.trip}</h1>
       <p className="mt-1 text-sm text-white/70">{c.tripLead}</p>
 
-      {trip.status === "confirmed" ? (
-        <div className="mt-5 rounded-2xl border border-kaenz/40 bg-kaenz/10 p-5">
-          <p className="text-sm font-bold text-kaenz">{c.confirmed}</p>
-          <p className="mt-2 text-sm text-white/80">
-            {c.statusConfirmed} · {yacht.captain.name}
-          </p>
+      {step ? (
+        <section className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
+          <p className="text-sm font-bold text-kaenz">{c.tripSteps[step]}</p>
+          <p className="mt-1 text-xs text-white/65">{c.tripStepLead[step]}</p>
+          <ol className="mt-4 space-y-2">
+            {TRIP_STEPS.map((id, i) => {
+              const done = currentIdx > i;
+              const active = currentIdx === i;
+              return (
+                <li key={id} className="flex items-start gap-3">
+                  <span
+                    className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
+                      done
+                        ? "bg-kaenz text-white"
+                        : active
+                          ? "border border-kaenz bg-kaenz/20 text-kaenz"
+                          : "border border-white/20 text-white/35"
+                    }`}
+                  >
+                    {done ? "✓" : i + 1}
+                  </span>
+                  <span
+                    className={`text-sm ${
+                      active
+                        ? "font-semibold text-white"
+                        : done
+                          ? "text-white/80"
+                          : "text-white/40"
+                    }`}
+                  >
+                    {c.tripSteps[id]}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
           {trip.bookingId ? (
-            <p className="mt-1 font-mono text-xs text-white/50">
+            <p className="mt-3 font-mono text-[11px] text-white/40">
               {trip.bookingId}
             </p>
           ) : null}
-        </div>
+        </section>
+      ) : null}
+
+      {trip.status === "underway" &&
+      originPlace &&
+      destinationPlace &&
+      Number.isFinite(originPlace.lat) &&
+      Number.isFinite(destinationPlace.lat) ? (
+        <section className="mt-4">
+          <TripLiveMap
+            origin={originPlace}
+            destination={destinationPlace}
+            progress={trip.tripProgress || 0}
+            onProgress={(p) => {
+              const prev = trip.tripProgress || 0;
+              if (p === 1 || p - prev >= 0.05) setTrip({ tripProgress: p });
+            }}
+          />
+          <p className="mt-2 text-xs text-white/55">
+            {originName} → {destinationName}
+            {arrived ? ` · ${c.arrivedPay}` : ""}
+          </p>
+        </section>
+      ) : null}
+
+      {(trip.status === "underway" ||
+        trip.status === "paid" ||
+        trip.status === "rated") &&
+      (yacht || onboard.length) ? (
+        <section className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+          <h3 className="text-sm font-bold uppercase tracking-wide text-kaenz">
+            {c.onboard}
+          </h3>
+          <ul className="mt-3 space-y-3">
+            <li className="flex items-center gap-3">
+              {yacht.captain.photo.startsWith("http") ? (
+                <img
+                  src={yacht.captain.photo}
+                  alt={yacht.captain.name}
+                  className="h-11 w-11 rounded-full object-cover"
+                />
+              ) : (
+                <Image
+                  src={yacht.captain.photo}
+                  alt={yacht.captain.name}
+                  width={44}
+                  height={44}
+                  className="h-11 w-11 rounded-full object-cover"
+                />
+              )}
+              <div>
+                <p className="text-sm font-semibold">{yacht.captain.name}</p>
+                <p className="text-xs text-white/50">{c.captain}</p>
+              </div>
+            </li>
+            {profile ? (
+              <li className="flex items-center gap-3">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-kaenz/20 text-sm font-bold text-kaenz">
+                  {(profile.fullName || "?").slice(0, 1).toUpperCase()}
+                </span>
+                <div>
+                  <p className="text-sm font-semibold">{profile.fullName}</p>
+                  <p className="text-xs text-white/50">{c.onboardYou}</p>
+                </div>
+              </li>
+            ) : null}
+            {onboard.map((member) => (
+              <li key={member.id} className="flex items-center gap-3">
+                <Image
+                  src={member.photo}
+                  alt={member.name}
+                  width={44}
+                  height={44}
+                  className="h-11 w-11 rounded-full object-cover"
+                />
+                <div>
+                  <p className="text-sm font-semibold">{member.name}</p>
+                  <p className="text-xs text-white/50">{member.goingTo}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
       ) : null}
 
       <section className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-white/5">
@@ -129,8 +365,8 @@ export function TripTab({ locale }: { locale: Locale }) {
             {originName} → {destinationName}
           </p>
           <p className="mt-2 text-sm text-white/70">
-            {trip.date} · {trip.time} · {trip.hours} {c.hoursUnit} · {trip.guests}{" "}
-            {c.guests}
+            {trip.whenMode === "now" ? c.leavingNow : `${trip.date} · ${trip.time}`}
+            {` · ${trip.hours} ${c.hoursUnit} · ${trip.guests} ${c.guests}`}
           </p>
           <div className="mt-4 flex items-center gap-3">
             {yacht.captain.photo.startsWith("http") ? (
@@ -157,135 +393,95 @@ export function TripTab({ locale }: { locale: Locale }) {
         </div>
       </section>
 
-      <section className="mt-4 rounded-2xl bg-white p-4 text-navy">
-        <h3 className="font-bold">{c.fare}</h3>
-        <dl className="mt-3 space-y-1 text-sm">
-          <div className="flex justify-between">
-            <dt>{c.boat}</dt>
-            <dd>{formatUsd(fare.total)}</dd>
-          </div>
-          <div className="flex justify-between text-navy/60">
-            <dt>{c.ownerShare}</dt>
-            <dd>{formatUsd(fare.owner)}</dd>
-          </div>
-          <div className="flex justify-between text-navy/60">
-            <dt>{c.captainShare}</dt>
-            <dd>
-              {formatUsd(
-                fare.captain + gratuityAmount(fare.total, trip.gratuityPct || 0),
-              )}
-            </dd>
-          </div>
-          {fare.marina.roundTrip && fare.marina.total ? (
-            <div className="flex justify-between text-navy/60">
-              <dt>{c.marinaRoundShare}</dt>
-              <dd>{formatUsd(fare.marina.total)}</dd>
-            </div>
-          ) : (
-            <>
-              {fare.marina.origin ? (
-                <div className="flex justify-between text-navy/60">
-                  <dt>{c.marinaPickupShare}</dt>
-                  <dd>{formatUsd(fare.marina.origin)}</dd>
-                </div>
-              ) : null}
-              {fare.marina.destination ? (
-                <div className="flex justify-between text-navy/60">
-                  <dt>{c.marinaDropoffShare}</dt>
-                  <dd>{formatUsd(fare.marina.destination)}</dd>
-                </div>
-              ) : null}
-            </>
-          )}
-          <div className="flex justify-between text-navy/60">
-            <dt>{c.platformShare}</dt>
-            <dd>{formatUsd(fare.platform)}</dd>
-          </div>
-          {trip.gratuityPct ? (
-            <div className="flex justify-between text-navy/60">
-              <dt>{c.gratuity}</dt>
-              <dd>{formatUsd(gratuityAmount(fare.total, trip.gratuityPct))}</dd>
-            </div>
-          ) : null}
-          <div className="flex justify-between border-t border-navy/10 pt-2 text-base font-bold">
-            <dt>{c.total}</dt>
-            <dd>
-              {formatUsd(
-                fare.total + gratuityAmount(fare.total, trip.gratuityPct || 0),
-              )}
-            </dd>
-          </div>
-        </dl>
-      </section>
+      <div className="mt-4">
+        <FareCard
+          locale={locale}
+          fare={fare}
+          gratuityPct={trip.gratuityPct || 0}
+          marketName={fare.marketName}
+          paid={paid}
+        />
+      </div>
 
-      {trip.status !== "confirmed" ? (
+      {showPay ? (
         <form onSubmit={pay} className="mt-4 rounded-2xl border border-white/10 p-4">
           <h3 className="font-bold">{c.pay}</h3>
-          <p className="mt-1 text-xs text-white/50">{c.demoPay}</p>
-          <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-white/60">
-            {c.gratuity}
-            <select
-              className={field}
+          <p className="mt-1 text-xs text-white/50">{c.payAfterQuote}</p>
+          <p className="mt-1 text-xs text-white/45">{c.demoPay}</p>
+          <div className="mt-3">
+            <GratuityPicker
+              locale={locale}
+              fare={fare.total}
               value={trip.gratuityPct || 0}
-              onChange={(e) => setTrip({ gratuityPct: Number(e.target.value) })}
-            >
-              {GRATUITY_PCTS.map((pct) => (
-                <option key={pct} value={pct}>
-                  {pct === 0 ? c.gratuityNone : `${pct}%`}
-                </option>
-              ))}
-            </select>
-          </label>
-          <p className="mt-1 text-[11px] text-white/45">{c.gratuityHint}</p>
-          <p className="mt-3 text-xs font-bold uppercase tracking-wide text-kaenz">
-            {c.stripePay}
-          </p>
-          <div className="mt-3 space-y-3">
-            <label className="block text-xs font-bold">
-              {c.cardNumber}
-              <input
-                className={field}
-                inputMode="numeric"
-                autoComplete="cc-number"
-                placeholder="4242 4242 4242 4242"
-                value={card}
-                onChange={(e) => setCard(e.target.value)}
-              />
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block text-xs font-bold">
-                {c.expiry}
-                <input
-                  className={field}
-                  placeholder="12/28"
-                  value={exp}
-                  onChange={(e) => setExp(e.target.value)}
-                />
-              </label>
-              <label className="block text-xs font-bold">
-                {c.cvc}
-                <input
-                  className={field}
-                  inputMode="numeric"
-                  placeholder="123"
-                  value={cvc}
-                  onChange={(e) => setCvc(e.target.value)}
-                />
-              </label>
-            </div>
+              onChange={(pct) => setTrip({ gratuityPct: pct })}
+            />
           </div>
+          {notice ? (
+            <p className="mt-3 text-sm text-kaenz">{notice}</p>
+          ) : null}
           {error ? <p className="mt-3 text-sm text-red-400">{error}</p> : null}
           <button
             type="submit"
-            disabled={busy}
+            disabled={busy || !profile}
             className="mt-4 w-full rounded-xl bg-kaenz py-3 text-sm font-bold text-white disabled:opacity-60"
           >
-            {busy ? c.paying : c.payConfirm}
+            {busy
+              ? c.payingStripe
+              : `${c.stripePay} · ${formatUsd(settleCharge(fare, trip.gratuityPct || 0).total)}`}
           </button>
         </form>
-      ) : (
-        <p className="mt-4 text-center text-sm text-white/70">{c.statusUnderway}</p>
-      )}
+      ) : notice && paid ? (
+        <p className="mt-4 text-sm text-kaenz">{notice}</p>
+      ) : null}
+
+      {showRate ? (
+        <section className="mt-4 rounded-2xl border border-white/10 p-4">
+          <h3 className="font-bold">{c.rateTrip}</h3>
+          <div className="mt-3 flex gap-2">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setTrip({ status: "rated", rating: n })}
+                className="text-3xl leading-none text-kaenz"
+                aria-label={`${n} ${c.stars}`}
+              >
+                {n <= (trip.rating || 0) ? "★" : "☆"}
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {trip.status === "rated" ? (
+        <div className="mt-4 text-center">
+          <p className="text-3xl tracking-wide text-kaenz">
+            {"★".repeat(trip.rating || 0)}
+            {"☆".repeat(Math.max(0, 5 - (trip.rating || 0)))}
+          </p>
+          <p className="mt-2 text-sm text-white/70">
+            {c.ratedAs} {trip.rating}/5
+          </p>
+          <button
+            type="button"
+            onClick={() =>
+              setTrip({
+                status: "draft",
+                paymentStatus: "unpaid",
+                tripProgress: 0,
+                rating: 0,
+                bookingId: undefined,
+                stripeSessionId: undefined,
+                stripePaymentIntent: undefined,
+                onboardCrewIds: [],
+              })
+            }
+            className="mt-6 w-full rounded-xl bg-kaenz py-3 text-sm font-bold text-white"
+          >
+            {c.requestCta}
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

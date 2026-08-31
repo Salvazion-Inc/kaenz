@@ -1,8 +1,5 @@
-"use client";
-
-import { KaenzApp } from "@/components/app/KaenzApp";
-import { WithLocale } from "@/components/WithLocale";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <WithLocale Component={KaenzApp} tab="request" />;
+  redirect("/app/trip");
 }

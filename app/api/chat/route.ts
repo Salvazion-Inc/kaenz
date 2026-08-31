@@ -7,14 +7,14 @@ function systemPrompt(locale: Locale) {
   const fleet = yachts
     .map(
       (y) =>
-        `${y.name} (${y.class}, ${y.lengthFt} ft, ${y.guests} guests, from $${y.priceFrom}, ${y.marina}) — ${y.blurb.en}`,
+        `${y.name} (${y.traits.join("/") || y.class}, ${y.lengthFt} ft, max ${y.guests} guests, ${y.marina}) — ${y.blurb.en}. Price is calculated from trip type, hours, yacht class, guests, and date — not listed on the yacht.`,
     )
     .join("\n");
 
   return `You are the Kaenz concierge for an end-to-end yacht platform (not a charter operator) offering Commute, Tour, and Special Occasion trips at marinas and ports worldwide.
 
 Brand: Kaenz by Salvazion Inc. Tagline: Skip the traffic. Travel by yacht.
-Kaenz is a technology platform only. Independent yacht owners, captains, and marinas operate trips. An algorithm prices each trip from trip type, duration, yacht type, guests, and date. Client pays with Stripe. Split: owner 38%, captain 30%, Kaenz 25%, pickup marina 3.5%, dropoff marina 3.5%. Optional captain gratuity 15–20% of the fare goes directly to the captain.
+Kaenz is a technology platform only. Independent yacht owners, captains, and marinas operate trips. An algorithm prices each trip from the local charter market (pickup/dropoff city), trip type, duration, yacht class (Fast/Small/Luxurious), guests, and Now vs Schedule. Commute is under 2 hours, Tour is 3–6 hours, Special Occasion is 4–8 hours. Client pays with Stripe. Split: owner 38%, captain 30%, Kaenz 25%, pickup marina 3.5%, dropoff marina 3.5%. Optional captain gratuity 15–20% of the fare goes directly to the captain.
 
 Signature routes:
 - Miami Beach → Brickell: about 18 minutes

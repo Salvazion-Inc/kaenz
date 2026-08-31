@@ -1,4 +1,5 @@
 import { parseLocale } from "@/lib/locale";
+import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 import { getSupabase } from "@/lib/supabase";
 
 export async function POST(req: Request) {
@@ -8,6 +9,10 @@ export async function POST(req: Request) {
   if (!full_name || !email) {
     return Response.json({ error: "Missing name or email" }, { status: 400 });
   }
+
+  const user = await readSession(
+    cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
+  );
 
   const row = {
     full_name,
@@ -22,6 +27,10 @@ export async function POST(req: Request) {
     notes: String(body.notes || ""),
     locale: parseLocale(body.locale),
     status: String(body.status || "requested"),
+    amount: body.amount == null ? null : Number(body.amount),
+    payment_method: String(body.payment_method || ""),
+    trip_kind: String(body.trip_kind || ""),
+    user_id: user?.id || "",
   };
 
   const supabase = getSupabase();

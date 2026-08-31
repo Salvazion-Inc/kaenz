@@ -5,9 +5,10 @@ import { t } from "@/lib/copy";
 import type { Locale } from "@/lib/locale";
 import { mapHubs, placeById, placeCountry } from "@/lib/places";
 import {
-  DEFAULT_HOURS,
+  clampHours,
   defaultHoursFor,
   estimateFare,
+  HOURS_RANGE,
   type TripKind,
 } from "@/lib/pricing";
 import { formatUsd, yachtById, yachts } from "@/lib/yachts";
@@ -26,7 +27,7 @@ export function BookForm({
   const [message, setMessage] = useState("");
   const [kind, setKind] = useState<TripKind>("tour");
   const [yachtId, setYachtId] = useState(defaultYacht || yachts[0].id);
-  const [hours, setHours] = useState(DEFAULT_HOURS.tour);
+  const [hours, setHours] = useState(HOURS_RANGE.tour.default);
   const [guests, setGuests] = useState(4);
   const [date, setDate] = useState("");
   const [originId, setOriginId] = useState(mapHubs[0]?.id || "");
@@ -98,7 +99,7 @@ export function BookForm({
             onChange={(e) => {
               const next = e.target.value as TripKind;
               setKind(next);
-              setHours(defaultHoursFor(next, yachtById(yachtId)));
+              setHours(defaultHoursFor(next));
             }}
           >
             {(["commute", "tour", "special"] as const).map((k, i) => (
@@ -114,11 +115,12 @@ export function BookForm({
             className={field}
             type="number"
             name="hours"
-            min={1}
-            max={12}
+            min={HOURS_RANGE[kind].min}
+            max={HOURS_RANGE[kind].max}
+            step={HOURS_RANGE[kind].step}
             required
             value={hours}
-            onChange={(e) => setHours(Number(e.target.value))}
+            onChange={(e) => setHours(clampHours(kind, Number(e.target.value)))}
           />
         </label>
         <label className="block text-sm font-semibold">

@@ -3,7 +3,7 @@ import { BookForm } from "@/components/BookForm";
 import { Site } from "@/components/Site";
 import { t } from "@/lib/copy";
 import type { Locale } from "@/lib/locale";
-import { formatUsd, type Yacht } from "@/lib/yachts";
+import type { Yacht } from "@/lib/yachts";
 
 export function YachtDetail({
   locale,
@@ -27,21 +27,19 @@ export function YachtDetail({
             />
           </div>
           <p className="mt-6 text-xs uppercase tracking-widest text-kaenz">
-            {yacht.class} · {yacht.lengthFt} ft
+            {yacht.traits.map((t) => t[0].toUpperCase() + t.slice(1)).join(" · ")}
+            {` · ${yacht.lengthFt} ft`}
           </p>
           <h1 className="mt-2 text-4xl font-extrabold">{yacht.name}</h1>
           <p className="mt-3 text-white/75">{yacht.blurb[locale]}</p>
           <ul className="mt-6 space-y-2 text-sm text-white/80">
             <li>
-              {yacht.guests} {c.guests}
+              {c.form.guests}: {yacht.guests}
             </li>
             <li>
               {yacht.hoursMin}+ {c.hours}
             </li>
             <li>{yacht.marina}</li>
-            <li>
-              {c.from} {formatUsd(yacht.priceFrom)}
-            </li>
           </ul>
         </div>
         <div>

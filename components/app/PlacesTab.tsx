@@ -78,7 +78,7 @@ function FeaturedCard({
 
 export function PlacesTab({ locale }: { locale: Locale }) {
   const c = at(locale);
-  const { setTrip, allPlaces, addPartnerPlace } = useTrip();
+  const { setTrip, trip, allPlaces, addPartnerPlace } = useTrip();
   const { here, located, locating, locate } = useLocation();
   const router = useRouter();
   const [adding, setAdding] = useState(false);
@@ -92,8 +92,10 @@ export function PlacesTab({ locale }: { locale: Locale }) {
   );
 
   function go(id: string, role: "originId" | "destinationId") {
-    setTrip({ [role]: id });
-    router.push(pathFor(locale, "/app/request"));
+    if (trip.status === "draft" || trip.status === "rated") {
+      setTrip({ [role]: id, status: "draft" });
+    }
+    router.push(pathFor(locale, "/app/trip"));
   }
 
   function kmFor(p: Place) {

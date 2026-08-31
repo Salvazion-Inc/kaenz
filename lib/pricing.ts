@@ -1,8 +1,10 @@
 import { marinaShares } from "./marina-listings";
+import { marketLabel, tripMarketHourly } from "./markets";
 import type { Place } from "./places";
 import type { Yacht } from "./yachts";
 
 export type TripKind = "commute" | "tour" | "special";
+export type WhenMode = "now" | "schedule";
 
 /** Client fare split (sums to 100%). Captain gratuity is on top. */
 export const FARE_SHARES = {
@@ -14,18 +16,30 @@ export const FARE_SHARES = {
 } as const;
 
 export const GRATUITY_PCTS = [0, 15, 18, 20] as const;
+export const GRATUITY_MAX_PCT = 25;
+
+export const HOURS_RANGE: Record<
+  TripKind,
+  { min: number; max: number; default: number; step: number }
+> = {
+  commute: { min: 1, max: 1.5, default: 1, step: 0.5 },
+  tour: { min: 3, max: 6, default: 4, step: 1 },
+  special: { min: 4, max: 8, default: 5, step: 1 },
+};
 
 export const DEFAULT_HOURS: Record<TripKind, number> = {
-  commute: 2,
-  tour: 4,
-  special: 5,
+  commute: HOURS_RANGE.commute.default,
+  tour: HOURS_RANGE.tour.default,
+  special: HOURS_RANGE.special.default,
 };
 
 const KIND_MULT: Record<TripKind, number> = {
-  commute: 0.72,
+  commute: 1.06,
   tour: 1,
-  special: 1.38,
+  special: 1.24,
 };
+
+const NOW_MULT = 1.12;
 
 export type FareQuote = {
   hours: number;
@@ -34,29 +48,57 @@ export type FareQuote = {
   captain: number;
   platform: number;
   marina: ReturnType<typeof marinaShares>;
+  marketHourly: number;
+  marketName: string;
 };
 
-export function defaultHoursFor(kind: TripKind, yacht?: Yacht) {
-  if (kind === "commute") return Math.max(1, (yacht?.hoursMin ?? 4) - 2);
-  return yacht?.hoursMin ?? DEFAULT_HOURS[kind];
+export function defaultHoursFor(kind: TripKind, _yacht?: Yacht) {
+  return HOURS_RANGE[kind].default;
 }
 
-function yachtTypeMultiplier(yacht: Yacht) {
-  let m = 1;
-  const cls = yacht.class.toLowerCase();
-  if (cls.includes("luxury")) m *= 1.22;
-  else if (cls.includes("flybridge")) m *= 1.12;
-  else if (cls.includes("motor")) m *= 1.08;
-  else if (cls.includes("center")) m *= 0.92;
+export function clampHours(kind: TripKind, hours: number) {
+  const { min, max, step, default: fallback } = HOURS_RANGE[kind];
+  if (!Number.isFinite(hours)) return fallback;
+  const snapped = Math.round(hours / step) * step;
+  return Math.min(max, Math.max(min, Number(snapped.toFixed(2))));
+}
 
-  m *= 1 + (yacht.lengthFt - 42) * 0.007;
+export function nowStamp() {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() + 25);
+  const rounded = Math.ceil(d.getMinutes() / 5) * 5;
+  d.setMinutes(rounded >= 60 ? 60 : rounded, 0, 0);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return {
+    date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
+    time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+  };
+}
 
-  for (const trait of yacht.traits ?? []) {
-    if (trait === "luxurious") m *= 1.12;
-    if (trait === "fast") m *= 1.05;
-    if (trait === "small") m *= 0.9;
+/** Fallback seed if a place has no market match. Classification still applies on top. */
+export const BASE_HOURLY = 380;
+
+const TRAIT_RATE = {
+  luxurious: 1.55,
+  fast: 1.18,
+  small: 0.8,
+} as const;
+
+export function yachtClasses(yacht: Yacht) {
+  return yacht.traits?.length ? yacht.traits : (["fast"] as const);
+}
+
+function classificationHourly(yacht: Yacht, market: number) {
+  let hourly = market;
+  for (const trait of yachtClasses(yacht)) {
+    hourly *= TRAIT_RATE[trait];
   }
-  return Math.max(0.75, m);
+  const cap = Math.max(2, yacht.guests || 8);
+  hourly *= 1 + (cap - 8) * 0.038;
+  if (yacht.lengthFt > 0) {
+    hourly *= 1 + (yacht.lengthFt - 42) * 0.0045;
+  }
+  return Math.max(150, hourly);
 }
 
 function guestMultiplier(yacht: Yacht, guests: number) {
@@ -76,6 +118,10 @@ function dateMultiplier(date?: string) {
   return (weekend ? 1.16 : 1) * (peak ? 1.08 : 1);
 }
 
+export function toCents(usd: number) {
+  return Math.max(0, Math.round(usd * 100));
+}
+
 export function splitFare(
   total: number,
   origin?: Place,
@@ -88,11 +134,66 @@ export function splitFare(
   return { owner, captain, platform, marina };
 }
 
+export function clampGratuityPct(pct: number) {
+  if (!Number.isFinite(pct)) return 0;
+  return Math.min(GRATUITY_MAX_PCT, Math.max(0, Math.round(pct)));
+}
+
 export function gratuityAmount(total: number, pct: number) {
-  const safe = GRATUITY_PCTS.includes(pct as (typeof GRATUITY_PCTS)[number])
-    ? pct
-    : 0;
-  return Math.round((total * safe) / 100);
+  return Math.round((total * clampGratuityPct(pct)) / 100);
+}
+
+export type ChargeBreakdown = {
+  fare: number;
+  gratuityPct: number;
+  gratuity: number;
+  total: number;
+  owner: number;
+  captain: number;
+  captainTotal: number;
+  platform: number;
+  marina: ReturnType<typeof marinaShares>;
+  fareCents: number;
+  gratuityCents: number;
+  totalCents: number;
+  ownerCents: number;
+  captainCents: number;
+  captainTotalCents: number;
+  platformCents: number;
+  marinaOriginCents: number;
+  marinaDestCents: number;
+};
+
+/** Fare split (100%) plus optional captain gratuity on top. */
+export function settleCharge(
+  quote: Pick<
+    FareQuote,
+    "total" | "owner" | "captain" | "platform" | "marina"
+  >,
+  gratuityPct: number,
+): ChargeBreakdown {
+  const pct = clampGratuityPct(gratuityPct);
+  const gratuity = gratuityAmount(quote.total, pct);
+  return {
+    fare: quote.total,
+    gratuityPct: pct,
+    gratuity,
+    total: quote.total + gratuity,
+    owner: quote.owner,
+    captain: quote.captain,
+    captainTotal: quote.captain + gratuity,
+    platform: quote.platform,
+    marina: quote.marina,
+    fareCents: toCents(quote.total),
+    gratuityCents: toCents(gratuity),
+    totalCents: toCents(quote.total + gratuity),
+    ownerCents: toCents(quote.owner),
+    captainCents: toCents(quote.captain),
+    captainTotalCents: toCents(quote.captain + gratuity),
+    platformCents: toCents(quote.platform),
+    marinaOriginCents: toCents(quote.marina.origin),
+    marinaDestCents: toCents(quote.marina.destination),
+  };
 }
 
 export function estimateFare(
@@ -104,21 +205,30 @@ export function estimateFare(
     date?: string;
     origin?: Place;
     destination?: Place;
+    whenMode?: WhenMode;
   },
 ): FareQuote {
-  const hours = Math.max(
-    1,
+  const hours = clampHours(
+    kind,
     options?.hours ?? defaultHoursFor(kind, yacht),
   );
   const guests = Math.max(1, options?.guests ?? 4);
-  const hourly = yacht.priceFrom / Math.max(1, yacht.hoursMin);
+  const market = tripMarketHourly(options?.origin, options?.destination);
+  const hourly = classificationHourly(yacht, market);
   const raw =
     hourly *
     hours *
     KIND_MULT[kind] *
-    yachtTypeMultiplier(yacht) *
     guestMultiplier(yacht, guests) *
-    dateMultiplier(options?.date);
-  const total = Math.max(250, Math.round(raw));
-  return { hours, total, ...splitFare(total, options?.origin, options?.destination) };
+    dateMultiplier(options?.date) *
+    (options?.whenMode === "now" ? NOW_MULT : 1);
+  const floor = kind === "commute" ? 180 : 320;
+  const total = Math.max(floor, Math.round(raw / 5) * 5);
+  return {
+    hours,
+    total,
+    marketHourly: Math.round(hourly),
+    marketName: marketLabel(options?.origin, options?.destination),
+    ...splitFare(total, options?.origin, options?.destination),
+  };
 }

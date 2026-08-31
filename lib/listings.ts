@@ -73,7 +73,6 @@ export function listingToYacht(row: YachtListing): Yacht {
     lengthFt: 0,
     guests: row.guests,
     hoursMin: 4,
-    priceFrom: 0,
     marina: row.homePort,
     marinaId: row.slug,
     image: row.photos[0] || "",

@@ -6,9 +6,49 @@ create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   full_name text,
   phone text,
-  role text check (role in ('client', 'owner', 'captain', 'both')) default 'client',
+  email text,
+  credit_last4 text,
+  credit_expiry text,
+  credit_brand text,
+  debit_last4 text,
+  debit_expiry text,
+  debit_brand text,
+  solana_wallet text,
+  instagram text,
+  city text,
+  city_lat double precision,
+  city_lng double precision,
+  role text check (role in ('client', 'customer', 'owner', 'captain', 'both')) default 'client',
   created_at timestamptz not null default now()
 );
+
+alter table public.profiles add column if not exists email text;
+alter table public.profiles add column if not exists credit_last4 text;
+alter table public.profiles add column if not exists credit_expiry text;
+alter table public.profiles add column if not exists credit_brand text;
+alter table public.profiles add column if not exists debit_last4 text;
+alter table public.profiles add column if not exists debit_expiry text;
+alter table public.profiles add column if not exists debit_brand text;
+alter table public.profiles add column if not exists solana_wallet text;
+alter table public.profiles add column if not exists instagram text;
+alter table public.profiles add column if not exists city text;
+alter table public.profiles add column if not exists city_lat double precision;
+alter table public.profiles add column if not exists city_lng double precision;
+
+alter table public.bookings add column if not exists user_id text;
+alter table public.bookings add column if not exists trip_kind text;
+alter table public.bookings add column if not exists fare_amount numeric;
+alter table public.bookings add column if not exists gratuity_pct numeric;
+alter table public.bookings add column if not exists gratuity_amount numeric;
+alter table public.bookings add column if not exists share_owner numeric;
+alter table public.bookings add column if not exists share_captain numeric;
+alter table public.bookings add column if not exists share_platform numeric;
+alter table public.bookings add column if not exists share_marina_pickup numeric;
+alter table public.bookings add column if not exists share_marina_dropoff numeric;
+alter table public.bookings add column if not exists stripe_session_id text;
+alter table public.bookings add column if not exists stripe_payment_intent text;
+alter table public.bookings add column if not exists transfer_group text;
+alter table public.bookings add column if not exists payouts jsonb;
 
 create table if not exists public.yachts (
   id uuid primary key default gen_random_uuid(),
@@ -43,6 +83,18 @@ create table if not exists public.bookings (
   amount numeric,
   payment_method text,
   trip_kind text,
+  fare_amount numeric,
+  gratuity_pct numeric,
+  gratuity_amount numeric,
+  share_owner numeric,
+  share_captain numeric,
+  share_platform numeric,
+  share_marina_pickup numeric,
+  share_marina_dropoff numeric,
+  stripe_session_id text,
+  stripe_payment_intent text,
+  transfer_group text,
+  payouts jsonb,
   created_at timestamptz not null default now()
 );
 
@@ -89,6 +141,11 @@ create policy "public read active yachts"
 
 create policy "service insert bookings"
   on public.bookings for insert
+  with check (true);
+
+create policy "service update bookings"
+  on public.bookings for update
+  using (true)
   with check (true);
 
 create policy "service insert applications"

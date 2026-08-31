@@ -9,9 +9,9 @@ import { HtmlLang } from "../HtmlLang";
 import { LanguageSwitcher } from "../LanguageSwitcher";
 import { AccountChip } from "../AccountChip";
 import {
+  IconAccount,
   IconCrew,
   IconPin,
-  IconRequest,
   IconTrip,
   IconYacht,
 } from "./icons";
@@ -23,9 +23,9 @@ const TABS: {
 }[] = [
   { id: "places", href: "/app", Icon: IconPin },
   { id: "yachts", href: "/app/yachts", Icon: IconYacht },
-  { id: "request", href: "/app/request", Icon: IconRequest },
   { id: "trip", href: "/app/trip", Icon: IconTrip },
   { id: "crew", href: "/app/crew", Icon: IconCrew },
+  { id: "account", href: "/app/account", Icon: IconAccount },
 ];
 
 export function AppShell({

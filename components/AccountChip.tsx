@@ -1,12 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import { at } from "@/lib/app-copy";
 import { t } from "@/lib/copy";
-import type { Locale } from "@/lib/locale";
+import { pathFor, type Locale } from "@/lib/locale";
+import { useProfile } from "@/lib/profile-store";
 import type { SessionUser } from "@/lib/session";
 
 export function AccountChip({ locale }: { locale: Locale }) {
   const c = t(locale);
+  const a = at(locale);
+  const { profile } = useProfile();
   const [user, setUser] = useState<SessionUser | null>(null);
 
   useEffect(() => {
@@ -23,11 +28,22 @@ export function AccountChip({ locale }: { locale: Locale }) {
     window.location.href = "/login";
   }
 
+  const label = profile?.fullName || user.name || user.email;
+
   return (
     <div className="flex items-center gap-2">
-      <span className="hidden max-w-[9rem] truncate text-[11px] text-white/70 sm:inline">
-        {user.name || user.email}
-      </span>
+      <Link
+        href={pathFor(locale, "/app/account")}
+        className="hidden max-w-[11rem] truncate text-[11px] text-white/70 hover:text-white sm:inline"
+      >
+        {label}
+        {profile?.role ? (
+          <span className="text-kaenz">
+            {" "}
+            · {a.account.roles[profile.role].title}
+          </span>
+        ) : null}
+      </Link>
       <button
         type="button"
         onClick={logout}

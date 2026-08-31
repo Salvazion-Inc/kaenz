@@ -34,6 +34,11 @@ const nextConfig: NextConfig = {
         destination: "/signup",
         permanent: true,
       },
+      {
+        source: "/app/request",
+        destination: "/app/trip",
+        permanent: true,
+      },
     ];
   },
 };

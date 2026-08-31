@@ -15,6 +15,7 @@ export type GpsPoint = { lat: number; lng: number; label: string };
 
 type LocationCtx = {
   here: GpsPoint;
+  city: string;
   located: boolean;
   locating: boolean;
   denied: boolean;
@@ -39,18 +40,17 @@ function readCached(): GpsPoint | null {
 
 export function LocationProvider({ children }: { children: React.ReactNode }) {
   const [here, setHere] = useState<GpsPoint>(defaultHere);
+  const [city, setCity] = useState(defaultHere.label);
   const [located, setLocated] = useState(false);
   const [locating, setLocating] = useState(false);
   const [denied, setDenied] = useState(false);
 
   const apply = useCallback((lat: number, lng: number) => {
     const near = nearestPlace({ lat, lng }, places);
-    const next = {
-      lat,
-      lng,
-      label: near ? near.city : "Near you",
-    };
+    const label = near ? near.city : "Near you";
+    const next = { lat, lng, label };
     setHere(next);
+    setCity(label);
     setLocated(true);
     setDenied(false);
     try {
@@ -58,6 +58,25 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     } catch {
       /* ignore */
     }
+    fetch(`/api/geo/city?lat=${lat}&lng=${lng}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const resolved = String(data.city || "").trim();
+        if (!resolved) return;
+        setCity(resolved);
+        setHere((cur) => {
+          const updated = { ...cur, label: resolved };
+          try {
+            sessionStorage.setItem(KEY, JSON.stringify(updated));
+          } catch {
+            /* ignore */
+          }
+          return updated;
+        });
+      })
+      .catch(() => {
+        /* nearest marina city already set */
+      });
   }, []);
 
   const locate = useCallback(() => {
@@ -84,14 +103,15 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     const cached = readCached();
     if (cached) {
       setHere(cached);
+      setCity(cached.label);
       setLocated(true);
     }
     locate();
   }, [locate]);
 
   const value = useMemo(
-    () => ({ here, located, locating, denied, locate }),
-    [here, located, locating, denied, locate],
+    () => ({ here, city, located, locating, denied, locate }),
+    [here, city, located, locating, denied, locate],
   );
 
   return (

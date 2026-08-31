@@ -83,6 +83,20 @@ export function IconCrew({ className }: { className?: string }) {
   );
 }
 
+export function IconAccount({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="8.5" r="3.2" stroke="currentColor" strokeWidth="1.8" />
+      <path
+        d="M5.5 19c.9-3.2 3.2-5 6.5-5s5.6 1.8 6.5 5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export function IconBadge({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
