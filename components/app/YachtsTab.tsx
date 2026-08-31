@@ -15,6 +15,7 @@ import { pathFor, type Locale } from "@/lib/locale";
 import { useLocation } from "@/lib/location";
 import { yachts, type Yacht } from "@/lib/yachts";
 import { useTrip } from "@/lib/trip-store";
+import { CaptainAvatar } from "@/components/CaptainAvatar";
 import { AddYachtForm } from "./AddYachtForm";
 import { IconBadge } from "./icons";
 
@@ -193,25 +194,7 @@ export function YachtsTab({ locale }: { locale: Locale }) {
                 </div>
               ) : null}
               <div className="mt-3 flex items-center gap-3">
-                {y.captain.photo ? (
-                  y.captain.photo.startsWith("http") ? (
-                    <img
-                      src={y.captain.photo}
-                      alt={y.captain.name}
-                      className="h-10 w-10 rounded-full object-cover"
-                    />
-                  ) : (
-                    <Image
-                      src={y.captain.photo}
-                      alt={y.captain.name}
-                      width={40}
-                      height={40}
-                      className="h-10 w-10 rounded-full object-cover"
-                    />
-                  )
-                ) : (
-                  <div className="h-10 w-10 rounded-full bg-white/15" />
-                )}
+                <CaptainAvatar src={y.captain.photo} name={y.captain.name} size={40} />
                 <div className="text-xs">
                   <p className="font-semibold">{y.captain.name}</p>
                   <p className="text-white/60">

@@ -10,6 +10,7 @@ import { formatUsd } from "@/lib/yachts";
 import { useProfile } from "@/lib/profile-store";
 import { useTripLog } from "@/lib/trip-log";
 import { TRIP_STEPS, useTrip, type TripStep } from "@/lib/trip-store";
+import { CaptainAvatar } from "@/components/CaptainAvatar";
 import { FareCard } from "./FareCard";
 import { GratuityPicker } from "./GratuityPicker";
 import { RequestTab } from "./RequestTab";
@@ -296,21 +297,11 @@ export function TripTab({ locale }: { locale: Locale }) {
           </h3>
           <ul className="mt-3 space-y-3">
             <li className="flex items-center gap-3">
-              {yacht.captain.photo.startsWith("http") ? (
-                <img
-                  src={yacht.captain.photo}
-                  alt={yacht.captain.name}
-                  className="h-11 w-11 rounded-full object-cover"
-                />
-              ) : (
-                <Image
-                  src={yacht.captain.photo}
-                  alt={yacht.captain.name}
-                  width={44}
-                  height={44}
-                  className="h-11 w-11 rounded-full object-cover"
-                />
-              )}
+              <CaptainAvatar
+                src={yacht.captain.photo}
+                name={yacht.captain.name}
+                size={44}
+              />
               <div>
                 <p className="text-sm font-semibold">{yacht.captain.name}</p>
                 <p className="text-xs text-white/50">{c.captain}</p>
@@ -369,21 +360,11 @@ export function TripTab({ locale }: { locale: Locale }) {
             {` · ${trip.hours} ${c.hoursUnit} · ${trip.guests} ${c.guests}`}
           </p>
           <div className="mt-4 flex items-center gap-3">
-            {yacht.captain.photo.startsWith("http") ? (
-              <img
-                src={yacht.captain.photo}
-                alt={yacht.captain.name}
-                className="h-11 w-11 rounded-full object-cover"
-              />
-            ) : (
-              <Image
-                src={yacht.captain.photo}
-                alt={yacht.captain.name}
-                width={44}
-                height={44}
-                className="h-11 w-11 rounded-full object-cover"
-              />
-            )}
+            <CaptainAvatar
+              src={yacht.captain.photo}
+              name={yacht.captain.name}
+              size={44}
+            />
             <div>
               <p className="text-xs text-white/50">{c.captain}</p>
               <p className="text-sm font-semibold">{yacht.captain.name}</p>

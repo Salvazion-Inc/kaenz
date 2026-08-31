@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" role="img" aria-label="Hassan Alami">
+  <rect width="160" height="160" rx="80" fill="hsl(334, 42%, 18%)"/>
+  <circle cx="80" cy="80" r="74" fill="none" stroke="hsl(6, 70%, 58%)" stroke-width="5"/>
+  <text x="80" y="96" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="52" font-weight="700" fill="#F4E7C3">HA</text>
+</svg>

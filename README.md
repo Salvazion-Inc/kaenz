@@ -46,6 +46,7 @@ Add to Home Screen on iOS/Android for the standalone mobile shell.
 | Variable | Purpose |
 | --- | --- |
 | `XAI_API_KEY` | Grok concierge (server-only) |
+| `NEXT_PUBLIC_MAP_API_KEY` | CARTO basemap key for the Kaenz map |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client/anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Optional server writes |

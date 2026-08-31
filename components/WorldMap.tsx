@@ -8,6 +8,7 @@ import { mapViewFor } from "@/lib/geo";
 import type { Locale } from "@/lib/locale";
 import { useLocation } from "@/lib/location";
 import { formatCoords, placePhoto } from "@/lib/place-photo";
+import { mapTiles } from "@/lib/map-tiles";
 import { mapHubs, placeCountry, type Place } from "@/lib/places";
 
 const FLORIDA: [number, number] = [26.05, -80.14];
@@ -83,14 +84,12 @@ export function WorldMap({
       }).setView(WORLD, 2);
       mapRef.current = map;
 
-      L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-        {
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-          subdomains: "abcd",
-        },
-      ).addTo(map);
+      const tiles = mapTiles();
+      L.tileLayer(tiles.url, {
+        attribution: tiles.attribution,
+        subdomains: tiles.subdomains,
+        maxZoom: tiles.maxZoom,
+      }).addTo(map);
 
       const zoom = L.control.zoom({
         position: "topleft",

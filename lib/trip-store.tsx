@@ -16,7 +16,7 @@ import {
   type WhenMode,
 } from "./pricing";
 import { placeById, places, type Place } from "./places";
-import { yachtById, yachts, type Yacht } from "./yachts";
+import { DEFAULT_YACHT_ID, yachtById, yachts, type Yacht } from "./yachts";
 
 export type { TripKind, WhenMode };
 export const TRIP_STEPS = [
@@ -77,7 +77,7 @@ const empty: TripDraft = {
   whenMode: "now",
   originId: "miami-beach-marina",
   destinationId: "brickell",
-  yachtId: "velocity-38",
+  yachtId: DEFAULT_YACHT_ID,
   date: "",
   time: "",
   hours: defaultHoursFor("commute"),
@@ -124,10 +124,14 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
       if (raw) {
         const parsed = JSON.parse(raw) as Partial<TripDraft>;
         const kind = parsed.kind || empty.kind;
+        const yachtId = yachtById(String(parsed.yachtId || ""))
+          ? String(parsed.yachtId)
+          : empty.yachtId;
         setState({
           ...empty,
           ...parsed,
           kind,
+          yachtId,
           whenMode:
             parsed.whenMode === "now"
               ? "now"

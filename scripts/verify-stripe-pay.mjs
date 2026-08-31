@@ -12,7 +12,7 @@ const trip = {
   whenMode: "now",
   originId: "miami-beach-marina",
   destinationId: "brickell",
-  yachtId: "velocity-38",
+  yachtId: "tempest-42",
   date: "2026-08-27",
   time: "16:00",
   hours: 1,
