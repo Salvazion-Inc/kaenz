@@ -60,7 +60,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.86,
       trips: 92,
-      photo: "/crew/elena-ruiz.jpg",
+      photo: "/crew/kaenz/selfie-1.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -90,7 +90,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.87,
       trips: 111,
-      photo: "/crew/will-park.jpg",
+      photo: "/crew/kaenz/selfie-2.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -120,7 +120,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.88,
       trips: 130,
-      photo: "/crew/nora-blake.jpg",
+      photo: "/crew/kaenz/selfie-3.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -150,7 +150,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.89,
       trips: 149,
-      photo: "/crew/marcus-cole.jpg",
+      photo: "/crew/kaenz/selfie-4.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -180,7 +180,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.9,
       trips: 168,
-      photo: "/crew/mia-chen.jpg",
+      photo: "/crew/kaenz/selfie-5.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -210,7 +210,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.91,
       trips: 187,
-      photo: "/crew/camille-dubois.jpg",
+      photo: "/crew/kaenz/selfie-6.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -240,7 +240,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.92,
       trips: 206,
-      photo: "/crew/luca-bianchi.jpg",
+      photo: "/crew/kaenz/selfie-7.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -270,7 +270,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.93,
       trips: 225,
-      photo: "/crew/diego-santos.jpg",
+      photo: "/crew/kaenz/selfie-8.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -300,7 +300,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.94,
       trips: 244,
-      photo: "/crew/sofia-alvarez.jpg",
+      photo: "/crew/kaenz/selfie-9.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -330,7 +330,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.95,
       trips: 263,
-      photo: "/crew/james-okonkwo.jpg",
+      photo: "/crew/kaenz/selfie-10.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -360,7 +360,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.96,
       trips: 282,
-      photo: "/crew/rafael-costa.jpg",
+      photo: "/crew/kaenz/selfie-11.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -390,7 +390,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.97,
       trips: 301,
-      photo: "/crew/hannah-kim.jpg",
+      photo: "/crew/kaenz/selfie-12.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -420,7 +420,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.98,
       trips: 320,
-      photo: "/crew/emily-rossi.jpg",
+      photo: "/crew/kaenz/selfie-13.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -450,7 +450,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.99,
       trips: 339,
-      photo: "/crew/trent-hale.jpg",
+      photo: "/crew/kaenz/selfie-14.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -480,7 +480,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.86,
       trips: 358,
-      photo: "/crew/avatars/ana-morales.svg",
+      photo: "/crew/kaenz/selfie-15.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -510,7 +510,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.87,
       trips: 377,
-      photo: "/crew/avatars/omar-haddad.svg",
+      photo: "/crew/kaenz/selfie-16.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -540,7 +540,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.88,
       trips: 396,
-      photo: "/crew/avatars/priya-nair.svg",
+      photo: "/crew/kaenz/selfie-17.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -570,7 +570,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.89,
       trips: 415,
-      photo: "/crew/avatars/jules-moreau.svg",
+      photo: "/crew/kaenz/selfie-18.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -600,7 +600,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.9,
       trips: 434,
-      photo: "/crew/avatars/mateo-vargas.svg",
+      photo: "/crew/kaenz/selfie-19.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -630,7 +630,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.91,
       trips: 453,
-      photo: "/crew/avatars/lina-kowalski.svg",
+      photo: "/crew/kaenz/selfie-20.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -660,7 +660,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.92,
       trips: 472,
-      photo: "/crew/avatars/andre-baptiste.svg",
+      photo: "/crew/kaenz/selfie-21.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -690,7 +690,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.93,
       trips: 491,
-      photo: "/crew/avatars/yara-mendes.svg",
+      photo: "/crew/kaenz/selfie-22.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -720,7 +720,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.94,
       trips: 510,
-      photo: "/crew/avatars/theo-lang.svg",
+      photo: "/crew/kaenz/selfie-23.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -750,7 +750,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.95,
       trips: 529,
-      photo: "/crew/avatars/isla-navarro.svg",
+      photo: "/crew/kaenz/selfie-24.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -780,7 +780,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.96,
       trips: 548,
-      photo: "/crew/avatars/kenji-watanabe.svg",
+      photo: "/crew/kaenz/selfie-25.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -810,7 +810,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.97,
       trips: 567,
-      photo: "/crew/avatars/rosa-delgado.svg",
+      photo: "/crew/kaenz/selfie-26.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -840,7 +840,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.98,
       trips: 586,
-      photo: "/crew/avatars/malik-thompson.svg",
+      photo: "/crew/kaenz/selfie-27.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -870,7 +870,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.99,
       trips: 605,
-      photo: "/crew/avatars/chiara-greco.svg",
+      photo: "/crew/kaenz/selfie-28.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -900,7 +900,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.86,
       trips: 624,
-      photo: "/crew/avatars/hugo-silva.svg",
+      photo: "/crew/kaenz/selfie-29.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -930,7 +930,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.87,
       trips: 95,
-      photo: "/crew/avatars/amira-hassan.svg",
+      photo: "/crew/kaenz/selfie-30.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -960,7 +960,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.88,
       trips: 114,
-      photo: "/crew/avatars/nico-berg.svg",
+      photo: "/crew/kaenz/selfie-31.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -990,7 +990,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.89,
       trips: 133,
-      photo: "/crew/avatars/valentina-ortiz.svg",
+      photo: "/crew/kaenz/selfie-32.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1020,7 +1020,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.9,
       trips: 152,
-      photo: "/crew/avatars/sean-gallagher.svg",
+      photo: "/crew/kaenz/selfie-33.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1050,7 +1050,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.91,
       trips: 171,
-      photo: "/crew/avatars/ines-carvalho.svg",
+      photo: "/crew/kaenz/selfie-34.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1080,7 +1080,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.92,
       trips: 190,
-      photo: "/crew/avatars/david-okoye.svg",
+      photo: "/crew/kaenz/selfie-35.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1110,7 +1110,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.93,
       trips: 209,
-      photo: "/crew/avatars/freya-lind.svg",
+      photo: "/crew/kaenz/selfie-36.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1140,7 +1140,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.94,
       trips: 228,
-      photo: "/crew/avatars/pablo-herrera.svg",
+      photo: "/crew/kaenz/selfie-37.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1170,7 +1170,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.95,
       trips: 247,
-      photo: "/crew/avatars/mei-zhang.svg",
+      photo: "/crew/kaenz/selfie-38.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1200,7 +1200,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.96,
       trips: 266,
-      photo: "/crew/avatars/owen-fitzgerald.svg",
+      photo: "/crew/kaenz/selfie-39.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1230,7 +1230,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.97,
       trips: 285,
-      photo: "/crew/avatars/carmen-paredes.svg",
+      photo: "/crew/kaenz/selfie-40.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1260,7 +1260,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.98,
       trips: 304,
-      photo: "/crew/avatars/leo-kovacs.svg",
+      photo: "/crew/kaenz/selfie-41.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1290,7 +1290,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.99,
       trips: 323,
-      photo: "/crew/avatars/nadine-faure.svg",
+      photo: "/crew/kaenz/selfie-42.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1320,7 +1320,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.86,
       trips: 342,
-      photo: "/crew/avatars/bruno-almeida.svg",
+      photo: "/crew/kaenz/selfie-43.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1350,7 +1350,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.87,
       trips: 361,
-      photo: "/crew/avatars/aisha-rahman.svg",
+      photo: "/crew/kaenz/selfie-44.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1380,7 +1380,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.88,
       trips: 380,
-      photo: "/crew/avatars/victor-pena.svg",
+      photo: "/crew/kaenz/selfie-45.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1410,7 +1410,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.89,
       trips: 399,
-      photo: "/crew/avatars/sienna-walsh.svg",
+      photo: "/crew/kaenz/selfie-46.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1440,7 +1440,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.9,
       trips: 418,
-      photo: "/crew/avatars/ravi-patel.svg",
+      photo: "/crew/kaenz/selfie-47.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1470,7 +1470,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.91,
       trips: 437,
-      photo: "/crew/avatars/gabriela-soto.svg",
+      photo: "/crew/kaenz/selfie-48.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1500,7 +1500,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.92,
       trips: 456,
-      photo: "/crew/avatars/erik-nilsen.svg",
+      photo: "/crew/kaenz/selfie-49.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1530,7 +1530,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.93,
       trips: 475,
-      photo: "/crew/avatars/noor-el-sayed.svg",
+      photo: "/crew/kaenz/selfie-50.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1560,7 +1560,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.94,
       trips: 494,
-      photo: "/crew/avatars/tomasz-nowak.svg",
+      photo: "/crew/kaenz/selfie-51.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1590,7 +1590,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.95,
       trips: 513,
-      photo: "/crew/avatars/camila-ferreira.svg",
+      photo: "/crew/kaenz/selfie-52.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1620,7 +1620,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.96,
       trips: 532,
-      photo: "/crew/avatars/jonah-brooks.svg",
+      photo: "/crew/kaenz/selfie-53.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1650,7 +1650,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.97,
       trips: 551,
-      photo: "/crew/avatars/helena-costa.svg",
+      photo: "/crew/kaenz/selfie-54.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1680,7 +1680,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.98,
       trips: 570,
-      photo: "/crew/avatars/adrian-popescu.svg",
+      photo: "/crew/kaenz/selfie-55.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1710,7 +1710,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.99,
       trips: 589,
-      photo: "/crew/avatars/layla-bennett.svg",
+      photo: "/crew/kaenz/selfie-56.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1740,7 +1740,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.86,
       trips: 608,
-      photo: "/crew/avatars/enzo-ricci.svg",
+      photo: "/crew/kaenz/selfie-57.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1770,7 +1770,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.87,
       trips: 627,
-      photo: "/crew/avatars/maya-singh.svg",
+      photo: "/crew/kaenz/selfie-58.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1800,7 +1800,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.88,
       trips: 98,
-      photo: "/crew/avatars/felipe-rojas.svg",
+      photo: "/crew/kaenz/selfie-59.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1830,7 +1830,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.89,
       trips: 117,
-      photo: "/crew/avatars/celine-marchand.svg",
+      photo: "/crew/kaenz/selfie-60.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1860,7 +1860,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.9,
       trips: 136,
-      photo: "/crew/avatars/kwame-asante.svg",
+      photo: "/crew/kaenz/selfie-61.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1890,7 +1890,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.91,
       trips: 155,
-      photo: "/crew/avatars/olivia-hart.svg",
+      photo: "/crew/kaenz/selfie-62.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1920,7 +1920,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.92,
       trips: 174,
-      photo: "/crew/avatars/santiago-leon.svg",
+      photo: "/crew/kaenz/selfie-63.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1950,7 +1950,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.93,
       trips: 193,
-      photo: "/crew/avatars/ingrid-solberg.svg",
+      photo: "/crew/kaenz/selfie-64.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -1980,7 +1980,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.94,
       trips: 212,
-      photo: "/crew/avatars/marco-teixeira.svg",
+      photo: "/crew/kaenz/selfie-65.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2010,7 +2010,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.95,
       trips: 231,
-      photo: "/crew/avatars/amina-diallo.svg",
+      photo: "/crew/kaenz/selfie-66.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2040,7 +2040,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.96,
       trips: 250,
-      photo: "/crew/avatars/patrick-oneill.svg",
+      photo: "/crew/kaenz/selfie-67.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2070,7 +2070,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.97,
       trips: 269,
-      photo: "/crew/avatars/lucia-benedetti.svg",
+      photo: "/crew/kaenz/selfie-68.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2100,7 +2100,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.98,
       trips: 288,
-      photo: "/crew/avatars/hassan-alami.svg",
+      photo: "/crew/kaenz/selfie-69.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2130,7 +2130,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.99,
       trips: 307,
-      photo: "/crew/avatars/brooke-tanner.svg",
+      photo: "/crew/kaenz/selfie-70.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2160,7 +2160,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.86,
       trips: 326,
-      photo: "/crew/avatars/iker-molina.svg",
+      photo: "/crew/kaenz/selfie-71.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2190,7 +2190,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.87,
       trips: 345,
-      photo: "/crew/avatars/sophie-laurent.svg",
+      photo: "/crew/kaenz/selfie-72.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2220,7 +2220,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.88,
       trips: 364,
-      photo: "/crew/avatars/daniel-kim.svg",
+      photo: "/crew/kaenz/selfie-73.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2250,7 +2250,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.89,
       trips: 383,
-      photo: "/crew/avatars/paloma-reyes.svg",
+      photo: "/crew/kaenz/selfie-74.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2280,7 +2280,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.9,
       trips: 402,
-      photo: "/crew/avatars/nathan-price.svg",
+      photo: "/crew/kaenz/selfie-75.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2310,7 +2310,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.91,
       trips: 421,
-      photo: "/crew/avatars/fatima-zahra.svg",
+      photo: "/crew/kaenz/selfie-76.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2340,7 +2340,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.92,
       trips: 440,
-      photo: "/crew/avatars/alessandro-conte.svg",
+      photo: "/crew/kaenz/selfie-77.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2370,7 +2370,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.93,
       trips: 459,
-      photo: "/crew/avatars/jun-park.svg",
+      photo: "/crew/kaenz/selfie-78.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2400,7 +2400,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.94,
       trips: 478,
-      photo: "/crew/avatars/beatriz-campos.svg",
+      photo: "/crew/kaenz/selfie-79.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2430,7 +2430,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.95,
       trips: 497,
-      photo: "/crew/avatars/liam-donovan.svg",
+      photo: "/crew/kaenz/selfie-80.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2460,7 +2460,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.96,
       trips: 516,
-      photo: "/crew/avatars/yasmin-farouk.svg",
+      photo: "/crew/kaenz/selfie-81.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2490,7 +2490,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.97,
       trips: 535,
-      photo: "/crew/avatars/roberto-nunez.svg",
+      photo: "/crew/kaenz/selfie-82.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2520,7 +2520,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.98,
       trips: 554,
-      photo: "/crew/avatars/claire-beaumont.svg",
+      photo: "/crew/kaenz/selfie-83.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2550,7 +2550,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.99,
       trips: 573,
-      photo: "/crew/avatars/thiago-barbosa.svg",
+      photo: "/crew/kaenz/selfie-84.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2580,7 +2580,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.86,
       trips: 592,
-      photo: "/crew/avatars/harper-quinn.svg",
+      photo: "/crew/kaenz/selfie-85.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2610,7 +2610,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.87,
       trips: 611,
-      photo: "/crew/avatars/imani-johnson.svg",
+      photo: "/crew/kaenz/selfie-86.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2640,7 +2640,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.88,
       trips: 630,
-      photo: "/crew/avatars/stefan-petrov.svg",
+      photo: "/crew/kaenz/selfie-87.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2670,7 +2670,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.89,
       trips: 101,
-      photo: "/crew/avatars/catalina-vega.svg",
+      photo: "/crew/kaenz/selfie-88.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2700,7 +2700,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.9,
       trips: 120,
-      photo: "/crew/avatars/miles-harrington.svg",
+      photo: "/crew/kaenz/selfie-89.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2730,7 +2730,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.91,
       trips: 139,
-      photo: "/crew/avatars/leila-bouazizi.svg",
+      photo: "/crew/kaenz/selfie-90.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2760,7 +2760,7 @@ export const yachts: Yacht[] = [
       license: "USCG OUPV Six-Pack",
       rating: 4.92,
       trips: 158,
-      photo: "/crew/avatars/giovanni-russo.svg",
+      photo: "/crew/kaenz/selfie-91.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2790,7 +2790,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.93,
       trips: 177,
-      photo: "/crew/avatars/anika-sharma.svg",
+      photo: "/crew/kaenz/selfie-92.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2820,7 +2820,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.94,
       trips: 196,
-      photo: "/crew/avatars/oscar-lindstrom.svg",
+      photo: "/crew/kaenz/selfie-93.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2850,7 +2850,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.95,
       trips: 215,
-      photo: "/crew/avatars/daniela-ibarra.svg",
+      photo: "/crew/kaenz/selfie-94.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2880,7 +2880,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.96,
       trips: 234,
-      photo: "/crew/avatars/felix-morel.svg",
+      photo: "/crew/kaenz/selfie-95.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2910,7 +2910,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.97,
       trips: 253,
-      photo: "/crew/avatars/zara-ahmed.svg",
+      photo: "/crew/kaenz/selfie-96.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2940,7 +2940,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.98,
       trips: 272,
-      photo: "/crew/avatars/henrique-lopes.svg",
+      photo: "/crew/kaenz/selfie-97.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -2970,7 +2970,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.99,
       trips: 291,
-      photo: "/crew/avatars/naomi-brooks.svg",
+      photo: "/crew/kaenz/selfie-98.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -3000,7 +3000,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 100 Ton",
       rating: 4.86,
       trips: 310,
-      photo: "/crew/avatars/andres-castillo.svg",
+      photo: "/crew/kaenz/selfie-99.jpg",
       verified: true,
     },
     blurb: blurb(
@@ -3030,7 +3030,7 @@ export const yachts: Yacht[] = [
       license: "USCG Master 50 Ton",
       rating: 4.87,
       trips: 329,
-      photo: "/crew/avatars/elise-moreau.svg",
+      photo: "/crew/kaenz/selfie-100.jpg",
       verified: true,
     },
     blurb: blurb(

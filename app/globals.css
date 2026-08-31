@@ -70,6 +70,39 @@ textarea {
     0 0 8px rgba(0, 161, 214, 0.55);
 }
 
+@keyframes fingerprint-unlock-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 0 1px rgba(0, 161, 214, 0.45),
+      0 0 18px rgba(0, 161, 214, 0.18);
+  }
+  50% {
+    transform: scale(1.045);
+    box-shadow:
+      0 0 0 10px rgba(0, 161, 214, 0.1),
+      0 0 32px rgba(0, 161, 214, 0.32);
+  }
+}
+.fingerprint-unlock-btn {
+  animation: fingerprint-unlock-breathe 2.1s ease-in-out infinite;
+  will-change: transform, box-shadow;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.fingerprint-unlock-btn-busy {
+  animation-duration: 1.35s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fingerprint-unlock-btn,
+  .fingerprint-unlock-btn-busy {
+    animation: none;
+  }
+}
+
 .leaflet-container {
   background: #050a30;
   font-family: inherit;

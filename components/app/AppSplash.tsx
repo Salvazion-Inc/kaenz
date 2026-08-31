@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTrip } from "@/lib/trip-store";
 
-const MIN_MS = 2600;
+const MIN_MS = 4200;
 const FADE_MS = 450;
 
 export function AppSplash({ children }: { children: React.ReactNode }) {

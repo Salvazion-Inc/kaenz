@@ -7,6 +7,7 @@ import { pathFor, type Locale } from "@/lib/locale";
 import { useLocation } from "@/lib/location";
 import { HtmlLang } from "../HtmlLang";
 import { LanguageSwitcher } from "../LanguageSwitcher";
+import { BiometricEnrollPrompt } from "../auth/BiometricEnrollPrompt";
 import { AccountChip } from "../AccountChip";
 import {
   IconAccount,
@@ -42,6 +43,7 @@ export function AppShell({
 
   return (
     <div className="app-shell min-h-dvh bg-navy text-foam">
+      <BiometricEnrollPrompt locale={locale} />
       <HtmlLang locale={locale} />
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[4.5rem] flex-col items-center border-r border-white/10 bg-navy-2 py-4 md:flex">
         <Link href={pathFor(locale, "/app")} className="mb-6">

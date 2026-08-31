@@ -14,6 +14,8 @@ import {
   type SavedCard,
 } from "@/lib/profile";
 import { useProfile } from "@/lib/profile-store";
+import { disableBiometric } from "@/lib/auth/biometric";
+import { BiometricControl } from "../auth/BiometricControl";
 import { TripCalendar } from "./TripCalendar";
 
 const field =
@@ -124,6 +126,7 @@ export function AccountTab({ locale }: { locale: Locale }) {
   }
 
   async function logout() {
+    disableBiometric();
     await fetch("/api/auth/logout", { method: "POST" });
     window.location.href = "/login";
   }
@@ -213,6 +216,8 @@ export function AccountTab({ locale }: { locale: Locale }) {
             </div>
           </div>
         </section>
+
+        <BiometricControl locale={locale} />
 
         <section className="rounded-2xl border border-white/10 bg-white/5 p-4">
           <h2 className="text-sm font-bold uppercase tracking-wide text-kaenz">

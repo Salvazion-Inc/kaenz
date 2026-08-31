@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { BookForm } from "@/components/BookForm";
+import { CaptainAvatar } from "@/components/CaptainAvatar";
 import { Site } from "@/components/Site";
 import { t } from "@/lib/copy";
 import type { Locale } from "@/lib/locale";
@@ -32,6 +33,17 @@ export function YachtDetail({
           </p>
           <h1 className="mt-2 text-4xl font-extrabold">{yacht.name}</h1>
           <p className="mt-3 text-white/75">{yacht.blurb[locale]}</p>
+          <div className="mt-5 flex items-center gap-3">
+            <CaptainAvatar
+              src={yacht.captain.photo}
+              name={yacht.captain.name}
+              size={56}
+            />
+            <div>
+              <p className="text-sm font-semibold">{yacht.captain.name}</p>
+              <p className="text-xs text-white/55">{yacht.captain.license}</p>
+            </div>
+          </div>
           <ul className="mt-6 space-y-2 text-sm text-white/80">
             <li>
               {c.form.guests}: {yacht.guests}

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { BiometricLogin } from "@/components/auth/BiometricLogin";
+import { useBiometricGate } from "@/components/auth/useBiometric";
 import { t } from "@/lib/copy";
 import { useLocale } from "@/lib/locale-context";
 import { Site } from "./Site";
@@ -21,6 +23,11 @@ export function AuthForm({
   const next = search.get("next") || "/app";
   const [status, setStatus] = useState<"idle" | "sending" | "err">("idle");
   const [message, setMessage] = useState("");
+  const [passwordFallback, setPasswordFallback] = useState(false);
+  const { ready: biometricReady, enabled: biometricEnabled } = useBiometricGate();
+  const thumbGate =
+    mode === "login" && biometricReady && biometricEnabled && !passwordFallback;
+  const waitingGate = mode === "login" && !biometricReady;
   const reason =
     googleReason ||
     (search.get("auth") === "google" ? search.get("reason") : null) ||
@@ -85,6 +92,16 @@ export function AuthForm({
   return (
     <Site locale={locale}>
       <section className="mx-auto max-w-md px-5 pb-24">
+        {waitingGate ? (
+          <p className="text-sm text-white/50">{c.biometricProcessing}</p>
+        ) : thumbGate ? (
+          <BiometricLogin
+            locale={locale}
+            next={next}
+            onUsePassword={() => setPasswordFallback(true)}
+          />
+        ) : (
+          <>
         <p className="text-sm text-kaenz">{c.sessionNeeded}</p>
         <h1 className="mt-2 text-4xl font-extrabold">
           {mode === "login" ? c.loginTitle : c.signupTitle}
@@ -166,6 +183,8 @@ export function AuthForm({
             </Link>
           )}
         </p>
+          </>
+        )}
       </section>
     </Site>
   );

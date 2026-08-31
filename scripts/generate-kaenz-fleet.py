@@ -338,13 +338,7 @@ def main() -> None:
     AVATAR_DIR.mkdir(parents=True, exist_ok=True)
     captain_photos: list[str] = []
     for i, (name, photo) in enumerate(CAPTAINS):
-        if photo:
-            captain_photos.append(photo)
-            continue
-        slug = slug_captain(name)
-        dest = AVATAR_DIR / f"{slug}.svg"
-        dest.write_text(avatar_svg(name, i), encoding="utf-8")
-        captain_photos.append(f"/crew/avatars/{slug}.svg")
+        captain_photos.append(f"/crew/kaenz/selfie-{i + 1}.jpg")
 
     blocks: list[str] = []
     for i, (yacht_id, name, file, klass, length, guests, traits) in enumerate(BOATS):
