@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
   FONT_SIZES,
@@ -8,7 +9,7 @@ import {
   useAccountPrefs,
 } from "@/lib/account-prefs";
 import { at } from "@/lib/app-copy";
-import type { Locale } from "@/lib/locale";
+import { pathFor, type Locale } from "@/lib/locale";
 import { useLocation } from "@/lib/location";
 import {
   formatCardNumber,
@@ -19,6 +20,7 @@ import {
   type ProfileRole,
   type SavedCard,
 } from "@/lib/profile";
+import { useOperator } from "@/lib/operator-store";
 import { useProfile } from "@/lib/profile-store";
 import { compressPhoto } from "@/lib/trip-log";
 import { disableBiometric } from "@/lib/auth/biometric";
@@ -34,6 +36,7 @@ export function AccountTab({ locale }: { locale: Locale }) {
   const c = at(locale);
   const a = c.account;
   const { profile, ready, save } = useProfile();
+  const { owner, captain, enrollCaptain } = useOperator();
   const {
     photo,
     font,
@@ -382,22 +385,56 @@ export function AccountTab({ locale }: { locale: Locale }) {
           </h2>
           <p className="mt-1 text-xs text-white/50">{a.roleLead}</p>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
-            {PROFILE_ROLES.map((id) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setRole(id)}
-                className={`rounded-2xl border p-4 text-left ${
-                  role === id
-                    ? "border-kaenz bg-kaenz/15"
-                    : "border-white/10 bg-white/5"
-                }`}
-              >
-                <p className="font-bold">{a.roles[id].title}</p>
-                <p className="mt-1 text-xs text-white/70">{a.roles[id].body}</p>
-              </button>
-            ))}
+            {PROFILE_ROLES.map((id) => {
+              const locked =
+                (id === "owner" && !owner) || (id === "captain" && !captain);
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setRole(id)}
+                  className={`rounded-2xl border p-4 text-left ${
+                    role === id
+                      ? "border-kaenz bg-kaenz/15"
+                      : "border-white/10 bg-white/5"
+                  } ${locked ? "opacity-80" : ""}`}
+                >
+                  <p className="font-bold">{a.roles[id].title}</p>
+                  <p className="mt-1 text-xs text-white/70">{a.roles[id].body}</p>
+                  {locked ? (
+                    <p className="mt-2 text-[11px] text-kaenz">
+                      {id === "owner" ? c.ops.ownerLocked : c.ops.captainLocked}
+                    </p>
+                  ) : null}
+                </button>
+              );
+            })}
           </div>
+          {role === "owner" && !owner ? (
+            <Link
+              href={`${pathFor(locale, "/app/yachts")}?add=yacht`}
+              className="btn-kaenz mt-4 text-xs"
+            >
+              {c.ops.goList}
+            </Link>
+          ) : null}
+          {role === "captain" && !captain ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link
+                href={`${pathFor(locale, "/app/yachts")}?add=yacht`}
+                className="btn-kaenz text-xs"
+              >
+                {c.ops.goList}
+              </Link>
+              <button
+                type="button"
+                onClick={enrollCaptain}
+                className="rounded-full border border-white/20 px-4 py-2 text-xs font-bold"
+              >
+                {c.ops.enrollCta}
+              </button>
+            </div>
+          ) : null}
         </section>
 
         <TripCalendar locale={locale} />

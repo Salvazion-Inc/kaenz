@@ -39,6 +39,21 @@ const nextConfig: NextConfig = {
         destination: "/app/trip",
         permanent: true,
       },
+      {
+        source: "/book",
+        destination: "/fleet",
+        permanent: true,
+      },
+      {
+        source: "/concierge",
+        destination: "/",
+        permanent: true,
+      },
+      {
+        source: "/yachts",
+        destination: "/fleet",
+        permanent: true,
+      },
     ];
   },
 };

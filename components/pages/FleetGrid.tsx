@@ -80,7 +80,7 @@ export function FleetGrid({ locale }: { locale: Locale }) {
               <div className="mt-6 flex items-center justify-between">
                 <Link
                   href={pathFor(locale, `/fleet/${y.id}`)}
-                  className="rounded-md bg-kaenz px-5 py-2 text-sm font-bold text-white"
+                  className="btn-kaenz !px-5 !py-2 text-sm"
                 >
                   {c.bookNow}
                 </Link>

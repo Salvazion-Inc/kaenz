@@ -16,12 +16,17 @@ import { useLocation } from "@/lib/location";
 import { yachts, type Yacht } from "@/lib/yachts";
 import { useTrip } from "@/lib/trip-store";
 import { CaptainAvatar } from "@/components/CaptainAvatar";
+import { useOperator } from "@/lib/operator-store";
+import { useProfile } from "@/lib/profile-store";
 import { AddYachtForm } from "./AddYachtForm";
 import { IconBadge } from "./icons";
+import { OwnerDesk } from "./OwnerDesk";
 
 export function YachtsTab({ locale }: { locale: Locale }) {
   const c = at(locale);
   const { setTrip, trip } = useTrip();
+  const { enrollOwner, enrollCaptain } = useOperator();
+  const { profile } = useProfile();
   const { here, located, locating, locate } = useLocation();
   const router = useRouter();
   const [adding, setAdding] = useState(false);
@@ -63,6 +68,7 @@ export function YachtsTab({ locale }: { locale: Locale }) {
     <div>
       <h1 className="text-2xl font-extrabold">{c.tabs.yachts}</h1>
       <p className="mt-1 text-sm text-white/70">{c.yachtsLead}</p>
+      {profile?.role === "owner" ? <OwnerDesk locale={locale} /> : null}
       <div className="mt-3 flex flex-wrap gap-2">
         <button
           type="button"
@@ -86,6 +92,14 @@ export function YachtsTab({ locale }: { locale: Locale }) {
           onCancel={() => setAdding(false)}
           onListed={(yacht) => {
             setListings((cur) => [yacht, ...cur.filter((item) => item.id !== yacht.id)]);
+            enrollOwner({
+              id: yacht.id,
+              name: yacht.name,
+              image: yacht.image,
+              guests: yacht.guests,
+              marina: yacht.marina,
+            });
+            enrollCaptain();
             setAdding(false);
             setNotice(c.addYacht.listed);
           }}

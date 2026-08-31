@@ -9,8 +9,6 @@ const paths = [
   "/app/crew",
   "/app/account",
   "/fleet",
-  "/book",
-  "/concierge",
   "/join",
   "/login",
   "/signup",

@@ -8,8 +8,6 @@ export function Nav({ locale }: { locale: Locale }) {
   const c = t(locale);
   const links = [
     { href: "/fleet", label: c.nav.fleet },
-    { href: "/book", label: c.nav.book },
-    { href: "/concierge", label: c.nav.concierge },
     { href: "/join", label: c.nav.join },
   ];
 

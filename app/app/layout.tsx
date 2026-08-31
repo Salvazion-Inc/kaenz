@@ -5,6 +5,8 @@ import {
 } from "@/lib/account-prefs";
 import { ProfileProvider } from "@/lib/profile-store";
 import { SelfieProvider } from "@/lib/selfie-store";
+import { DispatchProvider } from "@/lib/dispatch-store";
+import { OperatorProvider } from "@/lib/operator-store";
 import { TripLogProvider } from "@/lib/trip-log";
 import { TripProvider } from "@/lib/trip-store";
 
@@ -36,9 +38,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <ProfileProvider>
           <AccountPrefsProvider>
             <TripLogProvider>
-              <SelfieProvider>
-                <AppSplash>{children}</AppSplash>
-              </SelfieProvider>
+              <OperatorProvider>
+                <DispatchProvider>
+                  <SelfieProvider>
+                    <AppSplash>{children}</AppSplash>
+                  </SelfieProvider>
+                </DispatchProvider>
+              </OperatorProvider>
             </TripLogProvider>
           </AccountPrefsProvider>
         </ProfileProvider>

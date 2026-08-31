@@ -8,9 +8,12 @@ import { type Locale } from "@/lib/locale";
 import { nowStamp, settleCharge } from "@/lib/pricing";
 import { formatUsd } from "@/lib/yachts";
 import { useProfile } from "@/lib/profile-store";
+import { useDispatch } from "@/lib/dispatch-store";
+import { useOperator } from "@/lib/operator-store";
 import { useTripLog } from "@/lib/trip-log";
 import { TRIP_STEPS, useTrip, type TripStep } from "@/lib/trip-store";
 import { CaptainAvatar } from "@/components/CaptainAvatar";
+import { CaptainDesk } from "./CaptainDesk";
 import { FareCard } from "./FareCard";
 import { GratuityPicker } from "./GratuityPicker";
 import { RequestTab } from "./RequestTab";
@@ -31,6 +34,10 @@ export function TripTab({ locale }: { locale: Locale }) {
   } = useTrip();
   const { profile } = useProfile();
   const { addTrip } = useTripLog();
+  const { captain, available } = useOperator();
+  const { offers, accept } = useDispatch();
+  const ops = c.ops;
+  const myOffer = offers.find((item) => item.id === trip.bookingId);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
@@ -77,13 +84,27 @@ export function TripTab({ locale }: { locale: Locale }) {
   }, [c.errConfirm, c.paidWithStripe, c.stripeCancel, setTrip, trip.bookingId]);
 
   useEffect(() => {
-    if (trip.status === "requested") {
-      const id = window.setTimeout(
-        () => setTrip({ status: "approved" }),
-        3200,
-      );
-      return () => window.clearTimeout(id);
+    if (trip.status !== "requested") return;
+    const offer = offers.find((item) => item.id === trip.bookingId);
+    if (offer?.status === "accepted") {
+      setTrip({ status: "approved", yachtId: offer.yachtId });
+      return;
     }
+    if (captain && available) return;
+    const id = window.setTimeout(() => {
+      const current = offers.find((item) => item.id === trip.bookingId);
+      if (!current || current.status !== "offered") {
+        setTrip({ status: "approved" });
+        return;
+      }
+      const yid = current.ranked[0]?.yachtId || current.yachtId;
+      accept(current.id, yid);
+      setTrip({ status: "approved", yachtId: yid });
+    }, 8000);
+    return () => window.clearTimeout(id);
+  }, [trip.status, trip.bookingId, offers, captain, available, accept, setTrip]);
+
+  useEffect(() => {
     if (trip.status === "approved") {
       const id = window.setTimeout(
         () => setTrip({ status: "waiting" }),
@@ -211,7 +232,12 @@ export function TripTab({ locale }: { locale: Locale }) {
   }
 
   if (trip.status === "draft" || !complete) {
-    return <RequestTab locale={locale} />;
+    return (
+      <div>
+        {profile?.role === "captain" ? <CaptainDesk locale={locale} /> : null}
+        <RequestTab locale={locale} />
+      </div>
+    );
   }
 
   const currentIdx = step ? TRIP_STEPS.indexOf(step) : -1;
@@ -220,6 +246,29 @@ export function TripTab({ locale }: { locale: Locale }) {
     <div>
       <h1 className="text-2xl font-extrabold">{c.tabs.trip}</h1>
       <p className="mt-1 text-sm text-white/70">{c.tripLead}</p>
+      {profile?.role === "captain" ? <CaptainDesk locale={locale} /> : null}
+
+      {trip.status === "requested" ? (
+        <section className="mt-4 rounded-2xl border border-kaenz/30 bg-kaenz/10 p-4">
+          <p className="text-sm font-bold text-kaenz">{ops.matching}</p>
+          <p className="mt-1 text-xs text-white/65">
+            {ops.offeredTo.replace("{n}", String(myOffer?.ranked.length || 0))}
+          </p>
+          <ul className="mt-3 space-y-1 text-xs text-white/70">
+            {(myOffer?.ranked || []).map((row) => (
+              <li key={row.yachtId}>
+                {row.name} · {row.captain}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {myOffer?.extraPassengers.length ? (
+        <p className="mt-3 text-xs text-white/60">
+          {myOffer.extraPassengers.map((pax) => `${pax.name} · ${pax.pickup}`).join(" · ")}
+        </p>
+      ) : null}
 
       {step ? (
         <section className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">

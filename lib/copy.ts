@@ -8,7 +8,7 @@ export const copy = {
     brand: "Kaenz",
     nav: {
       app: "Platform",
-      fleet: "Fleet",
+      fleet: "Yachts",
       book: "Book",
       concierge: "Concierge",
       join: "Join",
@@ -22,7 +22,7 @@ export const copy = {
     heroLead:
       "Commute, tour, and celebrate on the water. Immortalize your trip, give Vibes, list yachts and marinas — all on one platform.",
     heroCta: "Enter the platform",
-    heroSecondary: "Book a yacht",
+    heroSecondary: "See yachts",
     platformEyebrow: "Inside Kaenz",
     platformTitle: "The platform, end to end",
     platformLead:
@@ -132,7 +132,10 @@ export const copy = {
     from: "From",
     guests: "guests",
     hours: "hours",
-    bookNow: "Book now",
+    bookNow: "View yacht",
+    requestPlatform: "Request on the platform",
+    requestPlatformLead:
+      "Trips are requested in Kaenz Yachts — verified captain, Stripe, live tracking.",
     bookTitle: "Book a private yacht",
     bookLead:
       "Request a Commute, Tour, or Special Occasion. A verified captain is included. Stripe checkout, priced by our algorithm.",
@@ -234,7 +237,7 @@ export const copy = {
     brand: "Kaenz",
     nav: {
       app: "Plataforma",
-      fleet: "Flota",
+      fleet: "Yates",
       book: "Reservar",
       concierge: "Concierge",
       join: "Únete",
@@ -248,7 +251,7 @@ export const copy = {
     heroLead:
       "Commute, tour y celebra en el agua. Inmortaliza tu viaje, da Vibes, publica yates y marinas — en una sola plataforma.",
     heroCta: "Entrar a la plataforma",
-    heroSecondary: "Reservar un yate",
+    heroSecondary: "Ver yates",
     platformEyebrow: "Dentro de Kaenz",
     platformTitle: "La plataforma, de punta a punta",
     platformLead:
@@ -358,7 +361,10 @@ export const copy = {
     from: "Desde",
     guests: "huéspedes",
     hours: "horas",
-    bookNow: "Reservar",
+    bookNow: "Ver yate",
+    requestPlatform: "Solicitar en la plataforma",
+    requestPlatformLead:
+      "Los viajes se piden en Yates de Kaenz — capitán verificado, Stripe y seguimiento en vivo.",
     bookTitle: "Reserva un yate privado",
     bookLead:
       "Solicita Commute, Tour u Ocasión especial. Capitán verificado incluido. Pago con Stripe, precio del algoritmo.",
@@ -460,7 +466,7 @@ export const copy = {
     brand: "Kaenz",
     nav: {
       app: "Plateforme",
-      fleet: "Flotte",
+      fleet: "Yachts",
       book: "Réserver",
       concierge: "Concierge",
       join: "Rejoindre",
@@ -474,7 +480,7 @@ export const copy = {
     heroLead:
       "Trajets, croisières et célébrations sur l’eau. Immortalisez votre trajet, donnez des Vibes, inscrivez yachts et marinas — une seule plateforme.",
     heroCta: "Entrer dans la plateforme",
-    heroSecondary: "Réserver un yacht",
+    heroSecondary: "Voir les yachts",
     platformEyebrow: "Dans Kaenz",
     platformTitle: "La plateforme, de bout en bout",
     platformLead:
@@ -585,7 +591,10 @@ export const copy = {
     from: "À partir de",
     guests: "invités",
     hours: "heures",
-    bookNow: "Réserver",
+    bookNow: "Voir le yacht",
+    requestPlatform: "Demander sur la plateforme",
+    requestPlatformLead:
+      "Les trajets se demandent dans Yachts Kaenz — capitaine vérifié, Stripe et suivi en direct.",
     bookTitle: "Réserver un yacht privé",
     bookLead:
       "Demandez un trajet, une croisière ou une occasion spéciale. Capitaine vérifié inclus. Paiement Stripe, prix de l’algorithme.",
@@ -687,7 +696,7 @@ export const copy = {
     brand: "Kaenz",
     nav: {
       app: "Piattaforma",
-      fleet: "Flotta",
+      fleet: "Yacht",
       book: "Prenota",
       concierge: "Concierge",
       join: "Unisciti",
@@ -701,7 +710,7 @@ export const copy = {
     heroLead:
       "Spostati, fai un tour e festeggia in acqua. Immortalizza il viaggio, dai Vibes, pubblica yacht e marine — una sola piattaforma.",
     heroCta: "Entra nella piattaforma",
-    heroSecondary: "Prenota uno yacht",
+    heroSecondary: "Vedi gli yacht",
     platformEyebrow: "Dentro Kaenz",
     platformTitle: "La piattaforma, da capo a fine",
     platformLead:
@@ -812,7 +821,10 @@ export const copy = {
     from: "Da",
     guests: "ospiti",
     hours: "ore",
-    bookNow: "Prenota",
+    bookNow: "Vedi yacht",
+    requestPlatform: "Richiedi sulla piattaforma",
+    requestPlatformLead:
+      "I viaggi si richiedono in Yacht Kaenz — capitano verificato, Stripe e tracciamento in diretta.",
     bookTitle: "Prenota uno yacht privato",
     bookLead:
       "Richiedi un tragitto, un tour o un’occasione speciale. Capitano verificato incluso. Pagamento Stripe, prezzo dell’algoritmo.",
@@ -914,7 +926,7 @@ export const copy = {
     brand: "Kaenz",
     nav: {
       app: "Plataforma",
-      fleet: "Frota",
+      fleet: "Iates",
       book: "Reservar",
       concierge: "Concierge",
       join: "Junte-se",
@@ -928,7 +940,7 @@ export const copy = {
     heroLead:
       "Desloque-se, passeie e celebre na água. Imortalize a viagem, dê Vibes, anuncie iates e marinas — numa só plataforma.",
     heroCta: "Entrar na plataforma",
-    heroSecondary: "Reservar um iate",
+    heroSecondary: "Ver iates",
     platformEyebrow: "Dentro da Kaenz",
     platformTitle: "A plataforma, de ponta a ponta",
     platformLead:
@@ -1038,7 +1050,10 @@ export const copy = {
     from: "A partir de",
     guests: "convidados",
     hours: "horas",
-    bookNow: "Reservar",
+    bookNow: "Ver iate",
+    requestPlatform: "Pedir na plataforma",
+    requestPlatformLead:
+      "As viagens pedem-se em Iates da Kaenz — capitão verificado, Stripe e acompanhamento ao vivo.",
     bookTitle: "Reserve um iate privado",
     bookLead:
       "Solicite Trajeto, Passeio ou Ocasião especial. Capitão verificado incluso. Pagamento Stripe, preço do algoritmo.",

@@ -15,6 +15,7 @@ import {
   type WhenMode,
 } from "@/lib/pricing";
 import { useTripLog } from "@/lib/trip-log";
+import { useDispatch } from "@/lib/dispatch-store";
 import { useTrip } from "@/lib/trip-store";
 import { maskCard } from "@/lib/profile";
 import { useProfile } from "@/lib/profile-store";
@@ -27,9 +28,10 @@ const field =
 
 export function RequestTab({ locale }: { locale: Locale }) {
   const c = at(locale);
-  const { trip, setTrip, fare, yacht, fleet, allPlaces, originName, destinationName } =
+  const { trip, setTrip, fare, yacht, fleet, allPlaces, originName, destinationName, originPlace } =
     useTrip();
   const { addTrip } = useTripLog();
+  const { postOffer } = useDispatch();
   const { profile, ready: profileReady, complete } = useProfile();
   const { here } = useLocation();
   const router = useRouter();
@@ -65,10 +67,30 @@ export function RequestTab({ locale }: { locale: Locale }) {
       router.push(pathFor(locale, "/app/account"));
       return;
     }
+    const offerId = trip.bookingId || `req-${Date.now()}`;
+    const origin = originPlace || here;
+    postOffer(
+      {
+        id: offerId,
+        customerName: profile.fullName,
+        originId: trip.originId,
+        destinationId: trip.destinationId,
+        originName,
+        destName: destinationName,
+        originLat: origin.lat,
+        originLng: origin.lng,
+        guests: trip.guests,
+        kind: trip.kind,
+        hours: trip.hours,
+        yachtId: trip.yachtId,
+      },
+      fleet,
+    );
     setTrip({
       status: "requested",
       tripProgress: 0,
       rating: 0,
+      bookingId: offerId,
       ...stamp,
       name: profile.fullName,
       email: profile.email,
@@ -77,7 +99,7 @@ export function RequestTab({ locale }: { locale: Locale }) {
     });
     if (yacht) {
       addTrip({
-        id: trip.bookingId || `req-${Date.now()}`,
+        id: offerId,
         date: stamp.date,
         time: stamp.time,
         kind: trip.kind,

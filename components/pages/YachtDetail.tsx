@@ -1,9 +1,9 @@
 import Image from "next/image";
-import { BookForm } from "@/components/BookForm";
+import Link from "next/link";
 import { CaptainAvatar } from "@/components/CaptainAvatar";
 import { Site } from "@/components/Site";
 import { t } from "@/lib/copy";
-import type { Locale } from "@/lib/locale";
+import { pathFor, type Locale } from "@/lib/locale";
 import type { Yacht } from "@/lib/yachts";
 
 export function YachtDetail({
@@ -54,9 +54,15 @@ export function YachtDetail({
             <li>{yacht.marina}</li>
           </ul>
         </div>
-        <div>
-          <h2 className="mb-4 text-2xl font-bold">{c.bookTitle}</h2>
-          <BookForm locale={locale} defaultYacht={yacht.id} />
+        <div className="kaenz-card p-8">
+          <h2 className="text-2xl font-bold">{c.nav.fleet}</h2>
+          <p className="mt-3 text-white/70">{c.requestPlatformLead}</p>
+          <Link
+            href={pathFor(locale, "/app/yachts")}
+            className="btn-kaenz mt-6 text-sm"
+          >
+            {c.requestPlatform}
+          </Link>
         </div>
       </section>
     </Site>

@@ -48,7 +48,7 @@ export function HomePage({ locale }: { locale: Locale }) {
             <Link href={pathFor(locale, "/app")} className="btn-kaenz text-base">
               {c.heroCta}
             </Link>
-            <Link href={pathFor(locale, "/book")} className="btn-ghost text-base">
+            <Link href={pathFor(locale, "/fleet")} className="btn-ghost text-base">
               {c.heroSecondary}
             </Link>
           </div>
@@ -121,7 +121,7 @@ export function HomePage({ locale }: { locale: Locale }) {
 
       <section className="relative overflow-hidden">
         <Image
-          src="/fleet/miami-skyline.jpg"
+          src="/site/yacht-dusk.jpg"
           alt=""
           fill
           className="object-cover opacity-30"
@@ -184,7 +184,7 @@ export function HomePage({ locale }: { locale: Locale }) {
 
       <section className="relative overflow-hidden">
         <Image
-          src="/crew/kaenz/selfie-7.jpg"
+          src="/site/crew-lifestyle.jpg"
           alt=""
           fill
           className="object-cover opacity-25"
@@ -238,7 +238,7 @@ export function HomePage({ locale }: { locale: Locale }) {
 
       <section className="relative overflow-hidden">
         <Image
-          src="/fleet/captain.jpg"
+          src="/site/captain-helm.jpg"
           alt=""
           fill
           className="object-cover opacity-25"

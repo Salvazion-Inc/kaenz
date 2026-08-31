@@ -52,12 +52,6 @@ export function Footer({ locale }: { locale: Locale }) {
             <Link href={pathFor(locale, "/fleet")} className="hover:text-kaenz">
               {c.nav.fleet}
             </Link>
-            <Link href={pathFor(locale, "/book")} className="hover:text-kaenz">
-              {c.nav.book}
-            </Link>
-            <Link href={pathFor(locale, "/concierge")} className="hover:text-kaenz">
-              {c.nav.concierge}
-            </Link>
             <Link href={pathFor(locale, "/join")} className="hover:text-kaenz">
               {c.nav.join}
             </Link>
