@@ -5,6 +5,8 @@ import { useMemo, useState } from "react";
 import { at } from "@/lib/app-copy";
 import { crew, crewById, crewFeed, type CrewPost } from "@/lib/crew";
 import type { Locale } from "@/lib/locale";
+import { ImmortalizeTrip } from "./ImmortalizeTrip";
+import { TopSelfies } from "./TopSelfies";
 
 export function CrewTab({ locale }: { locale: Locale }) {
   const c = at(locale);
@@ -38,7 +40,10 @@ export function CrewTab({ locale }: { locale: Locale }) {
       <h1 className="text-2xl font-extrabold">{c.tabs.crew}</h1>
       <p className="mt-1 text-sm text-white/70">{c.crewLead}</p>
 
-      <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
+      <ImmortalizeTrip locale={locale} />
+      <TopSelfies locale={locale} />
+
+      <div className="mt-8 flex gap-3 overflow-x-auto pb-2">
         {people.map((p) => (
           <article
             key={p.id}

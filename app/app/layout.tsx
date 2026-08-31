@@ -1,5 +1,6 @@
 import { AppSplash } from "@/components/app/AppSplash";
 import { ProfileProvider } from "@/lib/profile-store";
+import { SelfieProvider } from "@/lib/selfie-store";
 import { TripLogProvider } from "@/lib/trip-log";
 import { TripProvider } from "@/lib/trip-store";
 
@@ -28,7 +29,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <TripProvider>
       <ProfileProvider>
         <TripLogProvider>
-          <AppSplash>{children}</AppSplash>
+          <SelfieProvider>
+            <AppSplash>{children}</AppSplash>
+          </SelfieProvider>
         </TripLogProvider>
       </ProfileProvider>
     </TripProvider>
