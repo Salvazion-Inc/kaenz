@@ -22,10 +22,7 @@ export function Nav({ locale }: { locale: Locale }) {
     <header className={`site-header ${scrolled ? "is-scrolled" : ""}`}>
       <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 md:h-16 md:px-5">
         <Link href={pathFor(locale, "/")} className="flex items-center">
-          <Logo
-            size={40}
-            className="h-9 w-9 drop-shadow-[0_0_12px_rgba(0,161,214,0.65)] md:h-10 md:w-10"
-          />
+          <Logo size={40} className="h-9 w-9 md:h-10 md:w-10" />
         </Link>
         <div className="hidden items-center gap-5 text-sm font-semibold text-white/88 md:flex">
           <LanguageSwitcher />

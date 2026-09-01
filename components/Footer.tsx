@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { LanguageSwitcher } from "./LanguageSwitcher";
-import { Logo } from "./Logo";
 import { t } from "@/lib/copy";
 import type { Locale } from "@/lib/locale";
 
@@ -24,16 +22,7 @@ export function Footer({ locale }: { locale: Locale }) {
   const c = t(locale);
   return (
     <footer className="border-t border-white/10 bg-navy">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-14 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-4">
-          <Logo size={64} />
-          <p className="max-w-xl text-sm leading-relaxed text-white/70">
-            {c.footerLead}
-          </p>
-        </div>
-        <LanguageSwitcher />
-      </div>
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 pb-10 text-[11px] text-white/50 sm:flex-row">
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-8 text-[11px] text-white/50 sm:flex-row">
         <p>
           <a href="https://salvazion.org" className="hover:text-kaenz">
             {c.rights}

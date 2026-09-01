@@ -6,8 +6,6 @@ export const copy = {
     metaDescription:
       "Kaenz is an end-to-end yacht platform — not a charter operator — for Commute, Tour, and Special Occasion trips worldwide. Price by trip type, duration, yacht, guests, and date. Pay with Stripe.",
     brand: "Kaenz",
-    footerLead:
-      "Kaenz is the worldwide yacht platform for commute, tour, and celebration — not a charter company. Independent owners, captains, and marinas run every trip. You immortalize the moment, give Vibes, and pay with Stripe.",
     nav: {
       app: "Platform",
       fleet: "Yachts",
@@ -237,8 +235,6 @@ export const copy = {
     metaDescription:
       "Kaenz es una plataforma integral de yates — no un operador de chárter — para Commute, Tour y Ocasión especial en el mundo. El precio sale del tipo de viaje, duración, yate, pasajeros y fecha. Pagas con Stripe.",
     brand: "Kaenz",
-    footerLead:
-      "Kaenz es la plataforma mundial de yates para commute, tour y celebración — no una empresa de chárter. Dueños, capitanes y marinas independientes operan cada viaje. Inmortalizas el momento, das Vibes y pagas con Stripe.",
     nav: {
       app: "Plataforma",
       fleet: "Yates",
@@ -468,8 +464,6 @@ export const copy = {
     metaDescription:
       "Kaenz est une plateforme yacht de bout en bout — pas un opérateur de charter — pour trajets, croisières et occasions spéciales dans le monde. Le prix dépend du type de voyage, de la durée, du yacht, des passagers et de la date. Paiement Stripe.",
     brand: "Kaenz",
-    footerLead:
-      "Kaenz est la plateforme mondiale de yachts pour se déplacer, croiser et célébrer — pas une société de charter. Propriétaires, capitaines et marinas indépendants opèrent chaque trajet. Vous immortalisez l’instant, donnez des Vibes et payez avec Stripe.",
     nav: {
       app: "Plateforme",
       fleet: "Yachts",
@@ -700,8 +694,6 @@ export const copy = {
     metaDescription:
       "Kaenz è una piattaforma yacht end-to-end — non un operatore di charter — per tragitto, tour e occasione speciale nel mondo. Il prezzo dipende da tipo di viaggio, durata, yacht, passeggeri e data. Paghi con Stripe.",
     brand: "Kaenz",
-    footerLead:
-      "Kaenz è la piattaforma mondiale di yacht per spostarsi, fare un tour e festeggiare — non un’azienda di charter. Proprietari, capitani e marine indipendenti operano ogni viaggio. Immortalizzi il momento, dai Vibes e paghi con Stripe.",
     nav: {
       app: "Piattaforma",
       fleet: "Yacht",
@@ -932,8 +924,6 @@ export const copy = {
     metaDescription:
       "A Kaenz é uma plataforma integral de iates — não uma operadora de charter — para Trajeto, Passeio e Ocasião especial no mundo. O preço sai do tipo de viagem, duração, iate, passageiros e data. Você paga com Stripe.",
     brand: "Kaenz",
-    footerLead:
-      "A Kaenz é a plataforma mundial de iates para trajeto, passeio e celebração — não uma empresa de charter. Donos, capitães e marinas independentes operam cada viagem. Você imortaliza o momento, dá Vibes e paga com Stripe.",
     nav: {
       app: "Plataforma",
       fleet: "Iates",
