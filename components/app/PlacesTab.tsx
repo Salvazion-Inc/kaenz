@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { placePhoto } from "@/lib/place-photo";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { WorldMap } from "@/components/WorldMap";
@@ -39,7 +40,7 @@ function FeaturedCard({
   return (
     <li className="w-[16.5rem] shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-white/5">
       <div className="relative h-36">
-        <Image src={p.image} alt={p.name} fill className="object-cover" />
+        <Image src={placePhoto(p)} alt={p.name} fill className="object-cover" />
         {km != null && Number.isFinite(km) ? (
           <span className="absolute right-2 top-2 rounded-full bg-navy/80 px-2 py-0.5 text-[10px] font-bold">
             {formatKm(km)}
@@ -92,7 +93,10 @@ export function PlacesTab({ locale }: { locale: Locale }) {
   const gps = located ? here : null;
   const nearYou = useMemo(() => featuredSorted(gps), [gps]);
   const hubs = useMemo(
-    () => allPlaces.filter((p) => p.kind === "marina" || p.kind === "port"),
+    () =>
+      allPlaces.filter(
+        (p) => p.kind === "marina" || p.kind === "port" || Boolean(p.featured),
+      ),
     [allPlaces],
   );
 

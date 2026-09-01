@@ -25,6 +25,7 @@ export type Place = {
   dockmaster?: string;
   phone?: string;
   website?: string;
+  popular?: boolean;
 };
 
 export function placeCountry(place: Place, locale: Locale = "en") {
@@ -255,7 +256,7 @@ const southFlorida: Place[] = [
 export const places: Place[] = [...southFlorida, ...featuredPlaces, ...worldHubs];
 
 export const mapHubs = places.filter(
-  (p) => p.kind === "marina" || p.kind === "port",
+  (p) => p.kind === "marina" || p.kind === "port" || Boolean(p.featured),
 );
 
 export function placeById(id: string) {

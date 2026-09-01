@@ -321,6 +321,7 @@ export function TripTab({ locale }: { locale: Locale }) {
       Number.isFinite(destinationPlace.lat) ? (
         <section className="mt-4">
           <TripLiveMap
+            locale={locale}
             origin={originPlace}
             destination={destinationPlace}
             progress={trip.tripProgress || 0}
@@ -329,10 +330,6 @@ export function TripTab({ locale }: { locale: Locale }) {
               if (p === 1 || p - prev >= 0.05) setTrip({ tripProgress: p });
             }}
           />
-          <p className="mt-2 text-xs text-white/55">
-            {originName} → {destinationName}
-            {arrived ? ` · ${c.arrivedPay}` : ""}
-          </p>
         </section>
       ) : null}
 

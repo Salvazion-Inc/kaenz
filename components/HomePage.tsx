@@ -4,9 +4,13 @@ import { Footer } from "./Footer";
 import { HtmlLang } from "./HtmlLang";
 import { Logo } from "./Logo";
 import { Nav } from "./Nav";
+import { AppPhonePreview } from "./AppPhonePreview";
 import { WorldMap } from "./WorldMap";
+import { at } from "@/lib/app-copy";
 import { t } from "@/lib/copy";
+import { popularDropoffs } from "@/lib/featured-places";
 import { pathFor, type Locale } from "@/lib/locale";
+import { placePhoto } from "@/lib/place-photo";
 import { yachts } from "@/lib/yachts";
 
 const TESTIMONIAL_PHOTOS: Record<string, string> = {
@@ -17,7 +21,9 @@ const TESTIMONIAL_PHOTOS: Record<string, string> = {
 
 export function HomePage({ locale }: { locale: Locale }) {
   const c = t(locale);
+  const a = at(locale);
   const featured = yachts.slice(0, 3);
+  const dropoffs = popularDropoffs();
 
   return (
     <div className="bg-navy text-foam">
@@ -95,7 +101,7 @@ export function HomePage({ locale }: { locale: Locale }) {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 py-24">
+      <section id="marinas" className="mx-auto max-w-6xl px-5 py-24">
         <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
           {c.marinasTitle}
         </h2>
@@ -106,8 +112,45 @@ export function HomePage({ locale }: { locale: Locale }) {
         >
           {c.marinasCta}
         </Link>
-        <div className="kaenz-card mt-8 overflow-hidden p-2">
-          <WorldMap locale={locale} variant="site" />
+        <div className="mt-8 grid items-start gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+          <div className="kaenz-card overflow-hidden p-2">
+            <WorldMap locale={locale} variant="site" />
+          </div>
+          <AppPhonePreview locale={locale} />
+        </div>
+        <div className="mt-12">
+          <h3 className="text-2xl font-bold tracking-tight md:text-3xl">
+            {c.popularTitle}
+          </h3>
+          <p className="mt-2 max-w-2xl text-white/70">{c.popularLead}</p>
+          <ul className="featured-rail mt-6 -mx-5 px-5">
+            {dropoffs.map((p) => (
+              <li
+                key={p.id}
+                className="w-[16.5rem] shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-white/5"
+              >
+                <Link href={pathFor(locale, "/app")} className="block">
+                  <div className="relative h-36">
+                    <Image
+                      src={placePhoto(p)}
+                      alt={p.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="p-3">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-kaenz">
+                      {p.featured ? a.featured[p.featured] : p.city}
+                    </p>
+                    <h4 className="mt-0.5 truncate text-sm font-bold">
+                      {p.name}
+                    </h4>
+                    <p className="mt-1 text-xs text-white/55">{p.city}</p>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 

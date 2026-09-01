@@ -9,21 +9,36 @@ import type { Locale } from "@/lib/locale";
 import { useLocation } from "@/lib/location";
 import { formatCoords, placePhoto } from "@/lib/place-photo";
 import { mapTiles } from "@/lib/map-tiles";
-import { mapHubs, placeCountry, type Place } from "@/lib/places";
+import {
+  curvePoint,
+  DEMO_DEST_ID,
+  DEMO_ORIGIN_ID,
+  easeInOut,
+  headingDeg,
+  minutesLeft,
+  sampleCurve,
+  yachtIconHtml,
+} from "@/lib/live-route";
+import { mapHubs, placeById, placeCountry, type Place } from "@/lib/places";
 
 const FLORIDA: [number, number] = [26.05, -80.14];
 const WORLD: [number, number] = [22, 8];
 
 function tooltipFor(place: Place, locale: Locale) {
   const c = t(locale);
-  const kind = place.kind === "port" ? c.legendPort : c.legendMarina;
+  const kind =
+    place.kind === "port"
+      ? c.legendPort
+      : place.featured
+        ? c.legendPlace
+        : c.legendMarina;
   return `${kind} · ${place.name} · ${place.city}, ${placeCountry(place, locale)}`;
 }
 
 function uniqueHubs(list: Place[]) {
   const seen = new Set<string>();
   return list.filter((p) => {
-    if (p.kind !== "marina" && p.kind !== "port") return false;
+    if (p.kind !== "marina" && p.kind !== "port" && !p.featured) return false;
     if (seen.has(p.id)) return false;
     seen.add(p.id);
     return true;
@@ -63,8 +78,13 @@ export function WorldMap({
   const pinsRef = useRef(pins);
   pinsRef.current = pins;
   const [selected, setSelected] = useState<Place | null>(null);
-  const [view, setView] = useState<"world" | "florida" | "you">("world");
+  const [view, setView] = useState<"world" | "florida" | "you">(
+    variant === "site" ? "florida" : "world",
+  );
   const [ready, setReady] = useState(false);
+  const [liveT, setLiveT] = useState(0);
+  const demoOrigin = placeById(DEMO_ORIGIN_ID);
+  const demoDest = placeById(DEMO_DEST_ID);
 
   useEffect(() => {
     let cancelled = false;
@@ -81,7 +101,7 @@ export function WorldMap({
         minZoom: 2,
         maxZoom: 16,
         worldCopyJump: true,
-      }).setView(WORLD, 2);
+      }).setView(variant === "site" ? FLORIDA : WORLD, variant === "site" ? 11 : 2);
       mapRef.current = map;
 
       const tiles = mapTiles();
@@ -149,7 +169,13 @@ export function WorldMap({
     const placed: { place: Place; marker: import("leaflet").Marker }[] = [];
     for (const place of pinsRef.current) {
       const pin = L.divIcon({
-        className: `kaenz-pin ${place.kind === "port" ? "kaenz-pin-port" : "kaenz-pin-marina"}`,
+        className: `kaenz-pin ${
+          place.kind === "port"
+            ? "kaenz-pin-port"
+            : place.featured
+              ? "kaenz-pin-place"
+              : "kaenz-pin-marina"
+        }`,
         iconSize: [14, 14],
         iconAnchor: [7, 7],
       });
@@ -169,6 +195,76 @@ export function WorldMap({
     }
     markersRef.current = placed;
   }, [ready, pins]);
+
+  useEffect(() => {
+    const L = leafletRef.current;
+    const map = mapRef.current;
+    if (!L || !map || !ready || !demoOrigin || !demoDest) return;
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const start = { lat: demoOrigin.lat, lng: demoOrigin.lng };
+    const end = { lat: demoDest.lat, lng: demoDest.lng };
+    const path = sampleCurve(start, end);
+    const latlngs = path.map((p) => [p.lat, p.lng] as [number, number]);
+    const line = L.polyline(latlngs, {
+      color: "#00a1d6",
+      weight: 3,
+      opacity: 0.92,
+    }).addTo(map);
+    const boat = L.divIcon({
+      className: "kaenz-yacht-icon",
+      html: yachtIconHtml(0),
+      iconSize: [28, 28],
+      iconAnchor: [14, 14],
+    });
+    const marker = L.marker([start.lat, start.lng], {
+      icon: boat,
+      interactive: false,
+      zIndexOffset: 1200,
+    }).addTo(map);
+    let raf = 0;
+    const t0 = performance.now();
+    const duration = 16000;
+    let lastUi = 0;
+
+    function place(raw: number) {
+      const t = easeInOut(raw);
+      const here = curvePoint(start, end, t);
+      const ahead = curvePoint(start, end, Math.min(1, t + 0.02));
+      marker.setLatLng([here.lat, here.lng]);
+      const el = marker.getElement()?.querySelector(".kaenz-yacht") as
+        | HTMLElement
+        | null;
+      if (el) el.style.transform = `rotate(${headingDeg(here, ahead)}deg)`;
+    }
+
+    if (reduce) {
+      place(0.45);
+      setLiveT(0.45);
+    } else {
+      const tick = (now: number) => {
+        const t = (now - t0) % duration / duration;
+        place(t);
+        if (now - lastUi > 220) {
+          lastUi = now;
+          setLiveT(t);
+        }
+        raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+    }
+
+    if (variant === "site") {
+      map.fitBounds(L.latLngBounds(latlngs).pad(0.55));
+    }
+
+    return () => {
+      cancelAnimationFrame(raf);
+      map.removeLayer(line);
+      map.removeLayer(marker);
+    };
+  }, [ready, demoOrigin, demoDest, variant]);
 
   useEffect(() => {
     const L = leafletRef.current;
@@ -230,6 +326,10 @@ export function WorldMap({
               <i className="kaenz-pin kaenz-pin-port relative inline-block h-2.5 w-2.5" />
               {c.legendPort}
             </span>
+            <span className="inline-flex items-center gap-1.5">
+              <i className="kaenz-pin kaenz-pin-place relative inline-block h-2.5 w-2.5" />
+              {c.legendPlace}
+            </span>
           </span>
           <button
             type="button"
@@ -259,11 +359,45 @@ export function WorldMap({
         </div>
       </div>
       <div
-        className={`overflow-hidden rounded-2xl border border-white/10 ${
+        className={`relative overflow-hidden rounded-2xl border border-white/10 ${
           variant === "app" ? "h-80 md:h-[28rem]" : "h-[420px] md:h-[520px]"
         }`}
       >
         <div ref={host} className="h-full w-full" />
+        {demoOrigin && demoDest ? (
+          <div className="pointer-events-none absolute bottom-3 left-3 max-w-[17rem] rounded-2xl border border-white/15 bg-navy/84 px-3 py-2.5 shadow-lg backdrop-blur-md md:bottom-4 md:left-4">
+            <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-kaenz">
+              <span className="kaenz-live-dot" />
+              {c.liveBadge} · {c.liveTrip}
+            </p>
+            <p className="mt-1 text-xs font-semibold text-white">
+              {demoOrigin.name} → {demoDest.name}
+            </p>
+            <p className="mt-0.5 text-[11px] text-white/70">
+              {c.liveAway.replace(
+                "{n}",
+                String(
+                  minutesLeft(
+                    demoDest.minutesByYacht || demoOrigin.minutesByYacht || 12,
+                    liveT,
+                  ),
+                ),
+              )}
+            </p>
+            <p className="text-[11px] text-white/55">
+              {c.liveFaster.replace(
+                "{n}",
+                String(
+                  Math.max(
+                    1,
+                    (demoDest.minutesByCar || demoOrigin.minutesByCar || 28) -
+                      (demoDest.minutesByYacht || demoOrigin.minutesByYacht || 12),
+                  ),
+                ),
+              )}
+            </p>
+          </div>
+        ) : null}
       </div>
       {selected ? (
         <div className="mt-3 overflow-hidden rounded-2xl border border-white/10 bg-white/5">
@@ -277,7 +411,12 @@ export function WorldMap({
           </div>
           <div className="p-4">
             <p className="text-[10px] font-bold uppercase tracking-widest text-kaenz">
-              {selected.kind === "port" ? c.legendPort : c.legendMarina} ·{" "}
+              {selected.kind === "port"
+                ? c.legendPort
+                : selected.featured
+                  ? c.legendPlace
+                  : c.legendMarina}{" "}
+              ·{" "}
               {placeCountry(selected, locale)}
             </p>
             <h3 className="mt-1 text-lg font-bold">{selected.name}</h3>

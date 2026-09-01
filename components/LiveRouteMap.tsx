@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
-import { t } from "@/lib/copy";
-import type { Locale } from "@/lib/locale";
 import {
   curvePoint,
   easeInOut,
@@ -11,59 +9,71 @@ import {
   minutesLeft,
   sampleCurve,
   yachtIconHtml,
+  type LatLng,
 } from "@/lib/live-route";
 import { mapTiles } from "@/lib/map-tiles";
 import type { Place } from "@/lib/places";
+import { t } from "@/lib/copy";
+import type { Locale } from "@/lib/locale";
 
-export function TripLiveMap({
+export function LiveRouteMap({
   origin,
   destination,
+  locale,
+  loop = true,
   progress,
   onProgress,
-  locale,
+  className = "",
+  overlay = true,
 }: {
   origin: Place;
   destination: Place;
-  progress: number;
-  onProgress: (value: number) => void;
   locale: Locale;
+  loop?: boolean;
+  progress?: number;
+  onProgress?: (value: number) => void;
+  className?: string;
+  overlay?: boolean;
 }) {
   const host = useRef<HTMLDivElement>(null);
+  const [shown, setShown] = useState(Math.min(1, Math.max(0, progress ?? 0)));
+  const lastUi = useRef(0);
   const onProgressRef = useRef(onProgress);
   onProgressRef.current = onProgress;
-  const startRef = useRef(Math.min(1, Math.max(0, progress)));
-  const [shown, setShown] = useState(startRef.current);
   const c = t(locale);
   const totalMin = Math.max(
     8,
-    origin.minutesByYacht || destination.minutesByYacht || 18,
+    origin.minutesByYacht || destination.minutesByYacht || 12,
   );
   const carMin = Math.max(
     totalMin + 8,
-    origin.minutesByCar || destination.minutesByCar || 40,
+    origin.minutesByCar || destination.minutesByCar || 28,
   );
 
   useEffect(() => {
     let cancelled = false;
     let map: import("leaflet").Map | null = null;
     let raf = 0;
-    const from = startRef.current;
-    const duration = Math.max(4000, 26000 * (1 - from));
+    const from = Math.min(1, Math.max(0, progress ?? 0));
+    const duration = loop ? 16000 : Math.max(5000, 28000 * (1 - from));
     const t0 = performance.now();
-    let lastUi = 0;
 
     async function mount() {
       const L = await import("leaflet");
       if (cancelled || !host.current) return;
-      const start = { lat: origin.lat, lng: origin.lng };
-      const end = { lat: destination.lat, lng: destination.lng };
+      const start: LatLng = { lat: origin.lat, lng: origin.lng };
+      const end: LatLng = { lat: destination.lat, lng: destination.lng };
       const path = sampleCurve(start, end);
       const latlngs = path.map((p) => [p.lat, p.lng] as [number, number]);
+
       map = L.map(host.current, {
         zoomControl: false,
-        attributionControl: true,
-        minZoom: 8,
-        maxZoom: 16,
+        attributionControl: false,
+        dragging: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        boxZoom: false,
+        keyboard: false,
       });
       const tiles = mapTiles();
       L.tileLayer(tiles.url, {
@@ -96,12 +106,15 @@ export function TripLiveMap({
         interactive: false,
         zIndexOffset: 900,
       }).addTo(map);
-      map.fitBounds(L.latLngBounds(latlngs).pad(0.4));
+      map.fitBounds(L.latLngBounds(latlngs).pad(0.45));
 
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const reduce =
+        typeof window !== "undefined" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-      function place(raw: number) {
-        const t = easeInOut(Math.min(1, Math.max(0, raw)));
+      function place(p: number) {
+        if (cancelled) return;
+        const t = easeInOut(Math.min(1, Math.max(0, p)));
         const here = curvePoint(start, end, t);
         const ahead = curvePoint(start, end, Math.min(1, t + 0.02));
         marker.setLatLng([here.lat, here.lng]);
@@ -109,27 +122,31 @@ export function TripLiveMap({
           | HTMLElement
           | null;
         if (el) el.style.transform = `rotate(${headingDeg(here, ahead)}deg)`;
-        onProgressRef.current(t);
-        const now = performance.now();
-        if (now - lastUi > 200 || t >= 1) {
-          lastUi = now;
+        onProgressRef.current?.(t);
+        const nowUi = performance.now();
+        if (nowUi - lastUi.current > 200 || t >= 1) {
+          lastUi.current = nowUi;
           setShown(t);
         }
       }
 
       if (reduce) {
-        place(from < 1 ? Math.max(from, 0.4) : 1);
+        place(from < 1 ? Math.max(from, 0.45) : 1);
         return;
       }
 
       function tick(now: number) {
         if (cancelled) return;
-        const t = Math.min(1, from + ((now - t0) / duration) * (1 - from));
+        const elapsed = now - t0;
+        const t = loop
+          ? (elapsed % duration) / duration
+          : Math.min(1, from + (elapsed / duration) * (1 - from));
         place(t);
-        if (t < 1) raf = requestAnimationFrame(tick);
+        if (!loop && t >= 1) return;
+        raf = requestAnimationFrame(tick);
       }
       place(from);
-      if (from < 1) raf = requestAnimationFrame(tick);
+      raf = requestAnimationFrame(tick);
     }
 
     void mount();
@@ -138,33 +155,38 @@ export function TripLiveMap({
       cancelAnimationFrame(raf);
       map?.remove();
     };
-  }, [origin.lat, origin.lng, destination.lat, destination.lng]);
+  }, [
+    origin.lat,
+    origin.lng,
+    destination.lat,
+    destination.lng,
+    loop,
+    progress,
+  ]);
 
   const left = minutesLeft(totalMin, shown);
   const faster = Math.max(1, carMin - totalMin);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/10">
-      <div ref={host} className="h-64 w-full md:h-80" />
-      <div className="pointer-events-none absolute left-3 top-3 max-w-[17rem] rounded-2xl border border-white/15 bg-navy/84 px-3 py-2.5 shadow-lg backdrop-blur-md">
-        <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-kaenz">
-          <span className="kaenz-live-dot" />
-          {c.liveBadge} · {c.liveTrip}
-        </p>
-        <p className="mt-1 text-xs font-semibold text-white">
-          {origin.name} → {destination.name}
-        </p>
-        <p className="mt-0.5 text-[11px] text-white/70">
-          {shown >= 1
-            ? c.liveArrived
-            : c.liveAway.replace("{n}", String(left))}
-        </p>
-        {shown < 1 ? (
+    <div className={`relative overflow-hidden ${className}`}>
+      <div ref={host} className="h-full w-full" />
+      {overlay ? (
+        <div className="pointer-events-none absolute left-3 top-3 max-w-[16rem] rounded-2xl border border-white/15 bg-navy/82 px-3 py-2.5 shadow-lg backdrop-blur-md">
+          <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-kaenz">
+            <span className="kaenz-live-dot" />
+            {c.liveBadge} · {c.liveTrip}
+          </p>
+          <p className="mt-1 text-xs font-semibold text-white">
+            {origin.name} → {destination.name}
+          </p>
+          <p className="mt-0.5 text-[11px] text-white/70">
+            {c.liveAway.replace("{n}", String(left))}
+          </p>
           <p className="text-[11px] text-white/55">
             {c.liveFaster.replace("{n}", String(faster))}
           </p>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </div>
   );
 }

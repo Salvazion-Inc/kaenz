@@ -123,6 +123,9 @@ export const copy = {
     marinasBody:
       "Kaenz connects private yachts at marinas and ports worldwide. Arrive and depart by water — from South Florida to the Med, the Caribbean, and beyond. Open the platform and add your marina or port in Places.",
     marinasCta: "Open the platform and add your marina",
+    popularTitle: "Popular drop-offs",
+    popularLead:
+      "Dock-and-dine, the bayfront club, the arena, and the islands — arrive by yacht.",
     joinTitle: "Do you Own a Yacht and Are you a Captain?",
     joinCta: "Open the platform and add your yacht",
     joinLead:
@@ -180,10 +183,21 @@ export const copy = {
     mapFlorida: "South Florida",
     legendMarina: "Marina",
     legendPort: "Port",
+    legendPlace: "Drop-off",
     hubsLabel: "marinas and ports for yacht arrivals and departures",
     mapZoomIn: "Zoom in",
     mapZoomOut: "Zoom out",
     mapNearMe: "Near me",
+    liveTrip: "Trip in progress",
+    liveBadge: "Live",
+    liveAway: "{n} min away",
+    liveFaster: "{n} min faster than driving",
+    liveArrived: "Arrived — ready to pay",
+    appPreviewEyebrow: "On your phone",
+    appPreviewTitle: "Watch your yacht move, marina to marina",
+    appPreviewLead:
+      "The Kaenz platform on mobile: pick a marina, board, and follow the live hop while the causeway sits still.",
+    appPreviewCta: "Open the platform",
     role: "Role",
     joinFee:
       "Paid with Stripe. Owner 38%. Captain 30%. Kaenz 25%. Pickup marina 3.5%. Dropoff marina 3.5%. Optional captain gratuity (15–20%) goes directly to the captain.",
@@ -352,6 +366,9 @@ export const copy = {
     marinasBody:
       "Kaenz conecta yates privados en marinas y puertos de todo el mundo. Llega y sale por agua — de South Florida al Mediterráneo, el Caribe y más allá. Abre la plataforma y agrega tu marina o puerto en Lugares.",
     marinasCta: "Abre la plataforma y agrega tu marina",
+    popularTitle: "Destinos populares",
+    popularLead:
+      "Dock & dine, el club en la bahía, la arena y las islas — llega en yate.",
     joinTitle: "¿Tienes un Yate y eres Capitán?",
     joinCta: "Abre la plataforma y agrega tu yate",
     joinLead:
@@ -409,10 +426,21 @@ export const copy = {
     mapFlorida: "South Florida",
     legendMarina: "Marina",
     legendPort: "Puerto",
+    legendPlace: "Destino",
     hubsLabel: "marinas y puertos para llegadas y salidas en yate",
     mapZoomIn: "Acercar",
     mapZoomOut: "Alejar",
     mapNearMe: "Cerca de mí",
+    liveTrip: "Viaje en curso",
+    liveBadge: "En vivo",
+    liveAway: "A {n} min",
+    liveFaster: "{n} min más rápido que en auto",
+    liveArrived: "Llegaste — listo para pagar",
+    appPreviewEyebrow: "En tu móvil",
+    appPreviewTitle: "Mira el yate ir de marina a marina",
+    appPreviewLead:
+      "La plataforma Kaenz en el teléfono: elige una marina, sube y sigue el salto en vivo mientras el tráfico se queda quieto.",
+    appPreviewCta: "Abrir la plataforma",
     role: "Rol",
     joinFee:
       "Se cobra con Stripe. Dueño 38%. Capitán 30%. Kaenz 25%. Marina de origen 3.5%. Marina de destino 3.5%. Gratificación opcional al capitán (15–20%) va directo al capitán.",
@@ -582,6 +610,9 @@ export const copy = {
     marinasBody:
       "Kaenz relie des yachts privés dans des marinas et ports du monde entier. Arrivez et partez par l’eau — de South Florida à la Méditerranée, aux Caraïbes et au-delà. Ouvrez la plateforme et ajoutez votre marina ou port dans Lieux.",
     marinasCta: "Ouvrir la plateforme et ajouter votre marina",
+    popularTitle: "Arrivées populaires",
+    popularLead:
+      "Dock & dine, le club sur la baie, l’arena et les îles — arrivez en yacht.",
     joinTitle: "Vous possédez un yacht et vous êtes capitaine ?",
     joinCta: "Ouvrir la plateforme et ajouter votre yacht",
     joinLead:
@@ -639,10 +670,21 @@ export const copy = {
     mapFlorida: "South Florida",
     legendMarina: "Marina",
     legendPort: "Port",
+    legendPlace: "Arrivée",
     hubsLabel: "marinas et ports pour arrivées et départs en yacht",
     mapZoomIn: "Zoom avant",
     mapZoomOut: "Zoom arrière",
     mapNearMe: "Près de moi",
+    liveTrip: "Trajet en cours",
+    liveBadge: "En direct",
+    liveAway: "À {n} min",
+    liveFaster: "{n} min plus rapide qu’en voiture",
+    liveArrived: "Arrivé — prêt à payer",
+    appPreviewEyebrow: "Sur votre téléphone",
+    appPreviewTitle: "Voyez le yacht aller de marina en marina",
+    appPreviewLead:
+      "La plateforme Kaenz sur mobile : choisissez une marina, embarquez et suivez le saut en direct pendant que la route reste bloquée.",
+    appPreviewCta: "Ouvrir la plateforme",
     role: "Rôle",
     joinFee:
       "Paiement Stripe. Propriétaire 38 %. Capitaine 30 %. Kaenz 25 %. Marina de départ 3,5 %. Marina d’arrivée 3,5 %. Pourboire capitaine optionnel (15–20 %) versé directement au capitaine.",
@@ -812,6 +854,9 @@ export const copy = {
     marinasBody:
       "Kaenz collega yacht privati in marine e porti di tutto il mondo. Arriva e parti via acqua — da South Florida al Mediterraneo, ai Caraibi e oltre. Apri la piattaforma e aggiungi la tua marina o porto in Luoghi.",
     marinasCta: "Apri la piattaforma e aggiungi la tua marina",
+    popularTitle: "Sbarcati popolari",
+    popularLead:
+      "Dock & dine, il club sulla baia, l’arena e le isole — arrivi in yacht.",
     joinTitle: "Possiedi uno yacht e sei un capitano?",
     joinCta: "Apri la piattaforma e aggiungi il tuo yacht",
     joinLead:
@@ -869,10 +914,21 @@ export const copy = {
     mapFlorida: "South Florida",
     legendMarina: "Marina",
     legendPort: "Porto",
+    legendPlace: "Sbarco",
     hubsLabel: "marine e porti per arrivi e partenze in yacht",
     mapZoomIn: "Ingrandisci",
     mapZoomOut: "Riduci",
     mapNearMe: "Vicino a me",
+    liveTrip: "Viaggio in corso",
+    liveBadge: "Live",
+    liveAway: "A {n} min",
+    liveFaster: "{n} min più veloce dell’auto",
+    liveArrived: "Arrivato — pronto a pagare",
+    appPreviewEyebrow: "Sul tuo telefono",
+    appPreviewTitle: "Guarda lo yacht da marina a marina",
+    appPreviewLead:
+      "La piattaforma Kaenz sul mobile: scegli una marina, sali e segui il salto in diretta mentre il traffico resta fermo.",
+    appPreviewCta: "Apri la piattaforma",
     role: "Ruolo",
     joinFee:
       "Pagamento con Stripe. Proprietario 38%. Capitano 30%. Kaenz 25%. Marina di partenza 3,5%. Marina di arrivo 3,5%. Mancia capitano opzionale (15–20%) versata direttamente al capitano.",
@@ -1041,6 +1097,9 @@ export const copy = {
     marinasBody:
       "A Kaenz conecta iates privados em marinas e portos do mundo. Chegue e saia pela água — do South Florida ao Mediterrâneo, ao Caribe e além. Abra a plataforma e adicione sua marina ou porto em Lugares.",
     marinasCta: "Abra a plataforma e adicione sua marina",
+    popularTitle: "Destinos populares",
+    popularLead:
+      "Dock & dine, o clube na baía, a arena e as ilhas — chegue de iate.",
     joinTitle: "Você tem um iate e é capitão?",
     joinCta: "Abra a plataforma e adicione o seu iate",
     joinLead:
@@ -1098,10 +1157,21 @@ export const copy = {
     mapFlorida: "South Florida",
     legendMarina: "Marina",
     legendPort: "Porto",
+    legendPlace: "Destino",
     hubsLabel: "marinas e portos para chegadas e partidas de iate",
     mapZoomIn: "Aproximar",
     mapZoomOut: "Afastar",
     mapNearMe: "Perto de mim",
+    liveTrip: "Viagem em andamento",
+    liveBadge: "Ao vivo",
+    liveAway: "A {n} min",
+    liveFaster: "{n} min mais rápido que de carro",
+    liveArrived: "Chegou — pronto para pagar",
+    appPreviewEyebrow: "No seu celular",
+    appPreviewTitle: "Veja o iate ir de marina em marina",
+    appPreviewLead:
+      "A plataforma Kaenz no celular: escolha uma marina, embarque e acompanhe o salto ao vivo enquanto o trânsito fica parado.",
+    appPreviewCta: "Abrir a plataforma",
     role: "Função",
     joinFee:
       "Cobrado com Stripe. Dono 38%. Capitão 30%. Kaenz 25%. Marina de partida 3,5%. Marina de chegada 3,5%. Gorjeta opcional ao capitão (15–20%) vai direto ao capitão.",
