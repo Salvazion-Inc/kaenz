@@ -121,7 +121,7 @@ export function HomePage({ locale }: { locale: Locale }) {
           </div>
           <Link
             href={pathFor(locale, "/fleet")}
-            className="hidden font-semibold text-kaenz md:block"
+            className="shrink-0 font-semibold text-kaenz"
           >
             {c.nav.fleet} →
           </Link>

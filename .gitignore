@@ -6,6 +6,7 @@ out
 .vercel
 *.log
 .DS_Store
+scripts/.hub-cache/
 
 .env*
 .vercel
