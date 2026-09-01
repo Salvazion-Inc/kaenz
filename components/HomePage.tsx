@@ -30,6 +30,7 @@ export function HomePage({ locale }: { locale: Locale }) {
   return (
     <div className="bg-navy text-foam">
       <HtmlLang locale={locale} />
+      <Nav locale={locale} />
       <section className="relative min-h-screen overflow-hidden">
         <video
           className="absolute inset-0 h-full w-full object-cover"
@@ -42,13 +43,18 @@ export function HomePage({ locale }: { locale: Locale }) {
           <source src="/hero.mp4" type="video/mp4" />
         </video>
         <div className="hero-veil absolute inset-0" />
-        <Nav locale={locale} />
         <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5 pb-16 pt-28 text-center">
-          <Logo
-            size={120}
-            className="h-[5.5rem] w-[5.5rem] mix-blend-screen drop-shadow-[0_8px_28px_rgba(0,161,214,0.45)] md:h-32 md:w-32"
-          />
-          <h1 className="hero-title mt-5 max-w-5xl text-4xl font-extrabold leading-[1.05] text-white md:text-6xl lg:text-7xl">
+          <div className="relative mb-1 flex items-center justify-center">
+            <span
+              aria-hidden
+              className="pointer-events-none absolute h-52 w-52 rounded-full bg-kaenz/25 blur-3xl md:h-64 md:w-64"
+            />
+            <Logo
+              size={256}
+              className="relative h-44 w-44 mix-blend-screen drop-shadow-[0_0_48px_rgba(0,161,214,0.55)] sm:h-52 sm:w-52 md:h-56 md:w-56"
+            />
+          </div>
+          <h1 className="hero-title mt-4 max-w-5xl text-4xl font-extrabold leading-[1.05] text-white md:text-6xl lg:text-7xl">
             {c.heroTitle}
           </h1>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-white/80 md:text-lg">

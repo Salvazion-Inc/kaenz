@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { Logo } from "./Logo";
@@ -6,12 +9,23 @@ import { pathFor, type Locale } from "@/lib/locale";
 
 export function Nav({ locale }: { locale: Locale }) {
   const c = t(locale);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <header className="absolute inset-x-0 top-0 z-40 px-3 pt-3 md:px-5">
-      <nav className="nav-island mx-auto flex max-w-6xl items-center justify-between gap-3 rounded-full px-3 py-2 md:px-4">
-        <Link href={pathFor(locale, "/")} className="flex items-center pl-1">
-          <Logo size={44} />
+    <header className={`site-header ${scrolled ? "is-scrolled" : ""}`}>
+      <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 md:h-16 md:px-5">
+        <Link href={pathFor(locale, "/")} className="flex items-center">
+          <Logo
+            size={40}
+            className="h-9 w-9 drop-shadow-[0_0_12px_rgba(0,161,214,0.65)] md:h-10 md:w-10"
+          />
         </Link>
         <div className="hidden items-center gap-5 text-sm font-semibold text-white/88 md:flex">
           <LanguageSwitcher />

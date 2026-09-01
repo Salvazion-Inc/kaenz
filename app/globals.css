@@ -42,9 +42,37 @@ textarea {
     radial-gradient(80% 50% at 50% 100%, color-mix(in srgb, var(--color-kaenz) 22%, transparent), transparent);
 }
 
+.site-header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 50;
+  padding-top: env(safe-area-inset-top, 0px);
+  background: linear-gradient(
+    180deg,
+    rgba(5, 10, 48, 0.78) 0%,
+    rgba(5, 10, 48, 0.32) 62%,
+    rgba(5, 10, 48, 0) 100%
+  );
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.site-header.is-scrolled {
+  background: var(--color-navy);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 36px rgba(5, 10, 48, 0.45);
+}
+
 .nav-island {
   border: 1px solid rgba(255, 255, 255, 0.12);
-  background: color-mix(in srgb, var(--color-navy) 55%, transparent);
+  background: color-mix(in srgb, var(--color-navy) 72%, transparent);
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
   box-shadow: 0 10px 40px rgba(5, 10, 48, 0.28);
