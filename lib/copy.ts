@@ -123,9 +123,6 @@ export const copy = {
     marinasBody:
       "Kaenz connects private yachts at marinas and ports worldwide. Arrive and depart by water — from South Florida to the Med, the Caribbean, and beyond. Open the platform and add your marina or port in Places.",
     marinasCta: "Open the platform and add your marina",
-    popularTitle: "Popular drop-offs",
-    popularLead:
-      "Dock-and-dine, the bayfront club, the arena, and the islands — arrive by yacht.",
     joinTitle: "Do you Own a Yacht and Are you a Captain?",
     joinCta: "Open the platform and add your yacht",
     joinLead:
@@ -366,9 +363,6 @@ export const copy = {
     marinasBody:
       "Kaenz conecta yates privados en marinas y puertos de todo el mundo. Llega y sale por agua — de South Florida al Mediterráneo, el Caribe y más allá. Abre la plataforma y agrega tu marina o puerto en Lugares.",
     marinasCta: "Abre la plataforma y agrega tu marina",
-    popularTitle: "Destinos populares",
-    popularLead:
-      "Dock & dine, el club en la bahía, la arena y las islas — llega en yate.",
     joinTitle: "¿Tienes un Yate y eres Capitán?",
     joinCta: "Abre la plataforma y agrega tu yate",
     joinLead:
@@ -610,9 +604,6 @@ export const copy = {
     marinasBody:
       "Kaenz relie des yachts privés dans des marinas et ports du monde entier. Arrivez et partez par l’eau — de South Florida à la Méditerranée, aux Caraïbes et au-delà. Ouvrez la plateforme et ajoutez votre marina ou port dans Lieux.",
     marinasCta: "Ouvrir la plateforme et ajouter votre marina",
-    popularTitle: "Arrivées populaires",
-    popularLead:
-      "Dock & dine, le club sur la baie, l’arena et les îles — arrivez en yacht.",
     joinTitle: "Vous possédez un yacht et vous êtes capitaine ?",
     joinCta: "Ouvrir la plateforme et ajouter votre yacht",
     joinLead:
@@ -854,9 +845,6 @@ export const copy = {
     marinasBody:
       "Kaenz collega yacht privati in marine e porti di tutto il mondo. Arriva e parti via acqua — da South Florida al Mediterraneo, ai Caraibi e oltre. Apri la piattaforma e aggiungi la tua marina o porto in Luoghi.",
     marinasCta: "Apri la piattaforma e aggiungi la tua marina",
-    popularTitle: "Sbarcati popolari",
-    popularLead:
-      "Dock & dine, il club sulla baia, l’arena e le isole — arrivi in yacht.",
     joinTitle: "Possiedi uno yacht e sei un capitano?",
     joinCta: "Apri la piattaforma e aggiungi il tuo yacht",
     joinLead:
@@ -1097,9 +1085,6 @@ export const copy = {
     marinasBody:
       "A Kaenz conecta iates privados em marinas e portos do mundo. Chegue e saia pela água — do South Florida ao Mediterrâneo, ao Caribe e além. Abra a plataforma e adicione sua marina ou porto em Lugares.",
     marinasCta: "Abra a plataforma e adicione sua marina",
-    popularTitle: "Destinos populares",
-    popularLead:
-      "Dock & dine, o clube na baía, a arena e as ilhas — chegue de iate.",
     joinTitle: "Você tem um iate e é capitão?",
     joinCta: "Abra a plataforma e adicione o seu iate",
     joinLead:

@@ -6,8 +6,6 @@ export const FEATURED_KINDS = [
   "sandbar",
   "beach",
   "dine",
-  "club",
-  "venue",
   "scenic",
 ] as const;
 export type FeaturedKind = (typeof FEATURED_KINDS)[number];
@@ -16,7 +14,7 @@ export const featuredPlaces: Place[] = [
   {
     id: "haulover-sandbar",
     kind: "place",
-    featured: "beach",
+    featured: "sandbar",
     name: "Haulover Sandbar",
     city: "North Miami Beach",
     country: "United States",
@@ -136,7 +134,7 @@ export const featuredPlaces: Place[] = [
   {
     id: "nixon-sandbar",
     kind: "place",
-    featured: "beach",
+    featured: "sandbar",
     name: "Nixon Sandbar",
     city: "Key Biscayne",
     country: "United States",
@@ -156,7 +154,7 @@ export const featuredPlaces: Place[] = [
   {
     id: "stiltsville",
     kind: "place",
-    featured: "beach",
+    featured: "sandbar",
     name: "Stiltsville",
     city: "Biscayne Bay",
     country: "United States",
@@ -176,7 +174,7 @@ export const featuredPlaces: Place[] = [
   {
     id: "lake-sylvia",
     kind: "place",
-    featured: "beach",
+    featured: "sandbar",
     name: "Lake Sylvia",
     city: "Fort Lauderdale",
     country: "United States",
@@ -196,7 +194,7 @@ export const featuredPlaces: Place[] = [
   {
     id: "lake-boca-raton",
     kind: "place",
-    featured: "beach",
+    featured: "sandbar",
     name: "Lake Boca Raton",
     city: "Boca Raton",
     country: "United States",
@@ -216,7 +214,7 @@ export const featuredPlaces: Place[] = [
   {
     id: "maule-lake",
     kind: "place",
-    featured: "beach",
+    featured: "sandbar",
     name: "Maule Lake",
     city: "North Miami Beach",
     country: "United States",
@@ -236,7 +234,7 @@ export const featuredPlaces: Place[] = [
   {
     id: "john-u-lloyd",
     kind: "place",
-    featured: "beach",
+    featured: "sandbar",
     name: "John U. Lloyd State Park",
     city: "Dania Beach",
     country: "United States",
@@ -256,7 +254,7 @@ export const featuredPlaces: Place[] = [
   {
     id: "no-name-harbor",
     kind: "place",
-    featured: "beach",
+    featured: "sandbar",
     name: "No Name Harbor",
     city: "Key Biscayne",
     country: "United States",
@@ -1437,7 +1435,7 @@ export const featuredPlaces: Place[] = [
   {
     id: "palm-tree-club",
     kind: "place",
-    featured: "club",
+    featured: "dine",
     popular: true,
     name: "Palm Tree Club",
     city: "North Bay Village",
@@ -1481,7 +1479,7 @@ export const featuredPlaces: Place[] = [
   {
     id: "kaseya-center",
     kind: "place",
-    featured: "venue",
+    featured: "scenic",
     popular: true,
     name: "Kaseya Center",
     city: "Miami",
@@ -1556,11 +1554,4 @@ export function featuredByKind(
 
 export function featuredSorted(here?: { lat: number; lng: number } | null) {
   return sortByGps(featuredPlaces, here);
-}
-
-export function popularDropoffs(here?: { lat: number; lng: number } | null) {
-  return sortByGps(
-    featuredPlaces.filter((p) => p.popular),
-    here,
-  );
 }
