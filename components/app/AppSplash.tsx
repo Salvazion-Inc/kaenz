@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTrip } from "@/lib/trip-store";
+import { SplashLogo } from "./SplashLogo";
 
 const MIN_MS = 4200;
 const FADE_MS = 450;
@@ -41,23 +42,7 @@ export function AppSplash({ children }: { children: React.ReactNode }) {
           aria-live="polite"
           aria-label="Kaenz"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/brand/logo-splash.png"
-            alt=""
-            className="h-[min(88vw,24rem)] w-[min(88vw,24rem)] object-contain mix-blend-lighten"
-          />
-          <video
-            className="app-splash-video absolute h-[min(88vw,24rem)] w-[min(88vw,24rem)] object-contain mix-blend-lighten"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            poster="/brand/logo-splash.png"
-          >
-            <source src="/brand/logo-loading.mp4" type="video/mp4" />
-          </video>
+          <SplashLogo />
         </div>
       ) : null}
     </>

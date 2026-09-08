@@ -167,9 +167,68 @@ button.kaenz-card:hover,
   padding-top: env(safe-area-inset-top);
 }
 
+.app-splash-logo {
+  position: relative;
+  width: min(88vw, 24rem);
+  height: min(88vw, 24rem);
+}
+
+.app-splash-logo::before {
+  content: "";
+  position: absolute;
+  inset: 16%;
+  z-index: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-kaenz) 42%, transparent) 0%,
+    transparent 72%
+  );
+  pointer-events: none;
+  animation: kaenz-splash-glow 2.8s ease-in-out infinite;
+}
+
+.app-splash-logo img {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  animation: kaenz-splash-spin 3.8s ease-in-out infinite;
+}
+
+@keyframes kaenz-splash-spin {
+  0%,
+  100% {
+    transform: rotate(-8deg) scale(0.99);
+  }
+  50% {
+    transform: rotate(8deg) scale(1.025);
+  }
+}
+
+@keyframes kaenz-splash-glow {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .app-splash-video {
-    display: none;
+  .app-splash-logo::before,
+  .app-splash-logo img {
+    animation: none;
+    transform: none;
   }
 }
 
