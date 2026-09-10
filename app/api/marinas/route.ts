@@ -1,4 +1,5 @@
 import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
+import { listBookablePlaces } from "@/lib/inventory";
 import { isSolanaWallet } from "@/lib/listings";
 import {
   isCoord,
@@ -6,14 +7,18 @@ import {
   listingToPlace,
   normalizeWebsite,
 } from "@/lib/marina-listings";
-import { insertMarinaListing, listMarinaListings } from "@/lib/marina-store";
+import { insertMarinaListing } from "@/lib/marina-store";
 import { getSupabaseAdmin } from "@/lib/supabase";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  const rows = await listMarinaListings();
-  return Response.json({ places: rows.map(listingToPlace) });
+  const { places, meta } = await listBookablePlaces();
+  return Response.json({
+    places,
+    source: meta.source,
+    note: meta.note,
+  });
 }
 
 export async function POST(req: Request) {

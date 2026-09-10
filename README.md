@@ -57,13 +57,31 @@ Add to Home Screen on iOS/Android for the standalone mobile shell.
 | `STRIPE_CONNECT_MARINA_PICKUP` | Optional Connect account for pickup marina |
 | `STRIPE_CONNECT_MARINA_DROPOFF` | Optional Connect account for dropoff marina |
 
-Without Supabase, booking and join requests still succeed locally (no persistence). Without `XAI_API_KEY`, concierge returns an error until the key is set. Without `STRIPE_SECRET_KEY`, trip checkout returns an error until Stripe is configured.
+Without Supabase, booking and join requests still succeed locally (no persistence). `GET /api/yachts` and `GET /api/marinas` still return **seed-real** South Florida inventory so guests can book. Without `XAI_API_KEY`, concierge returns an error until the key is set. Without `STRIPE_SECRET_KEY`, trip checkout returns an error until Stripe is configured.
 
 After a request, the client pays the algorithm fare plus optional captain gratuity with Stripe Checkout. The fare splits **owner 38% / captain 30% / Kaenz 25% / pickup marina 3.5% / dropoff marina 3.5%**. Gratuity is on top and goes only to the captain. If Connect account IDs are set, the webhook at `/api/stripe/webhook` transfers those shares; otherwise the split is recorded and funds stay on the Kaenz platform account.
+
+Guests book from `/fleet/{id}` (bookable yachts) with email + name → `POST /api/checkout/guest` → Stripe Checkout. Success lands on `/book/confirmed`. Owners and captains still list boats from `/join`. There is no demo pay path.
 
 ## Supabase
 
 Run `supabase/schema.sql` in the SQL editor, then set the env vars on Vercel.
+
+`yacht_listings` / `marina_listings` are optional (operator-submitted inventory). If those tables are missing, the API serves **seed-real** rows from the origin FL catalog (Galeon, Tempest 42, SAVVY, Pink Lady, Amani at Miami Beach Marina, Island Gardens, Las Olas Marina, Hollywood Marina, Palm Beach Town Docks) and upserts them into `public.yachts` when the service role key is present.
+
+If the Supabase project is paused, unpause it in the dashboard. Minimum env: `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Writes need `SUPABASE_SERVICE_ROLE_KEY`.
+
+## Verify guest booking
+
+```bash
+curl -s https://kaenz.com/api/yachts
+curl -s https://kaenz.com/api/marinas
+curl -s -X POST https://kaenz.com/api/checkout/guest \
+  -H 'content-type: application/json' \
+  -d '{"yachtId":"galeon","kind":"tour","hours":4,"guests":4,"originId":"miami-beach-marina","destinationId":"miami-beach-marina","full_name":"Guest Test","email":"guest@example.com"}'
+```
+
+Click path: `/fleet` → **Bookable now** → a yacht → **Book this trip — pay with Stripe** → email → Stripe Checkout. Cancel returns to `/fleet/{id}`. Success shows `/book/confirmed`.
 
 ## Product notes
 

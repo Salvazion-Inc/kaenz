@@ -205,3 +205,16 @@ alter table public.marina_listings enable row level security;
 create policy "public read listed marinas"
   on public.marina_listings for select
   using (status = 'listed');
+
+-- seed-real bookable inventory (Miami Beach–FLL–Hollywood–Palm Beach).
+-- Evidence: origin catalog slugs already published on /fleet at public marinas.
+insert into public.yachts (
+  slug, name, class, length_ft, guests, hours_min, marina, image_url, active
+)
+values
+  ('galeon', 'Galeon', 'Motor yacht', 50, 13, 4, 'Miami Beach Marina', '/fleet/kaenz/galeon.webp', true),
+  ('tempest-42', 'Tempest 42', 'Express cruiser', 42, 10, 3, 'Island Gardens Miami', '/fleet/kaenz/tempest-42.webp', true),
+  ('savvy', 'SAVVY', 'Day cruiser', 32, 8, 3, 'Las Olas Marina', '/fleet/kaenz/savvy.webp', true),
+  ('pink-lady', 'Pink Lady', 'Flybridge yacht', 50, 12, 4, 'Hollywood Marina', '/fleet/kaenz/pink-lady.webp', true),
+  ('amani', 'Amani', 'Flybridge yacht', 46, 12, 4, 'Palm Beach Town Docks', '/fleet/kaenz/amani.webp', true)
+on conflict (slug) do nothing;

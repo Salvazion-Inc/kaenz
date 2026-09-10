@@ -1,4 +1,4 @@
-import { getSupabaseAdmin } from "./supabase";
+import { getSupabase, getSupabaseAdmin } from "./supabase";
 import type { MarinaListing } from "./marina-listings";
 import type { PlaceKind } from "./places";
 
@@ -81,17 +81,25 @@ async function writeCatalog(rows: MarinaListing[]) {
 }
 
 export async function listMarinaListings(): Promise<MarinaListing[]> {
-  const admin = getSupabaseAdmin();
-  if (!admin) return [];
-  const { data, error } = await admin
-    .from("marina_listings")
-    .select(
-      "id, slug, created_by, kind, name, lat, lng, address, region, dockmaster, phone, website, wallet, created_at",
-    )
-    .eq("status", "listed")
-    .order("created_at", { ascending: false });
-  if (!error && data) return (data as DbRow[]).map(fromRow).map(publicListing);
-  return (await readCatalog()).map(publicListing);
+  const db = getSupabase() || getSupabaseAdmin();
+  if (!db) return [];
+  try {
+    const { data, error } = await db
+      .from("marina_listings")
+      .select(
+        "id, slug, created_by, kind, name, lat, lng, address, region, dockmaster, phone, website, wallet, created_at",
+      )
+      .eq("status", "listed")
+      .order("created_at", { ascending: false });
+    if (error) {
+      if (error.code === "PGRST205") return [];
+      return (await readCatalog()).map(publicListing);
+    }
+    if (data) return (data as DbRow[]).map(fromRow).map(publicListing);
+  } catch {
+    /* table missing or paused */
+  }
+  return [];
 }
 
 export async function insertMarinaListing(row: {
