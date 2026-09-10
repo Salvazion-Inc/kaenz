@@ -11,6 +11,8 @@ export type Captain = {
   verified: boolean;
 };
 
+export type YachtSource = "live" | "seed-real" | "catalog";
+
 export type Yacht = {
   id: string;
   name: string;
@@ -32,6 +34,11 @@ export type Yacht = {
   hin?: string;
   captainLanguages?: Array<"en" | "es" | "pt" | "fr">;
   captainRegion?: string;
+  /** Live or seed-real inventory that can be paid with Stripe now. */
+  bookable?: boolean;
+  source?: YachtSource;
+  kinds?: Array<"commute" | "tour" | "special">;
+  priceFromUsd?: number;
 };
 
 function blurb(en: string, es: string, fr: string, it: string, pt: string): Localized {

@@ -1,4 +1,4 @@
-import { getSupabaseAdmin } from "./supabase";
+import { getSupabase, getSupabaseAdmin } from "./supabase";
 import {
   parseLangs,
   parseTraits,
@@ -135,17 +135,25 @@ async function writeCatalog(rows: YachtListing[]) {
 }
 
 export async function listYachtListings(): Promise<YachtListing[]> {
-  const admin = getSupabaseAdmin();
-  if (!admin) return [];
-  const { data, error } = await admin
-    .from("yacht_listings")
-    .select(
-      "id, slug, created_by, status, owner_name, owner_wallet, name, hin, guests, traits, home_port, photo_urls, captain_name, captain_photo_url, captain_languages, captain_region, captain_wallet, created_at",
-    )
-    .eq("status", "listed")
-    .order("created_at", { ascending: false });
-  if (!error && data) return (data as DbRow[]).map(fromRow).map(publicListing);
-  return (await readCatalog()).map(publicListing);
+  const db = getSupabase() || getSupabaseAdmin();
+  if (!db) return [];
+  try {
+    const { data, error } = await db
+      .from("yacht_listings")
+      .select(
+        "id, slug, created_by, status, owner_name, owner_wallet, name, hin, guests, traits, home_port, photo_urls, captain_name, captain_photo_url, captain_languages, captain_region, captain_wallet, created_at",
+      )
+      .eq("status", "listed")
+      .order("created_at", { ascending: false });
+    if (error) {
+      if (error.code === "PGRST205") return [];
+      return (await readCatalog()).map(publicListing);
+    }
+    if (data) return (data as DbRow[]).map(fromRow).map(publicListing);
+  } catch {
+    /* table missing or paused */
+  }
+  return [];
 }
 
 export async function insertYachtListing(row: {

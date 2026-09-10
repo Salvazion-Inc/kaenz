@@ -1,8 +1,7 @@
-import { listYachtListings } from "./listing-store";
-import { listingToYacht } from "./listings";
-import { listingToPlace } from "./marina-listings";
-import { listMarinaListings } from "./marina-store";
-import { placeById, type Place } from "./places";
+import {
+  resolveInventoryPlace,
+  resolveInventoryYacht,
+} from "./inventory";
 import {
   clampHours,
   estimateFare,
@@ -10,7 +9,6 @@ import {
   type TripKind,
   type WhenMode,
 } from "./pricing";
-import { yachtById, type Yacht } from "./yachts";
 
 export type QuoteInput = {
   yachtId: string;
@@ -34,20 +32,12 @@ export function parseWhenMode(value: unknown): WhenMode {
   return value === "now" ? "now" : "schedule";
 }
 
-async function resolveYacht(id: string): Promise<Yacht | undefined> {
-  const listed = yachtById(id);
-  if (listed) return listed;
-  const rows = await listYachtListings();
-  const row = rows.find((item) => item.id === id || item.slug === id);
-  return row ? listingToYacht(row) : undefined;
+async function resolveYacht(id: string) {
+  return resolveInventoryYacht(id);
 }
 
-async function resolvePlace(id: string): Promise<Place | undefined> {
-  const known = placeById(id);
-  if (known) return known;
-  const rows = await listMarinaListings();
-  const row = rows.find((item) => item.id === id || item.slug === id);
-  return row ? listingToPlace(row) : undefined;
+async function resolvePlace(id: string) {
+  return resolveInventoryPlace(id);
 }
 
 export async function quoteTrip(input: QuoteInput) {

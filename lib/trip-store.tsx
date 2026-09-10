@@ -193,11 +193,18 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(() => {
-    const fleet = [...listings, ...yachts];
+    const seen = new Set<string>();
+    const fleet = [...listings, ...yachts].filter((y) => {
+      if (!y.id || seen.has(y.id)) return false;
+      seen.add(y.id);
+      return true;
+    });
     const allPlaces = [...partners, ...places];
     const findPlace = (id: string) =>
       partners.find((item) => item.id === id) || placeById(id);
-    const yacht = yachtById(trip.yachtId) || listings.find((item) => item.id === trip.yachtId);
+    const yacht =
+      listings.find((item) => item.id === trip.yachtId) ||
+      yachtById(trip.yachtId);
     const originPlace = findPlace(trip.originId);
     const destinationPlace = findPlace(trip.destinationId);
     const fare = yacht

@@ -1,7 +1,7 @@
 import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
+import { listBookableYachts } from "@/lib/inventory";
 import {
   insertYachtListing,
-  listYachtListings,
   uploadListingFile,
 } from "@/lib/listing-store";
 import {
@@ -12,6 +12,7 @@ import {
   parseTraits,
 } from "@/lib/listings";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { yachts as catalogYachts } from "@/lib/yachts";
 
 export const runtime = "nodejs";
 
@@ -30,8 +31,16 @@ function tooBig(file: File | null) {
 }
 
 export async function GET() {
-  const rows = await listYachtListings();
-  return Response.json({ yachts: rows.map(listingToYacht) });
+  const { yachts, meta } = await listBookableYachts();
+  return Response.json({
+    yachts,
+    source: meta.source,
+    note: meta.note,
+    catalog: {
+      count: catalogYachts.length,
+      note: "Static marketing catalog on /fleet. Not live inventory.",
+    },
+  });
 }
 
 export async function POST(req: Request) {

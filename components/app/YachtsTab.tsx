@@ -47,8 +47,13 @@ export function YachtsTab({ locale }: { locale: Locale }) {
   }, []);
 
   const list = useMemo(() => {
+    const seen = new Set<string>();
     return [...listings, ...yachts]
-      .filter((y) => klass === "all" || y.traits?.includes(klass))
+      .filter((y) => {
+        if (!y.id || seen.has(y.id)) return false;
+        seen.add(y.id);
+        return klass === "all" || y.traits?.includes(klass);
+      })
       .map((y) => {
         const hasGeo = Number.isFinite(y.lat) && Number.isFinite(y.lng);
         const km = hasGeo ? haversineKm(here, y) : Number.POSITIVE_INFINITY;
