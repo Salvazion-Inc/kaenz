@@ -10,10 +10,28 @@ import { SESSION_COOKIE, readSession } from "@/lib/session";
 
 const APP_HOSTS = new Set(["app.kaenz.com", "www.app.kaenz.com"]);
 const SITE = "https://kaenz.com";
+const MAPUCOIN = "https://mapucoin.com";
 
 export async function middleware(request: NextRequest) {
   const host = request.headers.get("host")?.split(":")[0] ?? "";
   const { pathname, search } = request.nextUrl;
+
+  // Shared Supabase Site URL is kaenz.com. Mapucoin Google login lands
+  // here with ?code= when mapucoin.com is not on the redirect allow-list.
+  const oauthCode = request.nextUrl.searchParams.get("code");
+  if (
+    oauthCode &&
+    !pathname.startsWith("/api/") &&
+    (pathname === "/" ||
+      pathname === "/mapucoin-auth" ||
+      pathname.startsWith("/login") ||
+      pathname.startsWith("/signup") ||
+      pathname.startsWith("/app"))
+  ) {
+    const dest = new URL("/auth/callback", MAPUCOIN);
+    dest.search = request.nextUrl.search;
+    return NextResponse.redirect(dest);
+  }
 
   if (host === "www.kaenz.com") {
     const url = request.nextUrl.clone();
