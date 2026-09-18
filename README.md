@@ -78,10 +78,12 @@ curl -s https://kaenz.com/api/yachts
 curl -s https://kaenz.com/api/marinas
 curl -s -X POST https://kaenz.com/api/checkout/guest \
   -H 'content-type: application/json' \
-  -d '{"yachtId":"galeon","kind":"tour","hours":4,"guests":4,"originId":"miami-beach-marina","destinationId":"miami-beach-marina","full_name":"Guest Test","email":"guest@example.com"}'
+  -d '{"yachtId":"galeon","kind":"tour","hours":4,"guests":4,"originId":"miami-beach-marina","destinationId":"miami-beach-marina","full_name":"Guest Test","email":"guest@example.com","amount":1}'
 ```
 
-Click path: `/fleet` → **Bookable now** → a yacht → **Book this trip — pay with Stripe** → email → Stripe Checkout. Cancel returns to `/fleet/{id}`. Success shows `/book/confirmed`.
+Click path: `/fleet` → **Bookable now** → a yacht → **Book this trip — pay with Stripe** → name/email/hours/guests → Stripe Checkout. Cancel returns to `/fleet/{id}?checkout=cancel` with a calm message. Success shows `/book/confirmed` (yacht, kind, hours, email, masked session id, **Book another**). Catalog cards stay on `/fleet/{id}` — they never send guests to `/app/yachts`. Owners/captains apply on `/join`. `/app` stays behind login.
+
+Fare is always computed server-side from yacht + kind + hours. Client `amount` / `price` / `total` on `POST /api/checkout/guest` are ignored. Unknown `yachtId` is rejected. Email must be valid. The guest endpoint is rate-limited. Bookings are marked paid only after a verified Stripe webhook (`checkout.session.completed` or `checkout.session.async_payment_succeeded`, and only when `payment_status` is not `unpaid`).
 
 ## Product notes
 

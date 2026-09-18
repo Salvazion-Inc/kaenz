@@ -111,3 +111,11 @@ export function chargeToMetadata(charge: ChargeBreakdown) {
     marina_total: String(charge.marina.total),
   };
 }
+
+/** Display-only. Never echo a full Stripe id to a guest receipt. */
+export function maskStripeId(id: string) {
+  const value = String(id || "").trim();
+  if (!value) return "";
+  if (value.length <= 12) return "••••";
+  return `${value.slice(0, 8)}••••${value.slice(-4)}`;
+}

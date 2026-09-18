@@ -35,6 +35,7 @@ function chargeFromMetadata(meta: Stripe.Metadata | null | undefined) {
 }
 
 async function fulfill(session: Stripe.Checkout.Session) {
+  if (session.payment_status === "unpaid") return;
   const bookingId =
     session.client_reference_id || session.metadata?.booking_id || "";
   if (!bookingId) return;
@@ -94,6 +95,14 @@ export async function POST(req: Request) {
     event.type === "checkout.session.async_payment_succeeded"
   ) {
     await fulfill(event.data.object as Stripe.Checkout.Session);
+  }
+  if (event.type === "checkout.session.async_payment_failed") {
+    const session = event.data.object as Stripe.Checkout.Session;
+    const bookingId =
+      session.client_reference_id || session.metadata?.booking_id || "";
+    if (bookingId) {
+      await updateBooking(bookingId, { status: "failed" }).catch(() => undefined);
+    }
   }
 
   return Response.json({ received: true });

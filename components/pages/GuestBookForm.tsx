@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { t } from "@/lib/copy";
+import { useMemo, useRef, useState } from "react";
+import { t, tripKindLabel } from "@/lib/copy";
 import { defaultDestinationId, seedRealPlaces } from "@/lib/bookable-seed";
 import type { Locale } from "@/lib/locale";
 import { placeById, type Place } from "@/lib/places";
@@ -15,6 +15,7 @@ import {
 import { formatUsd, type Yacht } from "@/lib/yachts";
 
 const KINDS: TripKind[] = ["commute", "tour", "special"];
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function GuestBookForm({
   locale,
@@ -40,8 +41,13 @@ export function GuestBookForm({
   const [destinationId, setDestinationId] = useState(
     defaultDestinationId(yacht, "tour"),
   );
-  const [status, setStatus] = useState<"idle" | "sending" | "err">("idle");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<
+    "idle" | "sending" | "redirect" | "err"
+  >("idle");
   const [message, setMessage] = useState("");
+  const inflight = useRef(false);
 
   const origin = hubs.find((p) => p.id === originId) || placeById(originId);
   const destination =
@@ -58,8 +64,35 @@ export function GuestBookForm({
     [yacht, kind, hours, guests, date, origin, destination],
   );
 
+  const busy = status === "sending" || status === "redirect";
+
+  function validate() {
+    const range = HOURS_RANGE[kind];
+    if (name.trim().length < 2) return c.invalidName;
+    if (!EMAIL.test(email.trim())) return c.invalidEmail;
+    if (!Number.isFinite(hours) || hours < range.min || hours > range.max) {
+      return c.invalidHours;
+    }
+    if (
+      !Number.isFinite(guests) ||
+      guests < 1 ||
+      guests > (yacht.guests || 13)
+    ) {
+      return c.invalidGuests;
+    }
+    return "";
+  }
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (busy || inflight.current) return;
+    const invalid = validate();
+    if (invalid) {
+      setStatus("err");
+      setMessage(invalid);
+      return;
+    }
+    inflight.current = true;
     setStatus("sending");
     setMessage("");
     const form = new FormData(e.currentTarget);
@@ -79,25 +112,38 @@ export function GuestBookForm({
           destinationId,
           origin: origin?.name || yacht.marina,
           destination: destination?.name || yacht.marina,
-          full_name: String(form.get("full_name") || "").trim(),
-          email: String(form.get("email") || "").trim(),
+          full_name: name.trim(),
+          email: email.trim(),
           phone: String(form.get("phone") || "").trim(),
           locale,
         }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         if (data.error === "stripe_unconfigured") {
           throw new Error(c.stripeMissing);
         }
         if (data.error === "profile") {
-          throw new Error(c.form.email);
+          throw new Error(c.invalidEmail);
         }
-        throw new Error(data.error || c.formError);
+        if (data.error === "yacht") {
+          throw new Error(c.formError);
+        }
+        if (data.error === "rate") {
+          throw new Error(c.formError);
+        }
+        throw new Error(c.formError);
       }
-      if (!data.url) throw new Error(c.formError);
+      if (!data.url || typeof data.url !== "string") {
+        throw new Error(c.formError);
+      }
+      if (!data.url.startsWith("https://checkout.stripe.com/")) {
+        throw new Error(c.formError);
+      }
+      setStatus("redirect");
       window.location.href = data.url;
     } catch (err) {
+      inflight.current = false;
       setStatus("err");
       setMessage(err instanceof Error ? err.message : c.formError);
     }
@@ -107,12 +153,13 @@ export function GuestBookForm({
     "mt-2 w-full rounded-lg border border-white/15 bg-white px-4 py-3 text-navy outline-none focus:border-kaenz";
 
   return (
-    <form onSubmit={onSubmit} className="mt-6 space-y-4">
+    <form onSubmit={onSubmit} className="mt-6 space-y-4" noValidate>
       <label className="block text-sm font-semibold">
         {c.form.kind}
         <select
           className={field}
           value={kind}
+          disabled={busy}
           onChange={(e) => {
             const next = e.target.value as TripKind;
             setKind(next);
@@ -120,9 +167,9 @@ export function GuestBookForm({
             setDestinationId(defaultDestinationId(yacht, next));
           }}
         >
-          {KINDS.map((k, i) => (
+          {KINDS.map((k) => (
             <option key={k} value={k}>
-              {c.tripTypes[i].title}
+              {tripKindLabel(locale, k)}
             </option>
           ))}
         </select>
@@ -136,6 +183,7 @@ export function GuestBookForm({
           max={HOURS_RANGE[kind].max}
           step={HOURS_RANGE[kind].step}
           required
+          disabled={busy}
           value={hours}
           onChange={(e) => setHours(clampHours(kind, Number(e.target.value)))}
         />
@@ -145,6 +193,7 @@ export function GuestBookForm({
         <select
           className={field}
           value={originId}
+          disabled={busy}
           onChange={(e) => setOriginId(e.target.value)}
         >
           {hubs.map((p) => (
@@ -159,6 +208,7 @@ export function GuestBookForm({
         <select
           className={field}
           value={destinationId}
+          disabled={busy}
           onChange={(e) => setDestinationId(e.target.value)}
         >
           {hubs.map((p) => (
@@ -176,13 +226,20 @@ export function GuestBookForm({
             type="date"
             name="trip_date"
             required
+            disabled={busy}
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
         </label>
         <label className="block text-sm font-semibold">
           {c.form.time}
-          <input className={field} type="time" name="trip_time" required />
+          <input
+            className={field}
+            type="time"
+            name="trip_time"
+            required
+            disabled={busy}
+          />
         </label>
       </div>
       <label className="block text-sm font-semibold">
@@ -193,13 +250,22 @@ export function GuestBookForm({
           min={1}
           max={yacht.guests || 13}
           required
+          disabled={busy}
           value={guests}
           onChange={(e) => setGuests(Number(e.target.value))}
         />
       </label>
       <label className="block text-sm font-semibold">
         {c.form.name}
-        <input className={field} name="full_name" autoComplete="name" required />
+        <input
+          className={field}
+          name="full_name"
+          autoComplete="name"
+          required
+          disabled={busy}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
       </label>
       <label className="block text-sm font-semibold">
         {c.guestEmail}
@@ -209,23 +275,38 @@ export function GuestBookForm({
           name="email"
           autoComplete="email"
           required
+          disabled={busy}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
       </label>
       <label className="block text-sm font-semibold">
         {c.form.phone}
-        <input className={field} name="phone" type="tel" autoComplete="tel" />
+        <input
+          className={field}
+          name="phone"
+          type="tel"
+          autoComplete="tel"
+          disabled={busy}
+        />
       </label>
-      <p className="text-sm font-semibold text-kaenz">
-        {c.from} {formatUsd(quote.total)} USD · {kind} · {hours}h
+      <p className="text-lg font-extrabold text-kaenz">
+        {c.from} {formatUsd(quote.total)} · {tripKindLabel(locale, kind)} ·{" "}
+        {hours}h
+      </p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-white/50">
+        {c.stripeTrust}
       </p>
       <button
         type="submit"
-        disabled={status === "sending"}
-        className="btn-kaenz w-full text-sm"
+        disabled={busy}
+        className="btn-kaenz btn-book w-full text-sm disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {status === "sending" ? c.form.sending : c.payStripe}
+        {status === "sending" || status === "redirect"
+          ? c.stripeRedirect
+          : c.payStripe}
       </button>
-      {message ? <p className="text-sm text-red-400">{message}</p> : null}
+      {message ? <p className="text-sm text-red-300">{message}</p> : null}
     </form>
   );
 }

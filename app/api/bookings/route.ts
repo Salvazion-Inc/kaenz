@@ -3,11 +3,15 @@ import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 import { getSupabase } from "@/lib/supabase";
 
 export async function POST(req: Request) {
-  const body = await req.json();
-  const full_name = String(body.full_name || "").trim();
-  const email = String(body.email || "").trim();
+  const body = await req.json().catch(() => null);
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return Response.json({ error: "fields" }, { status: 400 });
+  }
+  const input = body as Record<string, unknown>;
+  const full_name = String(input.full_name || "").trim();
+  const email = String(input.email || "").trim();
   if (!full_name || !email) {
-    return Response.json({ error: "Missing name or email" }, { status: 400 });
+    return Response.json({ error: "fields" }, { status: 400 });
   }
 
   const user = await readSession(
@@ -17,19 +21,19 @@ export async function POST(req: Request) {
   const row = {
     full_name,
     email,
-    phone: String(body.phone || ""),
-    yacht_slug: String(body.yacht_slug || ""),
-    origin: String(body.origin || ""),
-    destination: String(body.destination || ""),
-    trip_date: body.trip_date || null,
-    trip_time: String(body.trip_time || ""),
-    guests: Number(body.guests) || 1,
-    notes: String(body.notes || ""),
-    locale: parseLocale(body.locale),
-    status: String(body.status || "requested"),
-    amount: body.amount == null ? null : Number(body.amount),
-    payment_method: String(body.payment_method || ""),
-    trip_kind: String(body.trip_kind || ""),
+    phone: String(input.phone || ""),
+    yacht_slug: String(input.yacht_slug || ""),
+    origin: String(input.origin || ""),
+    destination: String(input.destination || ""),
+    trip_date: input.trip_date ? String(input.trip_date) : null,
+    trip_time: String(input.trip_time || ""),
+    guests: Number(input.guests) || 1,
+    notes: String(input.notes || ""),
+    locale: parseLocale(input.locale),
+    status: "requested",
+    amount: null,
+    payment_method: String(input.payment_method || ""),
+    trip_kind: String(input.trip_kind || ""),
     user_id: user?.id || "",
   };
 
@@ -41,7 +45,7 @@ export async function POST(req: Request) {
       .select("id")
       .single();
     if (error) {
-      return Response.json({ error: error.message }, { status: 500 });
+      return Response.json({ error: "save" }, { status: 500 });
     }
     return Response.json({ id: data.id, stored: "supabase" });
   }

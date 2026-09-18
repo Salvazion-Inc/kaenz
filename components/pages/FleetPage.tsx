@@ -26,11 +26,8 @@ export function FleetPage({ locale }: { locale: Locale }) {
           {c.fleetTitle}
         </h1>
         <p className="mt-3 max-w-2xl text-white/70">{c.fleetLead}</p>
-        <Link
-          href={`${pathFor(locale, "/app/yachts")}?add=yacht`}
-          className="btn-kaenz mt-6 text-sm"
-        >
-          {c.joinCta}
+        <Link href={pathFor(locale, "/join")} className="btn-ghost mt-6 text-sm">
+          {c.joinAsOwner}
         </Link>
         <FleetGrid locale={locale} />
       </section>
