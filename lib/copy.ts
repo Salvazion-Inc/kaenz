@@ -150,6 +150,22 @@ export const copy = {
     bookingUnpaid: "This checkout was not completed. You can book again from the yacht page.",
     stripeMissing: "Stripe is not configured on this server.",
     guestEmail: "Email for your receipt",
+    stripeTrust: "Secure checkout with Stripe.",
+    stripeRedirect: "Opening Stripe to finish payment…",
+    checkoutCanceled:
+      "Checkout was canceled. You can book this trip when you are ready.",
+    bookAnother: "Book another trip",
+    joinAsOwner: "Own a yacht or captain? Join Kaenz",
+    fleetEmpty: "No yachts match these filters.",
+    fleetError:
+      "Live inventory could not be loaded. Showing bookable yachts you can still reserve.",
+    receiptYacht: "Yacht",
+    receiptHours: "Hours",
+    receiptSession: "Stripe session",
+    invalidName: "Enter your full name.",
+    invalidEmail: "Enter a valid email for your receipt.",
+    invalidHours: "Choose a duration in range for this trip type.",
+    invalidGuests: "Choose a guest count this yacht can carry.",
     bookTitle: "Book a private yacht",
     bookLead:
       "Request a Commute, Tour, or Special Occasion. A verified captain is included. Stripe checkout, priced by our algorithm.",
@@ -404,6 +420,22 @@ export const copy = {
     bookingUnpaid: "Este checkout no se completó. Puedes reservar de nuevo desde la ficha del yate.",
     stripeMissing: "Stripe no está configurado en este servidor.",
     guestEmail: "Correo para tu recibo",
+    stripeTrust: "Pago seguro con Stripe.",
+    stripeRedirect: "Abriendo Stripe para terminar el pago…",
+    checkoutCanceled:
+      "Cancelaste el pago. Puedes reservar este viaje cuando quieras.",
+    bookAnother: "Reservar otro viaje",
+    joinAsOwner: "¿Tienes un yate o eres capitán? Únete a Kaenz",
+    fleetEmpty: "Ningún yate coincide con estos filtros.",
+    fleetError:
+      "No se pudo cargar el inventario en vivo. Mostramos yates reservables que aún puedes pedir.",
+    receiptYacht: "Yate",
+    receiptHours: "Horas",
+    receiptSession: "Sesión de Stripe",
+    invalidName: "Escribe tu nombre completo.",
+    invalidEmail: "Escribe un correo válido para tu recibo.",
+    invalidHours: "Elige una duración válida para este tipo de viaje.",
+    invalidGuests: "Elige un número de huéspedes que este yate pueda llevar.",
     bookTitle: "Reserva un yate privado",
     bookLead:
       "Solicita Commute, Tour u Ocasión especial. Capitán verificado incluido. Pago con Stripe, precio del algoritmo.",
@@ -659,6 +691,22 @@ export const copy = {
     bookingUnpaid: "Ce paiement n’a pas été terminé. Vous pouvez réserver depuis la fiche du yacht.",
     stripeMissing: "Stripe n’est pas configuré sur ce serveur.",
     guestEmail: "E-mail pour votre reçu",
+    stripeTrust: "Paiement sécurisé avec Stripe.",
+    stripeRedirect: "Ouverture de Stripe pour finaliser le paiement…",
+    checkoutCanceled:
+      "Le paiement a été annulé. Vous pouvez réserver ce trajet quand vous voulez.",
+    bookAnother: "Réserver un autre trajet",
+    joinAsOwner: "Vous possédez un yacht ou vous êtes capitaine ? Rejoindre Kaenz",
+    fleetEmpty: "Aucun yacht ne correspond à ces filtres.",
+    fleetError:
+      "L’inventaire en direct n’a pas pu être chargé. Voici des yachts encore réservables.",
+    receiptYacht: "Yacht",
+    receiptHours: "Heures",
+    receiptSession: "Session Stripe",
+    invalidName: "Indiquez votre nom complet.",
+    invalidEmail: "Indiquez un e-mail valide pour votre reçu.",
+    invalidHours: "Choisissez une durée valable pour ce type de trajet.",
+    invalidGuests: "Choisissez un nombre d’invités que ce yacht peut accueillir.",
     bookTitle: "Réserver un yacht privé",
     bookLead:
       "Demandez un trajet, une croisière ou une occasion spéciale. Capitaine vérifié inclus. Paiement Stripe, prix de l’algorithme.",
@@ -914,6 +962,22 @@ export const copy = {
     bookingUnpaid: "Questo checkout non è stato completato. Puoi prenotare di nuovo dalla scheda dello yacht.",
     stripeMissing: "Stripe non è configurato su questo server.",
     guestEmail: "Email per la ricevuta",
+    stripeTrust: "Pagamento sicuro con Stripe.",
+    stripeRedirect: "Apertura di Stripe per completare il pagamento…",
+    checkoutCanceled:
+      "Il pagamento è stato annullato. Puoi prenotare questo viaggio quando vuoi.",
+    bookAnother: "Prenota un altro viaggio",
+    joinAsOwner: "Possiedi uno yacht o sei un capitano? Unisciti a Kaenz",
+    fleetEmpty: "Nessuno yacht corrisponde a questi filtri.",
+    fleetError:
+      "L’inventario live non è stato caricato. Mostriamo yacht ancora prenotabili.",
+    receiptYacht: "Yacht",
+    receiptHours: "Ore",
+    receiptSession: "Sessione Stripe",
+    invalidName: "Inserisci il tuo nome completo.",
+    invalidEmail: "Inserisci un’email valida per la ricevuta.",
+    invalidHours: "Scegli una durata valida per questo tipo di viaggio.",
+    invalidGuests: "Scegli un numero di ospiti che questo yacht può portare.",
     bookTitle: "Prenota uno yacht privato",
     bookLead:
       "Richiedi un tragitto, un tour o un’occasione speciale. Capitano verificato incluso. Pagamento Stripe, prezzo dell’algoritmo.",
@@ -1168,6 +1232,22 @@ export const copy = {
     bookingUnpaid: "Este checkout não foi concluído. Pode reservar de novo na ficha do iate.",
     stripeMissing: "Stripe não está configurado neste servidor.",
     guestEmail: "Email para o recibo",
+    stripeTrust: "Pagamento seguro com Stripe.",
+    stripeRedirect: "A abrir o Stripe para terminar o pagamento…",
+    checkoutCanceled:
+      "O pagamento foi cancelado. Pode reservar esta viagem quando quiser.",
+    bookAnother: "Reservar outra viagem",
+    joinAsOwner: "Tem um iate ou é capitão? Junte-se à Kaenz",
+    fleetEmpty: "Nenhum iate corresponde a estes filtros.",
+    fleetError:
+      "Não foi possível carregar o inventário ao vivo. Mostramos iates que ainda pode reservar.",
+    receiptYacht: "Iate",
+    receiptHours: "Horas",
+    receiptSession: "Sessão Stripe",
+    invalidName: "Escreva o seu nome completo.",
+    invalidEmail: "Escreva um email válido para o recibo.",
+    invalidHours: "Escolha uma duração válida para este tipo de viagem.",
+    invalidGuests: "Escolha um número de convidados que este iate possa levar.",
     bookTitle: "Reserve um iate privado",
     bookLead:
       "Solicite Trajeto, Passeio ou Ocasião especial. Capitão verificado incluso. Pagamento Stripe, preço do algoritmo.",
@@ -1277,4 +1357,11 @@ export const copy = {
 
 export function t(locale: Locale) {
   return copy[locale];
+}
+
+export function tripKindLabel(locale: Locale, kind: string) {
+  const c = t(locale);
+  if (kind === "commute") return c.tripTypes[0].title;
+  if (kind === "special") return c.tripTypes[2].title;
+  return c.tripTypes[1].title;
 }

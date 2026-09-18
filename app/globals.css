@@ -106,6 +106,24 @@ textarea {
     0 16px 36px color-mix(in srgb, var(--color-kaenz) 48%, transparent);
 }
 
+.btn-kaenz:disabled {
+  transform: none;
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-book {
+  background: var(--color-kaenz);
+  color: var(--color-navy);
+  font-weight: 800;
+}
+
+.btn-book:hover {
+  background: #7ad7f0;
+  color: var(--color-navy);
+}
+
 .btn-ghost {
   display: inline-flex;
   align-items: center;

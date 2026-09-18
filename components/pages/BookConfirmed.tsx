@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Site } from "@/components/Site";
-import { t } from "@/lib/copy";
+import { t, tripKindLabel } from "@/lib/copy";
 import { pathFor, type Locale } from "@/lib/locale";
 import { formatUsd } from "@/lib/yachts";
 
@@ -16,7 +16,10 @@ type Receipt = {
   amount: number;
   email: string;
   yachtId: string;
+  yachtName: string;
   kind: string;
+  hours: number | null;
+  guests: number | null;
 };
 
 export function BookConfirmed({ locale }: { locale: Locale }) {
@@ -35,7 +38,7 @@ export function BookConfirmed({ locale }: { locale: Locale }) {
     fetch(`/api/checkout?session_id=${encodeURIComponent(sessionId)}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.error) throw new Error(data.error);
+        if (data.error) throw new Error("receipt");
         setReceipt(data);
       })
       .catch(() => setError(c.formError));
@@ -56,38 +59,69 @@ export function BookConfirmed({ locale }: { locale: Locale }) {
         {!receipt && !error ? (
           <p className="mt-4 text-white/70">{c.bookingProcessing}</p>
         ) : null}
-        {error ? <p className="mt-4 text-sm text-red-400">{error}</p> : null}
+        {error ? <p className="mt-4 text-sm text-red-300">{error}</p> : null}
         {receipt ? (
-          <div className="kaenz-card mt-8 space-y-3 p-6 text-sm">
-            <p className="text-white/70">
-              {paid ? c.bookingConfirmed : c.bookingUnpaid}
-            </p>
-            {receipt.amount ? (
-              <p className="text-2xl font-extrabold text-kaenz">
-                {formatUsd(receipt.amount)} USD
+          <div className="kaenz-card mt-8 overflow-hidden">
+            <div className="border-b border-white/10 bg-white/5 px-6 py-5">
+              <p className="text-sm text-white/70">
+                {paid ? c.bookingConfirmed : c.bookingUnpaid}
               </p>
-            ) : null}
-            {receipt.kind ? (
-              <p className="uppercase tracking-widest text-white/50">
-                {receipt.kind}
-              </p>
-            ) : null}
-            {receipt.bookingId ? (
-              <p className="break-all text-white/60">
-                Booking {receipt.bookingId}
-              </p>
-            ) : null}
-            {receipt.sessionId ? (
-              <p className="break-all text-white/45">{receipt.sessionId}</p>
-            ) : null}
-            {receipt.email ? (
-              <p className="text-white/70">{receipt.email}</p>
-            ) : null}
+              {receipt.amount ? (
+                <p className="mt-2 text-3xl font-extrabold text-kaenz">
+                  {formatUsd(receipt.amount)}
+                </p>
+              ) : null}
+            </div>
+            <dl className="space-y-3 px-6 py-5 text-sm">
+              {receipt.yachtName || receipt.yachtId ? (
+                <div className="flex justify-between gap-4">
+                  <dt className="text-white/50">{c.receiptYacht}</dt>
+                  <dd className="font-semibold text-right">
+                    {receipt.yachtName || receipt.yachtId}
+                  </dd>
+                </div>
+              ) : null}
+              {receipt.kind ? (
+                <div className="flex justify-between gap-4">
+                  <dt className="text-white/50">{c.form.kind}</dt>
+                  <dd className="font-semibold text-right">
+                    {tripKindLabel(locale, receipt.kind)}
+                  </dd>
+                </div>
+              ) : null}
+              {receipt.hours ? (
+                <div className="flex justify-between gap-4">
+                  <dt className="text-white/50">{c.receiptHours}</dt>
+                  <dd className="font-semibold text-right">{receipt.hours}h</dd>
+                </div>
+              ) : null}
+              {receipt.email ? (
+                <div className="flex justify-between gap-4">
+                  <dt className="text-white/50">{c.form.email}</dt>
+                  <dd className="font-semibold text-right break-all">
+                    {receipt.email}
+                  </dd>
+                </div>
+              ) : null}
+              {receipt.sessionId ? (
+                <div className="flex justify-between gap-4">
+                  <dt className="text-white/50">{c.receiptSession}</dt>
+                  <dd className="font-mono text-xs text-white/60 text-right">
+                    {receipt.sessionId}
+                  </dd>
+                </div>
+              ) : null}
+            </dl>
           </div>
         ) : null}
-        <Link href={yachtHref} className="btn-kaenz mt-8 inline-flex text-sm">
-          {c.nav.fleet}
-        </Link>
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <Link href={pathFor(locale, "/fleet")} className="btn-kaenz btn-book text-sm">
+            {c.bookAnother}
+          </Link>
+          <Link href={yachtHref} className="btn-ghost text-sm">
+            {c.nav.fleet}
+          </Link>
+        </div>
       </section>
     </Site>
   );

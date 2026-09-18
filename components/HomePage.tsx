@@ -217,11 +217,8 @@ export function HomePage({ locale }: { locale: Locale }) {
             {c.joinTitle}
           </h2>
           <p className="mt-6 text-lg text-white/80">{c.joinLead}</p>
-          <Link
-            href={`${pathFor(locale, "/app/yachts")}?add=yacht`}
-            className="btn-kaenz mt-10 text-base"
-          >
-            {c.joinCta}
+          <Link href={pathFor(locale, "/join")} className="btn-kaenz mt-10 text-base">
+            {c.joinAsOwner}
           </Link>
         </div>
       </section>

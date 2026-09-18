@@ -36,6 +36,12 @@ export type CheckoutBody = {
   phone?: string;
   locale?: string;
   guest?: boolean;
+  /** Ignored. Fare is quoted server-side from yacht/kind/hours. */
+  amount?: unknown;
+  price?: unknown;
+  total?: unknown;
+  unit_amount?: unknown;
+  fare?: unknown;
 };
 
 function kindLabel(kind: string) {
@@ -69,7 +75,16 @@ export async function createTripCheckout(opts: {
 
   const guest = Boolean(opts.guest || !opts.user);
   const yachtId = String(opts.body.yachtId || opts.body.yacht_slug || "").trim();
+  if (!yachtId) {
+    return { error: "yacht" as const, status: 400 };
+  }
   const kind = opts.body.kind || opts.body.trip_kind;
+  // Fare is quoted from inventory + kind + hours. Client amount/price/total are ignored.
+  void opts.body.amount;
+  void opts.body.price;
+  void opts.body.total;
+  void opts.body.unit_amount;
+  void opts.body.fare;
   const quotedProbe = await quoteTrip({
     yachtId,
     kind: kind as "commute" | "tour" | "special",
@@ -205,7 +220,7 @@ export async function createTripCheckout(opts: {
     ? `${originUrl}/book/confirmed?session_id={CHECKOUT_SESSION_ID}`
     : `${originUrl}/app/trip?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
   const cancelUrl = guest
-    ? `${originUrl}/fleet/${encodeURIComponent(yacht.id)}`
+    ? `${originUrl}/fleet/${encodeURIComponent(yacht.id)}?checkout=cancel`
     : `${originUrl}/app/trip?checkout=cancel`;
 
   const sessionParams = {
@@ -218,7 +233,10 @@ export async function createTripCheckout(opts: {
     metadata: {
       booking_id: bookingId,
       yacht_id: yacht.id,
+      yacht_name: yacht.name,
       kind: tripKind,
+      hours: String(hours),
+      guests: String(guests),
       guest: guest ? "1" : "0",
       ...chargeToMetadata(charge),
     },
@@ -239,7 +257,11 @@ export async function createTripCheckout(opts: {
       integration_identifier: `kaenzgst${randLetters(8)}`,
     } as Stripe.Checkout.SessionCreateParams);
   } catch {
-    session = await stripe.checkout.sessions.create(sessionParams);
+    try {
+      session = await stripe.checkout.sessions.create(sessionParams);
+    } catch {
+      return { error: "checkout" as const, status: 502 };
+    }
   }
 
   await updateBooking(bookingId, {
@@ -252,8 +274,10 @@ export async function createTripCheckout(opts: {
     sessionId: session.id,
     url: session.url,
     amount: charge.total,
-    split: chargeToMetadata(charge),
     yachtId: yacht.id,
+    yachtName: yacht.name,
     kind: tripKind,
+    hours,
+    guests,
   };
 }

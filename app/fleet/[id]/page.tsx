@@ -12,11 +12,16 @@ export function generateStaticParams() {
 
 export default async function Page({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ checkout?: string }>;
 }) {
   const { id } = await params;
+  const query = await searchParams;
   const yacht = await resolveInventoryYacht(id);
   if (!yacht) notFound();
-  return <YachtDetailClient yacht={yacht} />;
+  return (
+    <YachtDetailClient yacht={yacht} canceled={query.checkout === "cancel"} />
+  );
 }

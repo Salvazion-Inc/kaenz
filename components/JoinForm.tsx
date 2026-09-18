@@ -15,6 +15,7 @@ export function JoinForm({ locale }: { locale: Locale }) {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (status === "sending") return;
     setStatus("sending");
     const form = new FormData(e.currentTarget);
     try {
@@ -24,7 +25,7 @@ export function JoinForm({ locale }: { locale: Locale }) {
         body: JSON.stringify({ ...Object.fromEntries(form.entries()), locale }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error");
+      if (!res.ok) throw new Error("join");
       setStatus("ok");
       setMessage(c.joinSuccess);
       e.currentTarget.reset();
