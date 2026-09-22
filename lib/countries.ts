@@ -210,6 +210,81 @@ const names: Record<string, Record<Locale, string>> = {
   },
 };
 
+const isoByEnglish = new Map<string, string>();
+const displayNames = new Map<Locale, Intl.DisplayNames>();
+
+const ISO2 =
+  "AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS YE YT ZA ZM ZW";
+
+function regionIndex() {
+  if (isoByEnglish.size > 0) return;
+  const english = new Intl.DisplayNames(["en"], { type: "region" });
+  for (const code of ISO2.split(" ")) {
+    try {
+      const label = english.of(code);
+      if (label && label !== code) isoByEnglish.set(label, code);
+    } catch {
+      /* skip codes this runtime does not translate */
+    }
+  }
+  const aliases: Record<string, string> = {
+    Turkey: "TR",
+    "United States": "US",
+    "South Korea": "KR",
+    "North Korea": "KP",
+    Czechia: "CZ",
+    Vietnam: "VN",
+    Russia: "RU",
+    Syria: "SY",
+    Iran: "IR",
+    Laos: "LA",
+    Tanzania: "TZ",
+    Bolivia: "BO",
+    Venezuela: "VE",
+    Moldova: "MD",
+    Brunei: "BN",
+    Taiwan: "TW",
+    "Hong Kong": "HK",
+    Macao: "MO",
+    "U.S. Virgin Islands": "VI",
+    "British Virgin Islands": "VG",
+    "Saint Barthélemy": "BL",
+    "Saint Martin": "MF",
+    "Sint Maarten": "SX",
+    Curaçao: "CW",
+    Bonaire: "BQ",
+    "Turks and Caicos": "TC",
+    "Cayman Islands": "KY",
+    "Antigua and Barbuda": "AG",
+    "Trinidad and Tobago": "TT",
+    "Dominican Republic": "DO",
+    "United Arab Emirates": "AE",
+    "Saudi Arabia": "SA",
+    "South Africa": "ZA",
+    "New Zealand": "NZ",
+    "French Polynesia": "PF",
+    "New Caledonia": "NC",
+    Réunion: "RE",
+    Guadeloupe: "GP",
+    Martinique: "MQ",
+    "Puerto Rico": "PR",
+    "Åland Islands": "AX",
+  };
+  for (const [label, code] of Object.entries(aliases)) {
+    isoByEnglish.set(label, code);
+  }
+}
+
 export function countryName(country: string, locale: Locale) {
-  return names[country]?.[locale] || country;
+  const known = names[country]?.[locale];
+  if (known) return known;
+  regionIndex();
+  const iso = isoByEnglish.get(country);
+  if (!iso) return country;
+  let formatter = displayNames.get(locale);
+  if (!formatter) {
+    formatter = new Intl.DisplayNames([locale], { type: "region" });
+    displayNames.set(locale, formatter);
+  }
+  return formatter.of(iso) || country;
 }

@@ -1,6 +1,7 @@
 import { countryName } from "./countries";
 import { featuredPlaces, type FeaturedKind } from "./featured-places";
 import type { Locale, Localized } from "./locale";
+import { globalHubs } from "./global-hubs";
 import { worldHubs } from "./world-hubs";
 
 export type PlaceKind = "marina" | "port" | "place";
@@ -253,14 +254,30 @@ const southFlorida: Place[] = [
   },
 ];
 
-export const places: Place[] = [...southFlorida, ...featuredPlaces, ...worldHubs];
+function uniqueById(list: Place[]) {
+  const seen = new Set<string>();
+  return list.filter((place) => {
+    if (seen.has(place.id)) return false;
+    seen.add(place.id);
+    return true;
+  });
+}
+
+export const places: Place[] = uniqueById([
+  ...southFlorida,
+  ...featuredPlaces,
+  ...worldHubs,
+  ...globalHubs,
+]);
+
+const placeIndex = new Map(places.map((place) => [place.id, place]));
 
 export const mapHubs = places.filter(
   (p) => p.kind === "marina" || p.kind === "port" || Boolean(p.featured),
 );
 
 export function placeById(id: string) {
-  return places.find((p) => p.id === id);
+  return placeIndex.get(id);
 }
 
 export function placesByKind(kind: PlaceKind | "all") {

@@ -5,7 +5,7 @@ export function mapTiles() {
   return {
     url: key ? `${url}?key=${encodeURIComponent(key)}` : url,
     attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a> | Places &copy; <a href="https://www.geonames.org/">GeoNames</a>',
     subdomains: "abcd",
     maxZoom: 20,
   };

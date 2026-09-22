@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { t } from "@/lib/copy";
 import type { Locale } from "@/lib/locale";
 import { mapHubs, placeById, placeCountry } from "@/lib/places";
@@ -12,6 +12,111 @@ import {
   type TripKind,
 } from "@/lib/pricing";
 import { formatUsd, yachtById, yachts } from "@/lib/yachts";
+
+function HubPicker({
+  label,
+  locale,
+  valueId,
+  onChange,
+}: {
+  label: string;
+  locale: Locale;
+  valueId: string;
+  onChange: (id: string) => void;
+}) {
+  const selected = mapHubs.find((hub) => hub.id === valueId);
+  const selectedLabel = selected
+    ? `${selected.name} — ${selected.city}, ${placeCountry(selected, locale)}`
+    : "";
+  const [query, setQuery] = useState(selectedLabel);
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setQuery(selectedLabel);
+  }, [selectedLabel]);
+
+  useEffect(() => {
+    function onDoc(event: MouseEvent) {
+      if (!root.current?.contains(event.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  const suggestions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (q.length < 2 || q === selectedLabel.toLowerCase()) return [];
+    const hits = [];
+    for (const hub of mapHubs) {
+      const hay =
+        `${hub.name} ${hub.city} ${hub.country || ""} ${placeCountry(hub, locale)}`.toLowerCase();
+      if (!hay.includes(q)) continue;
+      hits.push(hub);
+      if (hits.length >= 12) break;
+    }
+    return hits;
+  }, [locale, query, selectedLabel]);
+
+  return (
+    <div ref={root} className="relative">
+      <label className="block text-sm font-semibold">
+        {label}
+        <input
+          className="mt-2 w-full rounded-lg border border-navy/15 bg-white px-4 py-3 text-navy outline-none focus:border-kaenz"
+          role="combobox"
+          aria-expanded={open}
+          aria-autocomplete="list"
+          autoComplete="off"
+          value={query}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setOpen(true);
+          }}
+          onFocus={(event) => {
+            event.currentTarget.select();
+            setOpen(true);
+          }}
+          onBlur={() => {
+            if (selected) setQuery(selectedLabel);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") event.preventDefault();
+            if (event.key === "Escape") setOpen(false);
+          }}
+        />
+      </label>
+      {open && suggestions.length ? (
+        <ul
+          role="listbox"
+          className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-navy/10 bg-white py-1 text-navy shadow-xl"
+        >
+          {suggestions.map((hub) => (
+            <li key={hub.id} role="option">
+              <button
+                type="button"
+                className="block w-full px-3 py-2 text-left hover:bg-kaenz/10"
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  onChange(hub.id);
+                  setQuery(
+                    `${hub.name} — ${hub.city}, ${placeCountry(hub, locale)}`,
+                  );
+                  setOpen(false);
+                }}
+              >
+                <span className="block text-sm font-semibold">{hub.name}</span>
+                <span className="block text-[11px] text-navy/55">
+                  {hub.city}, {placeCountry(hub, locale)}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
 
 export function BookForm({
   locale,
@@ -138,42 +243,28 @@ export function BookForm({
             ))}
           </select>
         </label>
-        <label className="block text-sm font-semibold">
-          {c.form.origin}
-          <select
-            className={field}
-            name="origin"
-            value={mapHubs.find((m) => m.id === originId)?.name || ""}
-            onChange={(e) => {
-              const hub = mapHubs.find((m) => m.name === e.target.value);
-              if (hub) setOriginId(hub.id);
-            }}
-          >
-            {mapHubs.map((m) => (
-              <option key={m.id} value={m.name}>
-                {m.name} — {m.city}, {placeCountry(m, locale)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="block text-sm font-semibold">
-          {c.form.destination}
-          <select
-            className={field}
-            name="destination"
-            value={mapHubs.find((m) => m.id === destinationId)?.name || ""}
-            onChange={(e) => {
-              const hub = mapHubs.find((m) => m.name === e.target.value);
-              if (hub) setDestinationId(hub.id);
-            }}
-          >
-            {mapHubs.map((m) => (
-              <option key={m.id} value={m.name}>
-                {m.name} — {m.city}, {placeCountry(m, locale)}
-              </option>
-            ))}
-          </select>
-        </label>
+        <HubPicker
+          label={c.form.origin}
+          locale={locale}
+          valueId={originId}
+          onChange={setOriginId}
+        />
+        <HubPicker
+          label={c.form.destination}
+          locale={locale}
+          valueId={destinationId}
+          onChange={setDestinationId}
+        />
+        <input
+          type="hidden"
+          name="origin"
+          value={placeById(originId)?.name || ""}
+        />
+        <input
+          type="hidden"
+          name="destination"
+          value={placeById(destinationId)?.name || ""}
+        />
         <label className="block text-sm font-semibold">
           {c.form.date}
           <input

@@ -394,6 +394,19 @@ button.kaenz-card:hover,
   border: 2px solid #050a30;
 }
 
+.leaflet-div-icon.kaenz-cluster {
+  display: grid;
+  place-items: center;
+  background: var(--color-navy);
+  color: #fff;
+  border: 2px solid var(--color-kaenz);
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-kaenz) 28%, transparent);
+}
+
 .leaflet-div-icon.kaenz-yacht-icon {
   background: transparent;
   border: none;

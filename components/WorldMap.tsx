@@ -45,6 +45,87 @@ function uniqueHubs(list: Place[]) {
   });
 }
 
+type MapPoint =
+  | { type: "pin"; place: Place }
+  | {
+      type: "cluster";
+      lat: number;
+      lng: number;
+      count: number;
+      minLat: number;
+      maxLat: number;
+      minLng: number;
+      maxLng: number;
+      label: string;
+    };
+
+function cellForZoom(zoom: number, countInView: number) {
+  if (zoom >= 13 || (zoom >= 10 && countInView <= 420)) return 0;
+  if (zoom >= 9) return 0.18;
+  if (zoom >= 8) return 0.35;
+  if (zoom >= 7) return 0.7;
+  if (zoom >= 6) return 1.4;
+  if (zoom >= 5) return 2.8;
+  if (zoom >= 4) return 5;
+  if (zoom >= 3) return 8;
+  return 14;
+}
+
+function pointsForView(list: Place[], bounds: import("leaflet").LatLngBounds, zoom: number) {
+  const inView = list.filter((place) =>
+    bounds.contains([place.lat, place.lng]),
+  );
+  const cell = cellForZoom(zoom, inView.length);
+  if (!cell) {
+    return inView.map((place) => ({ type: "pin", place }) as MapPoint);
+  }
+  const groups = new Map<string, Place[]>();
+  for (const place of inView) {
+    const key = `${Math.floor(place.lat / cell)}:${Math.floor(place.lng / cell)}`;
+    const group = groups.get(key);
+    if (group) group.push(place);
+    else groups.set(key, [place]);
+  }
+  const points: MapPoint[] = [];
+  for (const group of groups.values()) {
+    if (group.length === 1) {
+      points.push({ type: "pin", place: group[0] });
+      continue;
+    }
+    let lat = 0;
+    let lng = 0;
+    let minLat = 90;
+    let maxLat = -90;
+    let minLng = 180;
+    let maxLng = -180;
+    for (const place of group) {
+      lat += place.lat;
+      lng += place.lng;
+      if (place.lat < minLat) minLat = place.lat;
+      if (place.lat > maxLat) maxLat = place.lat;
+      if (place.lng < minLng) minLng = place.lng;
+      if (place.lng > maxLng) maxLng = place.lng;
+    }
+    const names = group
+      .slice(0, 3)
+      .map((place) => place.name)
+      .join(" · ");
+    const extra = group.length > 3 ? ` +${group.length - 3}` : "";
+    points.push({
+      type: "cluster",
+      lat: lat / group.length,
+      lng: lng / group.length,
+      count: group.length,
+      minLat,
+      maxLat,
+      minLng,
+      maxLng,
+      label: `${names}${extra}`,
+    });
+  }
+  return points;
+}
+
 export function WorldMap({
   locale,
   variant = "site",
@@ -65,7 +146,7 @@ export function WorldMap({
   const mapRef = useRef<import("leaflet").Map | null>(null);
   const leafletRef = useRef<typeof import("leaflet") | null>(null);
   const markersRef = useRef<
-    { place: Place; marker: import("leaflet").Marker }[]
+    { place?: Place; marker: import("leaflet").Marker }[]
   >([]);
   const youRef = useRef<import("leaflet").Marker | null>(null);
   const zoomRef = useRef<import("leaflet").Control.Zoom | null>(null);
@@ -142,7 +223,7 @@ export function WorldMap({
     if (!L || !map) return;
 
     for (const { place, marker } of markersRef.current) {
-      marker.setTooltipContent(tooltipFor(place, locale));
+      if (place) marker.setTooltipContent(tooltipFor(place, locale));
     }
 
     if (zoomRef.current) {
@@ -162,38 +243,84 @@ export function WorldMap({
     const map = mapRef.current;
     if (!L || !map || !ready) return;
 
-    for (const { marker } of markersRef.current) {
-      map.removeLayer(marker);
+    function clearMarkers() {
+      for (const { marker } of markersRef.current) {
+        map!.removeLayer(marker);
+      }
+      markersRef.current = [];
     }
 
-    const placed: { place: Place; marker: import("leaflet").Marker }[] = [];
-    for (const place of pinsRef.current) {
-      const pin = L.divIcon({
-        className: `kaenz-pin ${
-          place.kind === "port"
-            ? "kaenz-pin-port"
-            : place.featured
-              ? "kaenz-pin-place"
-              : "kaenz-pin-marina"
-        }`,
-        iconSize: [14, 14],
-        iconAnchor: [7, 7],
-      });
-      const marker = L.marker([place.lat, place.lng], { icon: pin });
-      marker.bindTooltip(tooltipFor(place, localeRef.current), {
-        direction: "top",
-        offset: [0, -8],
-      });
-      marker.on("click", () => {
-        setSelected(place);
-        map.flyTo([place.lat, place.lng], Math.max(map.getZoom(), 14), {
-          duration: 0.6,
+    function draw() {
+      if (!map!.getSize()?.x) return;
+      clearMarkers();
+      const bounds = map!.getBounds().pad(0.15);
+      const zoom = map!.getZoom();
+      const placed: { place?: Place; marker: import("leaflet").Marker }[] = [];
+      for (const point of pointsForView(pinsRef.current, bounds, zoom)) {
+        if (point.type === "cluster") {
+          const size = point.count < 10 ? 28 : point.count < 100 ? 34 : 40;
+          const icon = L!.divIcon({
+            className: "kaenz-cluster",
+            html: String(point.count),
+            iconSize: [size, size],
+            iconAnchor: [size / 2, size / 2],
+          });
+          const marker = L!.marker([point.lat, point.lng], { icon });
+          marker.bindTooltip(point.label, {
+            direction: "top",
+            offset: [0, -10],
+          });
+          marker.on("click", () => {
+            setSelected(null);
+            map!.fitBounds(
+              L!.latLngBounds(
+                [point.minLat, point.minLng],
+                [point.maxLat, point.maxLng],
+              ).pad(0.35),
+              { maxZoom: 14 },
+            );
+          });
+          marker.addTo(map!);
+          placed.push({ marker });
+          continue;
+        }
+        const place = point.place;
+        const pin = L!.divIcon({
+          className: `kaenz-pin ${
+            place.kind === "port"
+              ? "kaenz-pin-port"
+              : place.featured
+                ? "kaenz-pin-place"
+                : "kaenz-pin-marina"
+          }`,
+          iconSize: [14, 14],
+          iconAnchor: [7, 7],
         });
-      });
-      marker.addTo(map);
-      placed.push({ place, marker });
+        const marker = L!.marker([place.lat, place.lng], { icon: pin });
+        marker.bindTooltip(tooltipFor(place, localeRef.current), {
+          direction: "top",
+          offset: [0, -8],
+        });
+        marker.on("click", () => {
+          setSelected(place);
+          map!.flyTo([place.lat, place.lng], Math.max(map!.getZoom(), 14), {
+            duration: 0.6,
+          });
+        });
+        marker.addTo(map!);
+        placed.push({ place, marker });
+      }
+      markersRef.current = placed;
     }
-    markersRef.current = placed;
+
+    draw();
+    map.on("moveend", draw);
+    map.on("resize", draw);
+    return () => {
+      map.off("moveend", draw);
+      map.off("resize", draw);
+      clearMarkers();
+    };
   }, [ready, pins]);
 
   useEffect(() => {
