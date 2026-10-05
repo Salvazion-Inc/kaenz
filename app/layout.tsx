@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { cookies } from "next/headers";
 import { Outfit } from "next/font/google";
 import { LocaleProvider } from "@/lib/locale-context";
@@ -67,6 +68,7 @@ export default async function RootLayout({
         <LocaleProvider initialLocale={locale}>
           <LocationProvider>{children}</LocationProvider>
         </LocaleProvider>
+        <Analytics />
       </body>
     </html>
   );
