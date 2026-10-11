@@ -6,8 +6,8 @@ import {
 } from "@/lib/listing-store";
 import {
   isHin,
-  isSolanaWallet,
   listingToYacht,
+  optionalWallet,
   parseLangs,
   parseTraits,
 } from "@/lib/listings";
@@ -56,7 +56,10 @@ export async function POST(req: Request) {
 
   const form = await req.formData();
   const ownerName = String(form.get("owner_name") || "").trim();
-  const ownerWallet = String(form.get("owner_wallet") || "").trim();
+  // Solana wallets are optional: payouts run through Stripe Connect and never
+  // read these fields. Anything empty or invalid is stored as "" so a missing
+  // wallet never blocks self-serve listing; it can be added later in Account.
+  const ownerWallet = optionalWallet(form.get("owner_wallet"));
   const name = String(form.get("name") || "").trim();
   const hin = String(form.get("hin") || "").trim();
   const guests = Number(form.get("guests"));
@@ -65,7 +68,7 @@ export async function POST(req: Request) {
   const captainName = String(form.get("captain_name") || "").trim();
   const captainLanguages = parseLangs(form.get("languages"));
   const captainRegion = String(form.get("captain_region") || "").trim();
-  const captainWallet = String(form.get("captain_wallet") || "").trim();
+  const captainWallet = optionalWallet(form.get("captain_wallet"));
 
   const ownerId = form.get("owner_id");
   const captainId = form.get("captain_id");
@@ -78,9 +81,6 @@ export async function POST(req: Request) {
 
   if (!ownerName || !name || !captainName || !homePort || !captainRegion) {
     return Response.json({ error: "fields" }, { status: 400 });
-  }
-  if (!isSolanaWallet(ownerWallet) || !isSolanaWallet(captainWallet)) {
-    return Response.json({ error: "wallet" }, { status: 400 });
   }
   if (!isHin(hin)) return Response.json({ error: "hin" }, { status: 400 });
   if (!Number.isFinite(guests) || guests < 1 || guests > 50) {
@@ -96,6 +96,9 @@ export async function POST(req: Request) {
   if (!(captainId instanceof File) || !isDoc(captainId) || tooBig(captainId)) {
     return Response.json({ error: "captain_id" }, { status: 400 });
   }
+  // captain_mmc is any skipper licence document (US MMC or a local licence such
+  // as the Spanish PER/PPER, French permis côtier/hauturier, ICC, RYA…). Only the
+  // file type and size are checked; no US-specific format is enforced.
   if (!(captainMmc instanceof File) || !isDoc(captainMmc) || tooBig(captainMmc)) {
     return Response.json({ error: "mmc" }, { status: 400 });
   }

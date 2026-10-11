@@ -1,6 +1,6 @@
 import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 import { listBookablePlaces } from "@/lib/inventory";
-import { isSolanaWallet } from "@/lib/listings";
+import { optionalWallet } from "@/lib/listings";
 import {
   isCoord,
   isWebsite,
@@ -42,7 +42,8 @@ export async function POST(req: Request) {
   const dockmaster = String(body.dockmaster || "").trim();
   const phone = String(body.phone || "").trim();
   const website = normalizeWebsite(String(body.website || ""));
-  const wallet = String(body.wallet || "").trim();
+  // Optional: payouts run through Stripe Connect; invalid/empty is stored as "".
+  const wallet = optionalWallet(body.wallet);
 
   if (!name || !address || !region || !dockmaster || !phone) {
     return Response.json({ error: "fields" }, { status: 400 });
@@ -52,9 +53,6 @@ export async function POST(req: Request) {
   }
   if (!isWebsite(website)) {
     return Response.json({ error: "website" }, { status: 400 });
-  }
-  if (!isSolanaWallet(wallet)) {
-    return Response.json({ error: "wallet" }, { status: 400 });
   }
 
   try {
