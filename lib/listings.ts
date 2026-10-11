@@ -39,8 +39,25 @@ export function isSolanaWallet(value: string) {
   return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(value.trim());
 }
 
+/** Optional Solana wallet: returns the trimmed address when valid, "" otherwise. */
+export function optionalWallet(value: unknown) {
+  const wallet = String(value ?? "").trim();
+  return isSolanaWallet(wallet) ? wallet : "";
+}
+
+/** Strips spaces and hyphens and upper-cases a HIN / CIN. */
+export function normalizeHin(value: string) {
+  return value.replace(/[\s-]/g, "").toUpperCase();
+}
+
+/**
+ * Accepts a US HIN (12 chars, optional "US" prefix) and the EU Craft
+ * Identification Number (CIN, ISO 10087: 2-letter country + 3 maker + 5 serial
+ * + month/year + model year = 14 chars, often written "ES-ABC12345D404").
+ * Spaces and hyphens are ignored.
+ */
 export function isHin(value: string) {
-  const hin = value.replace(/\s+/g, "").toUpperCase();
+  const hin = normalizeHin(value);
   return /^[A-Z0-9]{12,17}$/.test(hin);
 }
 

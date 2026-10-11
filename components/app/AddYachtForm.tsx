@@ -140,7 +140,12 @@ export function AddYachtForm({
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.ownerWallet}
-          <input className={field} name="owner_wallet" required minLength={32} />
+          <input
+            className={field}
+            name="owner_wallet"
+            autoComplete="off"
+            placeholder={c.walletOptional}
+          />
         </label>
       </section>
 
@@ -176,7 +181,14 @@ export function AddYachtForm({
         ) : null}
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.hin}
-          <input className={field} name="hin" required minLength={12} maxLength={17} />
+          <input
+            className={field}
+            name="hin"
+            required
+            minLength={12}
+            maxLength={24}
+            placeholder={c.hinPlaceholder}
+          />
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.capacity}
@@ -276,7 +288,12 @@ export function AddYachtForm({
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.captainWallet}
-          <input className={field} name="captain_wallet" required minLength={32} />
+          <input
+            className={field}
+            name="captain_wallet"
+            autoComplete="off"
+            placeholder={c.walletOptional}
+          />
         </label>
       </section>
 

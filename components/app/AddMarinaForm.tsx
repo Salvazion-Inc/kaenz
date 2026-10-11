@@ -136,7 +136,12 @@ export function AddMarinaForm({
       </label>
       <label className="block text-xs font-bold uppercase tracking-wide text-navy/60">
         {c.wallet}
-        <input className={field} name="wallet" required minLength={32} />
+        <input
+          className={field}
+          name="wallet"
+          autoComplete="off"
+          placeholder={c.walletOptional}
+        />
       </label>
 
       {message ? (
