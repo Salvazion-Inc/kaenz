@@ -4,6 +4,7 @@ import { useState } from "react";
 import { at } from "@/lib/app-copy";
 import type { Locale } from "@/lib/locale";
 import type { Place } from "@/lib/places";
+import { PayoutsNotice } from "./PayoutsSection";
 
 const field =
   "mt-1.5 w-full rounded-xl border border-navy/10 bg-white px-3 py-2.5 text-sm text-navy outline-none";
@@ -143,6 +144,8 @@ export function AddMarinaForm({
           placeholder={c.walletOptional}
         />
       </label>
+
+      <PayoutsNotice locale={locale} />
 
       {message ? (
         <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">

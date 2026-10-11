@@ -10,6 +10,7 @@ import {
   type YachtTrait,
 } from "@/lib/listings";
 import { marinas } from "@/lib/yachts";
+import { PayoutsNotice } from "./PayoutsSection";
 import type { Locale } from "@/lib/locale";
 import type { Yacht } from "@/lib/yachts";
 
@@ -296,6 +297,8 @@ export function AddYachtForm({
           />
         </label>
       </section>
+
+      <PayoutsNotice locale={locale} />
 
       {message ? (
         <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">

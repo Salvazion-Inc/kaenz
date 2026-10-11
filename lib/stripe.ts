@@ -1,5 +1,12 @@
 import Stripe from "stripe";
 import type { ChargeBreakdown } from "./pricing";
+import {
+  fetchTransfersStatus,
+  getPartnerAccount,
+  recordPending,
+  type PayoutRole,
+  type TripPartners,
+} from "./payouts";
 
 let client: Stripe | null | undefined;
 
@@ -28,71 +35,103 @@ export function appOrigin(req: Request) {
   return host ? `${proto}://${host}` : "https://kaenz.com";
 }
 
-export type TripPayoutAccounts = {
-  owner?: string;
-  captain?: string;
-  marinaPickup?: string;
-  marinaDropoff?: string;
+export type TripShareResult = {
+  role: PayoutRole;
+  amount: number;
+  id?: string;
+  destination?: string;
+  skipped?: "zero" | "pending";
+  reason?: string;
 };
 
-function connectId(value: string | undefined | null) {
-  const id = String(value || "").trim();
-  return /^acct_[A-Za-z0-9]+$/.test(id) ? id : "";
-}
-
-export function payoutAccountsFromEnv(): TripPayoutAccounts {
-  return {
-    owner: connectId(process.env.STRIPE_CONNECT_OWNER) || undefined,
-    captain: connectId(process.env.STRIPE_CONNECT_CAPTAIN) || undefined,
-    marinaPickup:
-      connectId(process.env.STRIPE_CONNECT_MARINA_PICKUP) || undefined,
-    marinaDropoff:
-      connectId(process.env.STRIPE_CONNECT_MARINA_DROPOFF) || undefined,
-  };
-}
-
+/**
+ * Pays each partner's share of a paid trip into that partner's own connected
+ * account (separate charges and transfers). Kaenz keeps the remainder.
+ * A share whose partner is missing or not active stays on the platform balance
+ * and is recorded in pending_payouts; there is no fixed fallback account.
+ */
 export async function transferTripShares(opts: {
   stripe: Stripe;
   charge: ChargeBreakdown;
   transferGroup: string;
   bookingId: string;
-  accounts: TripPayoutAccounts;
+  sourceCharge: string;
+  partners: TripPartners;
 }) {
-  const { stripe, charge, transferGroup, bookingId, accounts } = opts;
-  const results: { role: string; id?: string; amount: number; skipped?: string }[] =
-    [];
+  const { stripe, charge, transferGroup, bookingId, sourceCharge, partners } =
+    opts;
+  const results: TripShareResult[] = [];
+  const statusCache = new Map<string, { accountId: string; active: boolean }>();
 
-  async function send(
-    role: string,
-    amount: number,
-    destination: string | undefined,
-  ) {
+  async function accountFor(userId: string) {
+    if (!userId) return { accountId: "", active: false, reason: "no_partner" };
+    const cached = statusCache.get(userId);
+    if (cached) return { ...cached, reason: cached.active ? "" : "not_ready" };
+    const account = await getPartnerAccount(userId);
+    if (!account) return { accountId: "", active: false, reason: "not_connected" };
+    // Re-check capability status right before moving money.
+    const status = await fetchTransfersStatus(
+      stripe,
+      account.accountId,
+      account.api,
+    ).catch(() => "pending" as const);
+    const entry = { accountId: account.accountId, active: status === "active" };
+    statusCache.set(userId, entry);
+    return { ...entry, reason: entry.active ? "" : "not_ready" };
+  }
+
+  async function keep(role: PayoutRole, amount: number, reason: string) {
+    const partner = partners[role];
+    await recordPending({
+      bookingId,
+      role,
+      partnerUserId: partner.userId,
+      listingRef: partner.ref,
+      amountCents: amount,
+      transferGroup,
+      sourceCharge,
+      reason,
+    });
+    results.push({ role, amount, skipped: "pending", reason });
+  }
+
+  async function send(role: PayoutRole, amount: number) {
     if (amount <= 0) {
       results.push({ role, amount, skipped: "zero" });
       return;
     }
-    if (!destination) {
-      results.push({ role, amount, skipped: "no_account" });
+    const target = await accountFor(partners[role].userId);
+    if (!target.active || !target.accountId) {
+      await keep(role, amount, target.reason || "not_ready");
       return;
     }
-    const transfer = await stripe.transfers.create({
-      amount,
-      currency: "usd",
-      destination,
-      transfer_group: transferGroup,
-      metadata: { role, booking_id: bookingId },
-    });
-    results.push({ role, amount, id: transfer.id });
+    try {
+      const transfer = await stripe.transfers.create(
+        {
+          amount,
+          currency: "usd",
+          destination: target.accountId,
+          transfer_group: transferGroup,
+          ...(sourceCharge ? { source_transaction: sourceCharge } : {}),
+          metadata: { role, booking_id: bookingId },
+        },
+        { idempotencyKey: `kaenz_${bookingId}_${role}` },
+      );
+      results.push({
+        role,
+        amount,
+        id: transfer.id,
+        destination: target.accountId,
+      });
+    } catch {
+      await keep(role, amount, "transfer_failed");
+    }
   }
 
-  await send("owner", charge.ownerCents, accounts.owner);
-  await send("captain", charge.captainTotalCents, accounts.captain);
-  await send("marina_pickup", charge.marinaOriginCents, accounts.marinaPickup);
-  await send(
-    "marina_dropoff",
-    charge.marinaDestCents,
-    accounts.marinaDropoff,
-  );
+  await send("owner", charge.ownerCents);
+  await send("captain", charge.captainTotalCents);
+  await send("marina_pickup", charge.marinaOriginCents);
+  await send("marina_dropoff", charge.marinaDestCents);
   return results;
 }
 

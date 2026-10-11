@@ -25,6 +25,7 @@ import { useProfile } from "@/lib/profile-store";
 import { compressPhoto } from "@/lib/trip-log";
 import { disableBiometric } from "@/lib/auth/biometric";
 import { BiometricControl } from "../auth/BiometricControl";
+import { PayoutsSection } from "./PayoutsSection";
 import { ProfileAvatar } from "./ProfileAvatar";
 import { TripCalendar } from "./TripCalendar";
 import { IconCamera } from "./icons";
@@ -436,6 +437,8 @@ export function AccountTab({ locale }: { locale: Locale }) {
             </div>
           ) : null}
         </section>
+
+        <PayoutsSection locale={locale} />
 
         <TripCalendar locale={locale} />
 
