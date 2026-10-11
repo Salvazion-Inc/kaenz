@@ -82,19 +82,29 @@ export async function POST(req: Request) {
   if (!stripeConfigured()) {
     return Response.json({ error: "stripe_unconfigured" }, { status: 503 });
   }
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!secret) {
+  // Two Stripe endpoints point at this URL: the platform endpoint
+  // (STRIPE_WEBHOOK_SECRET) and the Connect endpoint for connected-account
+  // events such as account.updated (STRIPE_CONNECT_WEBHOOK_SECRET).
+  const secrets = [
+    process.env.STRIPE_WEBHOOK_SECRET,
+    process.env.STRIPE_CONNECT_WEBHOOK_SECRET,
+  ].filter((s): s is string => Boolean(s));
+  if (secrets.length === 0) {
     return Response.json({ error: "webhook_unconfigured" }, { status: 503 });
   }
   const raw = await req.text();
   const sig = req.headers.get("stripe-signature");
   if (!sig) return Response.json({ error: "signature" }, { status: 400 });
-  let event: Stripe.Event;
-  try {
-    event = getStripe().webhooks.constructEvent(raw, sig, secret);
-  } catch {
-    return Response.json({ error: "webhook" }, { status: 400 });
+  let event: Stripe.Event | null = null;
+  for (const secret of secrets) {
+    try {
+      event = getStripe().webhooks.constructEvent(raw, sig, secret);
+      break;
+    } catch {
+      // try the next endpoint secret
+    }
   }
+  if (!event) return Response.json({ error: "webhook" }, { status: 400 });
 
   if (
     event.type === "checkout.session.completed" ||
