@@ -52,14 +52,11 @@ Add to Home Screen on iOS/Android for the standalone mobile shell.
 | `SUPABASE_SERVICE_ROLE_KEY` | Optional server writes |
 | `STRIPE_SECRET_KEY` | Stripe Checkout (server) |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signature |
-| `STRIPE_CONNECT_OWNER` | Optional Connect account for owner payouts |
-| `STRIPE_CONNECT_CAPTAIN` | Optional Connect account for captain payouts |
-| `STRIPE_CONNECT_MARINA_PICKUP` | Optional Connect account for pickup marina |
-| `STRIPE_CONNECT_MARINA_DROPOFF` | Optional Connect account for dropoff marina |
+| `AUTH_SECRET` | Required for payouts: private key that signs Kaenz sessions (payout onboarding is disabled without it) |
 
 Without Supabase, booking and join requests still succeed locally (no persistence). `GET /api/yachts` and `GET /api/marinas` still return **seed-real** South Florida inventory so guests can book. Without `XAI_API_KEY`, concierge returns an error until the key is set. Without `STRIPE_SECRET_KEY`, trip checkout returns an error until Stripe is configured.
 
-After a request, the client pays the algorithm fare plus optional captain gratuity with Stripe Checkout. The fare splits **owner 38% / captain 30% / Kaenz 25% / pickup marina 3.5% / dropoff marina 3.5%**. Gratuity is on top and goes only to the captain. If Connect account IDs are set, the webhook at `/api/stripe/webhook` transfers those shares; otherwise the split is recorded and funds stay on the Kaenz platform account.
+After a request, the client pays the algorithm fare plus optional captain gratuity with Stripe Checkout. The fare splits **owner 38% / captain 30% / Kaenz 25% / pickup marina 3.5% / dropoff marina 3.5%**. Gratuity is on top and goes only to the captain. Each partner connects their own Stripe account from **Account → Receive your earnings** (Accounts v2, Express dashboard, recipient configuration). After payment the webhook at `/api/stripe/webhook` transfers each share to that partner's own account (separate charges and transfers, `transfer_group` + `source_transaction`). A share whose partner has not connected yet stays on the Kaenz platform balance in `pending_payouts` and is released automatically once that partner's account is active. There is no fixed fallback account.
 
 Guests book from `/fleet/{id}` (bookable yachts) with email + name → `POST /api/checkout/guest` → Stripe Checkout. Success lands on `/book/confirmed`. Owners and captains still list boats from `/join`. There is no demo pay path.
 

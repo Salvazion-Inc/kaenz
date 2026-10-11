@@ -1,11 +1,7 @@
 import Stripe from "stripe";
 import { updateBooking } from "@/lib/booking-store";
-import {
-  getStripe,
-  payoutAccountsFromEnv,
-  stripeConfigured,
-  transferTripShares,
-} from "@/lib/stripe";
+import { refreshByAccountId, resolveTripPartners } from "@/lib/payouts";
+import { getStripe, stripeConfigured, transferTripShares } from "@/lib/stripe";
 import { settleCharge } from "@/lib/pricing";
 
 export const runtime = "nodejs";
@@ -51,20 +47,30 @@ async function fulfill(session: Stripe.Checkout.Session) {
 
   if (session.payment_status !== "paid") return;
   const charge = chargeFromMetadata(session.metadata);
-  const accounts = payoutAccountsFromEnv();
-  const hasAny =
-    accounts.owner ||
-    accounts.captain ||
-    accounts.marinaPickup ||
-    accounts.marinaDropoff;
-  if (!hasAny) return;
+  const stripe = getStripe();
   try {
+    // source_transaction ties each transfer to this trip's charge, so partner
+    // transfers never draw on unrelated platform balance.
+    let sourceCharge = "";
+    if (paymentIntent) {
+      const pi = await stripe.paymentIntents.retrieve(paymentIntent);
+      sourceCharge =
+        typeof pi.latest_charge === "string"
+          ? pi.latest_charge
+          : pi.latest_charge?.id || "";
+    }
+    const partners = await resolveTripPartners({
+      yachtId: String(session.metadata?.yacht_id || ""),
+      originId: String(session.metadata?.origin_id || ""),
+      destinationId: String(session.metadata?.destination_id || ""),
+    });
     const payouts = await transferTripShares({
-      stripe: getStripe(),
+      stripe,
       charge,
       transferGroup: `kaenz_${bookingId}`,
       bookingId,
-      accounts,
+      sourceCharge,
+      partners,
     });
     await updateBooking(bookingId, { payouts, status: "paid" });
   } catch {
@@ -103,6 +109,11 @@ export async function POST(req: Request) {
     if (bookingId) {
       await updateBooking(bookingId, { status: "failed" }).catch(() => undefined);
     }
+  }
+
+  if (event.type === "account.updated") {
+    const account = event.data.object as Stripe.Account;
+    await refreshByAccountId(getStripe(), account.id).catch(() => undefined);
   }
 
   return Response.json({ received: true });

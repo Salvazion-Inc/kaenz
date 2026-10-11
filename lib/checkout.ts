@@ -234,6 +234,8 @@ export async function createTripCheckout(opts: {
       booking_id: bookingId,
       yacht_id: yacht.id,
       yacht_name: yacht.name,
+      origin_id: origin?.id || originId,
+      destination_id: destination?.id || destinationId,
       kind: tripKind,
       hours: String(hours),
       guests: String(guests),
