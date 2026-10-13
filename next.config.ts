@@ -1,6 +1,9 @@
+import path from "path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // A lockfile above this repo was being chosen as the tracing root.
+  outputFileTracingRoot: path.join(__dirname),
   transpilePackages: ["leaflet"],
   images: {
     remotePatterns: [
