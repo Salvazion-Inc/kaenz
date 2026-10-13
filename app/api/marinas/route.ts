@@ -8,6 +8,7 @@ import {
   normalizeWebsite,
 } from "@/lib/marina-listings";
 import { insertMarinaListing } from "@/lib/marina-store";
+import { mapHubs } from "@/lib/places";
 import { getSupabaseAdmin } from "@/lib/supabase";
 
 export const runtime = "nodejs";
@@ -16,6 +17,7 @@ export async function GET() {
   const { places, meta } = await listBookablePlaces();
   return Response.json({
     places,
+    mapHubs: mapHubs.length,
     source: meta.source,
     note: meta.note,
   });
