@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Kaenz</string>
+    <string name="title_activity_main">Kaenz</string>
+    <string name="package_name">com.kaenz.app</string>
+    <string name="custom_url_scheme">com.kaenz.app</string>
+</resources>

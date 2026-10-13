@@ -2,11 +2,29 @@ node_modules
 .next
 out
 .env
-.env.local
+.env.*
+!.env.example
 .vercel
 *.log
 .DS_Store
+*.tsbuildinfo
 scripts/.hub-cache/
 
-.env*
-.vercel
+# Capacitor build output. Keep the android/ and ios/ projects.
+android/app/build
+android/build
+android/.gradle
+android/local.properties
+android/captures
+android/.idea
+ios/App/Pods
+ios/App/App/public
+ios/DerivedData
+*.apk
+*.aab
+*.jks
+*.keystore
+
+# Local agent skills. Not part of the product.
+.agents/
+skills-lock.json
