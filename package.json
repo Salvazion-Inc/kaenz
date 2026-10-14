@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "test": "node --experimental-strip-types --experimental-detect-module --test lib/salvazion-key.test.ts",
     "start": "next start",
     "cap:sync": "npx cap sync",
     "cap:open:android": "npx cap open android",

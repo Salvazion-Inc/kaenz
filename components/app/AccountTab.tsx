@@ -25,6 +25,7 @@ import { useProfile } from "@/lib/profile-store";
 import { compressPhoto } from "@/lib/trip-log";
 import { disableBiometric } from "@/lib/auth/biometric";
 import { BiometricControl } from "../auth/BiometricControl";
+import { HolderKey } from "./HolderKey";
 import { PayoutsSection } from "./PayoutsSection";
 import { ProfileAvatar } from "./ProfileAvatar";
 import { TripCalendar } from "./TripCalendar";
@@ -513,6 +514,7 @@ export function AccountTab({ locale }: { locale: Locale }) {
               onChange={(e) => setWallet(e.target.value)}
             />
           </label>
+          <HolderKey locale={locale} wallet={profile?.solanaWallet ?? ""} />
         </section>
 
         {status === "ok" ? (
