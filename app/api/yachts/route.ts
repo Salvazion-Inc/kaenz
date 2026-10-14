@@ -1,9 +1,15 @@
 import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 import { listBookableYachts } from "@/lib/inventory";
 import {
+  assertUploadedListingFile,
   insertYachtListing,
   uploadListingFile,
 } from "@/lib/listing-store";
+import {
+  assertListingPaths,
+  isListingClientError,
+  parseStoredListingBody,
+} from "@/lib/listing-files";
 import {
   isHin,
   listingToYacht,
@@ -43,6 +49,71 @@ export async function GET() {
   });
 }
 
+function listingErrorResponse(err: unknown) {
+  const code = err instanceof Error ? err.message : "save";
+  if (code === "supabase") return Response.json({ error: "supabase" }, { status: 503 });
+  if (isListingClientError(code)) return Response.json({ error: code }, { status: 400 });
+  return Response.json({ error: "save" }, { status: 500 });
+}
+
+async function postStoredListing(req: Request, userId: string) {
+  const parsed = parseStoredListingBody(await req.json().catch(() => null));
+  if (!parsed.ok) return Response.json({ error: parsed.error }, { status: 400 });
+  const paths = assertListingPaths(userId, parsed.listingId, parsed.files);
+  if (!paths.ok) return Response.json({ error: paths.error }, { status: 400 });
+  try {
+    const [ownerIdUrl, captainIdUrl, captainMmcUrl, captainPhotoUrl, ...photos] =
+      await Promise.all([
+        assertUploadedListingFile({
+          path: parsed.files.owner_id,
+          kind: "doc",
+          error: "owner_id",
+        }),
+        assertUploadedListingFile({
+          path: parsed.files.captain_id,
+          kind: "doc",
+          error: "captain_id",
+        }),
+        assertUploadedListingFile({
+          path: parsed.files.captain_mmc,
+          kind: "doc",
+          error: "mmc",
+        }),
+        assertUploadedListingFile({
+          path: parsed.files.captain_photo,
+          kind: "photo",
+          error: "captain_photo",
+        }),
+        ...parsed.files.yacht_photos.map((path) =>
+          assertUploadedListingFile({ path, kind: "photo", error: "photos" }),
+        ),
+      ]);
+    const listing = await insertYachtListing({
+      id: parsed.listingId,
+      createdBy: userId,
+      ownerName: parsed.ownerName,
+      ownerIdUrl,
+      ownerWallet: parsed.ownerWallet,
+      name: parsed.name,
+      hin: parsed.hin,
+      guests: parsed.guests,
+      traits: parsed.traits,
+      homePort: parsed.homePort,
+      photos,
+      captainName: parsed.captainName,
+      captainIdUrl,
+      captainMmcUrl,
+      captainPhoto: captainPhotoUrl,
+      captainLanguages: parsed.captainLanguages,
+      captainRegion: parsed.captainRegion,
+      captainWallet: parsed.captainWallet,
+    });
+    return Response.json({ yacht: listingToYacht(listing) });
+  } catch (err) {
+    return listingErrorResponse(err);
+  }
+}
+
 export async function POST(req: Request) {
   const user = await readSession(
     cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
@@ -52,6 +123,11 @@ export async function POST(req: Request) {
   }
   if (!getSupabaseAdmin()) {
     return Response.json({ error: "supabase" }, { status: 503 });
+  }
+
+  const contentType = req.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    return postStoredListing(req, user.id);
   }
 
   const form = await req.formData();
