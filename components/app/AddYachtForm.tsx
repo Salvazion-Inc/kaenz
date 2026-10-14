@@ -2,6 +2,12 @@
 
 import { useState } from "react";
 import { at } from "@/lib/app-copy";
+import { compressListingImage, uploadSignedListingFile } from "@/lib/listing-direct";
+import {
+  classifyListingResponse,
+  directListingPayload,
+  validateListingFileSet,
+} from "@/lib/listing-files";
 import {
   CAPTAIN_LANG_FLAGS,
   CAPTAIN_LANGS,
@@ -16,6 +22,17 @@ import type { Yacht } from "@/lib/yachts";
 
 const field =
   "mt-1.5 w-full rounded-xl border border-navy/10 bg-white px-3 py-2.5 text-sm text-navy outline-none";
+
+function inputFile(form: HTMLFormElement, name: string) {
+  const el = form.elements.namedItem(name);
+  if (!(el instanceof HTMLInputElement) || !el.files?.[0]) return null;
+  return el.files[0];
+}
+
+function inputValue(form: HTMLFormElement, name: string) {
+  const el = form.elements.namedItem(name);
+  return el instanceof HTMLInputElement ? el.value : "";
+}
 
 const REGIONS = [
   "South Florida",
@@ -54,6 +71,31 @@ export function AddYachtForm({
     );
   }
 
+  function messageFor(code: string) {
+    const map: Record<string, string> = {
+      auth: c.needAuth,
+      wallet: c.needWallet,
+      hin: c.needHin,
+      owner_id: c.needOwnerId,
+      captain_id: c.needCaptainId,
+      mmc: c.needMmc,
+      captain_photo: c.needCaptainPhoto,
+      photos: c.needPhotos,
+      traits: c.needTrait,
+      languages: c.needLanguage,
+      too_large: c.tooLarge,
+      file_too_big: c.fileTooBig,
+      upload: c.uploadFailed,
+      http: c.badResponse,
+      empty: c.badResponse,
+      fields: c.error,
+      guests: c.error,
+      save: c.error,
+      supabase: c.error,
+    };
+    return map[code] || c.badResponse;
+  }
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
@@ -73,31 +115,95 @@ export function AddYachtForm({
       setMessage(c.needPhotos);
       return;
     }
+    const ownerId = inputFile(form, "owner_id");
+    const captainId = inputFile(form, "captain_id");
+    const captainMmc = inputFile(form, "captain_mmc");
+    const captainPhoto = inputFile(form, "captain_photo");
+    if (!ownerId || !captainId || !captainMmc || !captainPhoto) {
+      setStatus("err");
+      setMessage(c.error);
+      return;
+    }
     setStatus("sending");
-    const data = new FormData(form);
-    data.set("traits", traits.join(","));
-    data.set("languages", langs.join(","));
-    data.delete("yacht_photos");
-    for (const file of photos) data.append("yacht_photos", file);
     try {
-      const res = await fetch("/api/yachts", { method: "POST", body: data });
-      const json = await res.json();
-      if (!res.ok) {
-        const map: Record<string, string> = {
-          auth: c.needAuth,
-          wallet: c.needWallet,
-          hin: c.needHin,
-          owner_id: c.needOwnerId,
-          captain_id: c.needCaptainId,
-          mmc: c.needMmc,
-          captain_photo: c.needCaptainPhoto,
-          photos: c.needPhotos,
-          traits: c.needTrait,
-          languages: c.needLanguage,
-        };
-        throw new Error(map[json.error] || c.error);
-      }
-      onListed(json.yacht);
+      const prepared = [
+        { slot: "owner_id", file: await compressListingImage(ownerId) },
+        {
+          slot: "captain_id",
+          file: captainId.type.startsWith("image/")
+            ? await compressListingImage(captainId)
+            : captainId,
+        },
+        {
+          slot: "captain_mmc",
+          file: captainMmc.type.startsWith("image/")
+            ? await compressListingImage(captainMmc)
+            : captainMmc,
+        },
+        { slot: "captain_photo", file: await compressListingImage(captainPhoto) },
+        ...(await Promise.all(
+          photos.map(async (file, index) => ({
+            slot: `yacht_${index}`,
+            file: await compressListingImage(file),
+          })),
+        )),
+      ];
+      const descriptors = prepared.map(({ slot, file }) => ({
+        slot,
+        name: file.name,
+        type: file.type,
+        size: file.size,
+      }));
+      const checked = validateListingFileSet(descriptors);
+      if (!checked.ok) throw new Error(messageFor(checked.error));
+
+      const signRes = await fetch("/api/yachts/uploads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ files: descriptors }),
+      });
+      const signed = classifyListingResponse(signRes.status, await signRes.text());
+      if (!signRes.ok || signed.error) throw new Error(messageFor(signed.error));
+      const uploads = (signed.uploads || []) as Array<{
+        slot?: string;
+        path?: string;
+        signedUrl?: string;
+      }>;
+      const bySlot = new Map(prepared.map((item) => [item.slot, item.file]));
+      await Promise.all(
+        uploads.map(async (upload) => {
+          const file = upload.slot ? bySlot.get(upload.slot) : undefined;
+          if (!file || !upload.signedUrl || !upload.path) throw new Error(c.uploadFailed);
+          await uploadSignedListingFile(upload.signedUrl, file);
+        }),
+      );
+
+      const payload = directListingPayload({
+        listingId: signed.listingId || "",
+        owner_name: inputValue(form, "owner_name"),
+        owner_wallet: inputValue(form, "owner_wallet"),
+        name: inputValue(form, "name"),
+        hin: inputValue(form, "hin"),
+        guests: inputValue(form, "guests"),
+        traits: traits.join(","),
+        home_port: inputValue(form, "home_port"),
+        captain_name: inputValue(form, "captain_name"),
+        languages: langs.join(","),
+        captain_region: inputValue(form, "captain_region"),
+        captain_wallet: inputValue(form, "captain_wallet"),
+        uploads: uploads.map((upload) => ({
+          slot: String(upload.slot || ""),
+          path: String(upload.path || ""),
+        })),
+      });
+      const res = await fetch("/api/yachts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = classifyListingResponse(res.status, await res.text());
+      if (!res.ok || json.error) throw new Error(messageFor(json.error));
+      onListed(json.yacht as Yacht);
       form.reset();
       setTraits([]);
       setLangs([]);
@@ -105,7 +211,18 @@ export function AddYachtForm({
       setStatus("idle");
     } catch (err) {
       setStatus("err");
-      setMessage(err instanceof Error ? err.message : c.error);
+      const text = err instanceof Error ? err.message : "";
+      if (
+        text === "upload" ||
+        text === "too_large" ||
+        text === "file_too_big" ||
+        text === "http" ||
+        text === "empty"
+      ) {
+        setMessage(messageFor(text));
+        return;
+      }
+      setMessage(text && !/unexpected token|not valid json/i.test(text) ? text : c.badResponse);
     }
   }
 

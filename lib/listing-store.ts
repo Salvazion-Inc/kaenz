@@ -1,5 +1,11 @@
 import { getSupabase, getSupabaseAdmin } from "./supabase";
 import {
+  LISTING_MAX_BYTES,
+  listingObjectPath,
+  mimeMatchesExt,
+  type PreparedListingFile,
+} from "./listing-files";
+import {
   parseLangs,
   parseTraits,
   type CaptainLang,
@@ -106,6 +112,56 @@ export async function uploadListingFile(opts: {
   if (opts.kind === "doc") return path;
   const { data } = admin.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
+}
+
+export async function signListingUploads(opts: {
+  userId: string;
+  listingId: string;
+  files: PreparedListingFile[];
+}) {
+  const admin = getSupabaseAdmin();
+  if (!admin) throw new Error("supabase");
+  await ensureBuckets();
+  const uploads: Array<{ slot: string; path: string; signedUrl: string }> = [];
+  for (const file of opts.files) {
+    const path = listingObjectPath(opts.userId, opts.listingId, file.base, file.ext);
+    const bucket = file.kind === "photo" ? PHOTO_BUCKET : DOC_BUCKET;
+    const { data, error } = await admin.storage.from(bucket).createSignedUploadUrl(path, {
+      upsert: true,
+    });
+    if (error || !data?.signedUrl) throw new Error("upload");
+    uploads.push({ slot: file.slot, path, signedUrl: data.signedUrl });
+  }
+  return uploads;
+}
+
+export async function assertUploadedListingFile(opts: {
+  path: string;
+  kind: "photo" | "doc";
+  error: string;
+}) {
+  const admin = getSupabaseAdmin();
+  if (!admin) throw new Error("supabase");
+  const bucket = opts.kind === "photo" ? PHOTO_BUCKET : DOC_BUCKET;
+  const info = await admin.storage.from(bucket).info(opts.path);
+  let size = Number(info.data?.size);
+  let mime = String(info.data?.contentType || "");
+  if (info.error || !info.data) {
+    const name = opts.path.split("/").pop() || "";
+    const folder = opts.path.slice(0, Math.max(0, opts.path.length - name.length - 1));
+    const listed = await admin.storage.from(bucket).list(folder, { limit: 20, search: name });
+    const hit = listed.data?.find((item) => item.name === name);
+    if (listed.error || !hit) throw new Error(opts.error);
+    size = Number(hit.metadata?.size);
+    mime = String(hit.metadata?.mimetype || "");
+  }
+  if (!Number.isFinite(size) || size <= 0) throw new Error(opts.error);
+  if (size > LISTING_MAX_BYTES) throw new Error("file_too_big");
+  const ext = opts.path.split(".").pop() || "";
+  if (!mimeMatchesExt(ext, mime)) throw new Error(opts.error);
+  if (opts.kind === "doc") return opts.path;
+  const { data: pub } = admin.storage.from(bucket).getPublicUrl(opts.path);
+  return pub.publicUrl;
 }
 
 async function readCatalog(): Promise<YachtListing[]> {
