@@ -146,10 +146,11 @@ export async function PUT(req: Request) {
   if (debitCard === "invalid") {
     return NextResponse.json({ error: "debit" }, { status: 400 });
   }
-  const solanaWallet = parseWallet(String(body.solanaWallet || ""));
-  if (solanaWallet === "invalid") {
-    return NextResponse.json({ error: "wallet" }, { status: 400 });
-  }
+  // The Solana wallet is optional and never read by payouts (Stripe Connect).
+  // An empty or malformed value must never block saving the account, so an
+  // invalid entry is dropped instead of rejected (DEC-20261011-04).
+  const parsedWallet = parseWallet(String(body.solanaWallet || ""));
+  const solanaWallet = parsedWallet === "invalid" ? "" : parsedWallet;
 
   const profile = {
     fullName,
