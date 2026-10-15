@@ -10,6 +10,7 @@ import {
   rawListingFileTooBig,
 } from "./listing-files";
 import { readAccountAccess } from "./submit-access";
+import { firstAddYachtIssue, firstEditYachtIssue } from "./listings";
 import { yachtHeroSrc } from "./yachts";
 import {
   canManageListing,
@@ -328,9 +329,15 @@ test("verification uses the auth confirmation timestamp and blocks submit", () =
   assert.match(logout, /303/);
   assert.match(logout, /clearSessionCookie\(false\)/);
   assert.match(logout, /clearSessionCookie\(true\)/);
+  assert.equal(logout.includes("cookies()"), false);
   const form = fs.readFileSync(new URL("../components/LogoutForm.tsx", import.meta.url), "utf8");
   assert.match(form, /action="\/api\/auth\/logout"/);
   assert.match(form, /method="post"/);
+  assert.match(form, /onsubmit=/);
+  assert.match(form, /kaenz\.biometric\.vault/);
+  const login = fs.readFileSync(new URL("../app/login/page.tsx", import.meta.url), "utf8");
+  assert.match(login, /readSession/);
+  assert.match(login, /redirect\("\/app"\)/);
   const nav = fs.readFileSync(new URL("../components/Nav.tsx", import.meta.url), "utf8");
   assert.match(nav, /\/api\/auth\/me/);
   assert.match(nav, /LogoutForm/);
@@ -342,8 +349,43 @@ test("verification uses the auth confirmation timestamp and blocks submit", () =
   const src = fs.readFileSync(new URL("../components/app/AddYachtForm.tsx", import.meta.url), "utf8");
   const hin = src.slice(src.indexOf("{c.hin}"), src.indexOf("{c.hin}") + 520);
   assert.match(hin, /\*/);
-  assert.match(hin, /onInvalid/);
-  assert.match(hin, /c\.needHin/);
+  assert.match(src, /noValidate/);
+  assert.match(src, /firstAddYachtIssue/);
+  assert.equal(src.includes("onInvalid"), false);
+  const filled = {
+    ownerName: "Owner",
+    hasOwnerId: true,
+    name: "Yacht",
+    photoCount: 1,
+    hin: "ES-ABC12345D404",
+    guests: "8",
+    traitCount: 1,
+    homePort: "Port",
+    captainName: "Captain",
+    hasCaptainId: true,
+    hasCaptainMmc: true,
+    hasCaptainPhoto: true,
+    languageCount: 1,
+    region: "Mediterranean",
+  };
+  assert.equal(firstAddYachtIssue({ ...filled, name: "" }), "name");
+  assert.equal(firstAddYachtIssue({ ...filled, ownerName: "  " }), "owner_name");
+  assert.equal(firstAddYachtIssue({ ...filled, hin: "" }), "hin");
+  assert.equal(firstAddYachtIssue(filled), null);
+  assert.equal(
+    firstEditYachtIssue({
+      ownerName: "",
+      name: "Yacht",
+      hin: "ES-ABC12345D404",
+      guests: "8",
+      traitCount: 1,
+      homePort: "Port",
+      captainName: "Captain",
+      languageCount: 1,
+      region: "Mediterranean",
+    }),
+    "owner_name",
+  );
   assert.match(src, /accept="image\/\*,\.pdf"/);
   const ownerAccept = src.indexOf('name="owner_id"');
   assert.match(src.slice(ownerAccept, ownerAccept + 180), /accept="image\/\*,\.pdf"/);
@@ -373,4 +415,16 @@ test("verification uses the auth confirmation timestamp and blocks submit", () =
   assert.equal(yachtHeroSrc("galeon", " "), "/fleet/kaenz/galeon.webp");
   assert.equal(yachtHeroSrc("galeon", "null"), "/fleet/kaenz/galeon.webp");
   assert.equal(yachtHeroSrc("galeon", "/fleet/kaenz/galeon.webp"), "/fleet/kaenz/galeon.webp");
+});
+
+test("logout POST clears the session cookie and sends the browser to login", async () => {
+  const { POST } = await import("../app/api/auth/logout/route.ts");
+  const res = await POST(new Request("https://preview.example/api/auth/logout", { method: "POST" }));
+  assert.equal(res.status, 303);
+  assert.equal(new URL(res.headers.get("location") || "http://bad").pathname, "/login");
+  const setCookies = typeof res.headers.getSetCookie === "function" ? res.headers.getSetCookie() : [];
+  assert.equal(setCookies.length, 2);
+  assert.ok(setCookies.every((line) => line.includes("kaenz_session=") && line.includes("Max-Age=0")));
+  assert.equal(setCookies.filter((line) => line.includes("Secure")).length, 1);
+  assert.equal(setCookies.filter((line) => !line.includes("Secure")).length, 1);
 });

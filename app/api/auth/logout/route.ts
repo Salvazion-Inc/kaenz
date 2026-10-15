@@ -1,22 +1,16 @@
-import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
-import { clearSessionCookie, SESSION_COOKIE } from "@/lib/session";
+import { clearSessionCookie } from "@/lib/session";
 
 export const runtime = "nodejs";
 
-/** Clears the session on the navigation response so the first click cannot race the cookie. */
+/**
+ * Native form POST. Clears the host-only cookie both with and without Secure
+ * so a pre-hydration submit cannot leave the session in place, then redirects.
+ */
 export async function POST(req: Request) {
-  const secure = new URL(req.url).protocol === "https:";
-  const jar = await cookies();
-  jar.set(SESSION_COOKIE, "", {
-    path: "/",
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge: 0,
-    expires: new Date(0),
-    secure,
+  const res = new Response(null, {
+    status: 303,
+    headers: { Location: new URL("/login", req.url).toString() },
   });
-  const res = NextResponse.redirect(new URL("/login", req.url), 303);
   res.headers.append("Set-Cookie", clearSessionCookie(false));
   res.headers.append("Set-Cookie", clearSessionCookie(true));
   return res;

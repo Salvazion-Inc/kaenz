@@ -19,8 +19,9 @@ import {
   CAPTAIN_LANG_FLAGS,
   CAPTAIN_LANGS,
   YACHT_TRAITS,
-  isHin,
+  firstAddYachtIssue,
   type CaptainLang,
+  type YachtFormIssue,
   type YachtTrait,
 } from "@/lib/listings";
 import { marinas } from "@/lib/yachts";
@@ -122,29 +123,56 @@ export function AddYachtForm({
     return map[code] || c.badResponse;
   }
 
+  function issueMessage(issue: YachtFormIssue) {
+    const missing = (field: string) => c.missingField.replace("{field}", field);
+    const map: Record<YachtFormIssue, string> = {
+      owner_name: missing(c.ownerName),
+      owner_id: c.needOwnerId,
+      name: missing(c.yachtName),
+      photos: c.needPhotos,
+      hin: c.needHin,
+      guests: missing(c.capacity),
+      traits: c.needTrait,
+      home_port: missing(c.homePort),
+      captain_name: missing(c.captainName),
+      captain_id: c.needCaptainId,
+      mmc: c.needMmc,
+      captain_photo: c.needCaptainPhoto,
+      languages: c.needLanguage,
+      region: missing(c.region),
+    };
+    return map[issue];
+  }
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     setMessage("");
-    if (!traits.length) {
-      setStatus("err");
-      setMessage(c.needTrait);
-      return;
-    }
-    if (!langs.length) {
-      setStatus("err");
-      setMessage(c.needLanguage);
-      return;
-    }
-    if (photos.length < 1) {
-      setStatus("err");
-      setMessage(c.needPhotos);
-      return;
-    }
     const ownerId = inputFile(form, "owner_id");
     const captainId = inputFile(form, "captain_id");
     const captainMmc = inputFile(form, "captain_mmc");
     const captainPhoto = inputFile(form, "captain_photo");
+    const issue = firstAddYachtIssue({
+      ownerName: inputValue(form, "owner_name"),
+      hasOwnerId: Boolean(ownerId),
+      name: inputValue(form, "name"),
+      photoCount: photos.length,
+      hin: inputValue(form, "hin"),
+      guests: inputValue(form, "guests"),
+      traitCount: traits.length,
+      homePort: inputValue(form, "home_port"),
+      captainName: inputValue(form, "captain_name"),
+      hasCaptainId: Boolean(captainId),
+      hasCaptainMmc: Boolean(captainMmc),
+      hasCaptainPhoto: Boolean(captainPhoto),
+      languageCount: langs.length,
+      region: inputValue(form, "captain_region"),
+    });
+    if (issue) {
+      setStatus("err");
+      setMessage(issueMessage(issue));
+      return;
+    }
     if (!ownerId || !captainId || !captainMmc || !captainPhoto) {
       setStatus("err");
       setMessage(c.error);
@@ -159,11 +187,6 @@ export function AddYachtForm({
     if (verified === false) {
       setStatus("err");
       setMessage(verifySubmitMessage(locale));
-      return;
-    }
-    if (!isHin(inputValue(form, "hin"))) {
-      setStatus("err");
-      setMessage(c.needHin);
       return;
     }
     const submitter = (e.nativeEvent as SubmitEvent).submitter;
@@ -319,6 +342,7 @@ export function AddYachtForm({
 
   return (
     <form
+      noValidate
       onSubmit={onSubmit}
       className="mt-5 space-y-6 rounded-2xl border border-white/10 bg-white p-4 text-navy"
     >
@@ -416,11 +440,6 @@ export function AddYachtForm({
             minLength={12}
             maxLength={24}
             placeholder={c.hinPlaceholder}
-            onInvalid={(event) => {
-              event.preventDefault();
-              setStatus("err");
-              setMessage(c.needHin);
-            }}
           />
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">

@@ -63,6 +63,81 @@ export function isHin(value: string) {
   return /^[A-Z0-9]{12,17}$/.test(hin);
 }
 
+export type YachtFormIssue =
+  | "owner_name"
+  | "owner_id"
+  | "name"
+  | "photos"
+  | "hin"
+  | "guests"
+  | "traits"
+  | "home_port"
+  | "captain_name"
+  | "captain_id"
+  | "mmc"
+  | "captain_photo"
+  | "languages"
+  | "region";
+
+/** First problem in form order. A valid HIN does not mask an earlier empty field. */
+export function firstAddYachtIssue(input: {
+  ownerName: string;
+  hasOwnerId: boolean;
+  name: string;
+  photoCount: number;
+  hin: string;
+  guests: string;
+  traitCount: number;
+  homePort: string;
+  captainName: string;
+  hasCaptainId: boolean;
+  hasCaptainMmc: boolean;
+  hasCaptainPhoto: boolean;
+  languageCount: number;
+  region: string;
+}): YachtFormIssue | null {
+  if (!input.ownerName.trim()) return "owner_name";
+  if (!input.hasOwnerId) return "owner_id";
+  if (!input.name.trim()) return "name";
+  if (input.photoCount < 1) return "photos";
+  if (!isHin(input.hin)) return "hin";
+  const guests = Number(input.guests);
+  if (!Number.isFinite(guests) || guests < 1 || guests > 50) return "guests";
+  if (input.traitCount < 1) return "traits";
+  if (!input.homePort.trim()) return "home_port";
+  if (!input.captainName.trim()) return "captain_name";
+  if (!input.hasCaptainId) return "captain_id";
+  if (!input.hasCaptainMmc) return "mmc";
+  if (!input.hasCaptainPhoto) return "captain_photo";
+  if (input.languageCount < 1) return "languages";
+  if (!input.region.trim()) return "region";
+  return null;
+}
+
+export function firstEditYachtIssue(input: {
+  ownerName: string;
+  name: string;
+  hin: string;
+  guests: string;
+  traitCount: number;
+  homePort: string;
+  captainName: string;
+  languageCount: number;
+  region: string;
+}): YachtFormIssue | null {
+  if (!input.ownerName.trim()) return "owner_name";
+  if (!input.name.trim()) return "name";
+  if (!isHin(input.hin)) return "hin";
+  const guests = Number(input.guests);
+  if (!Number.isFinite(guests) || guests < 1 || guests > 50) return "guests";
+  if (input.traitCount < 1) return "traits";
+  if (!input.homePort.trim()) return "home_port";
+  if (!input.captainName.trim()) return "captain_name";
+  if (input.languageCount < 1) return "languages";
+  if (!input.region.trim()) return "region";
+  return null;
+}
+
 export function parseTraits(value: unknown): YachtTrait[] {
   const raw = Array.isArray(value)
     ? value
