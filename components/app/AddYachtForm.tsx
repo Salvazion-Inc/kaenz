@@ -1,13 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import { VerifySubmitNote } from "@/components/VerifySubmitNote";
+import { useAccountVerified } from "@/components/useAccountVerified";
 import { at } from "@/lib/app-copy";
+import { loginUrl } from "@/lib/form-gate";
 import { compressListingImage, uploadSignedListingFile } from "@/lib/listing-direct";
 import {
+  LISTING_MAX_BYTES,
   classifyListingResponse,
   directListingPayload,
+  rawListingFileTooBig,
   validateListingFileSet,
 } from "@/lib/listing-files";
+import { fetchAccountAccess } from "@/lib/submit-access";
+import { verifySubmitMessage, yachtManageCopy } from "@/lib/yacht-manage-copy";
 import {
   CAPTAIN_LANG_FLAGS,
   CAPTAIN_LANGS,
@@ -50,9 +57,11 @@ export function AddYachtForm({
 }: {
   locale: Locale;
   onCancel: () => void;
-  onListed: (yacht: Yacht) => void;
+  onListed: (yacht: Yacht, listingStatus: "listed" | "draft") => void;
 }) {
   const c = at(locale).addYacht;
+  const manage = yachtManageCopy(locale);
+  const verified = useAccountVerified();
   const [traits, setTraits] = useState<YachtTrait[]>([]);
   const [langs, setLangs] = useState<CaptainLang[]>([]);
   const [photos, setPhotos] = useState<File[]>([]);
@@ -71,6 +80,13 @@ export function AddYachtForm({
     );
   }
 
+  function rejectOversized(list: File[]) {
+    if (!list.some((file) => rawListingFileTooBig(file))) return false;
+    setStatus("err");
+    setMessage(c.fileTooBig);
+    return true;
+  }
+
   function messageFor(code: string) {
     const map: Record<string, string> = {
       auth: c.needAuth,
@@ -85,6 +101,7 @@ export function AddYachtForm({
       languages: c.needLanguage,
       too_large: c.tooLarge,
       file_too_big: c.fileTooBig,
+      unverified: verifySubmitMessage(locale),
       upload: c.uploadFailed,
       http: c.badResponse,
       empty: c.badResponse,
@@ -124,6 +141,30 @@ export function AddYachtForm({
       setMessage(c.error);
       return;
     }
+    const selected = [ownerId, captainId, captainMmc, captainPhoto, ...photos];
+    if (selected.some((file) => rawListingFileTooBig(file))) {
+      setStatus("err");
+      setMessage(c.fileTooBig);
+      return;
+    }
+    if (verified === false) {
+      setStatus("err");
+      setMessage(verifySubmitMessage(locale));
+      return;
+    }
+    const submitter = (e.nativeEvent as SubmitEvent).submitter;
+    const listingStatus =
+      submitter instanceof HTMLButtonElement && submitter.value === "draft" ? "draft" : "listed";
+    const access = await fetchAccountAccess();
+    if (access && !access.user) {
+      window.location.assign(loginUrl(`${window.location.pathname}${window.location.search}`));
+      return;
+    }
+    if (access && !access.verified) {
+      setStatus("err");
+      setMessage(verifySubmitMessage(locale));
+      return;
+    }
     setStatus("sending");
     try {
       const prepared = [
@@ -148,6 +189,11 @@ export function AddYachtForm({
           })),
         )),
       ];
+      if (prepared.some((item) => item.file.size > LISTING_MAX_BYTES)) {
+        setStatus("err");
+        setMessage(c.fileTooBig);
+        return;
+      }
       const descriptors = prepared.map(({ slot, file }) => ({
         slot,
         name: file.name,
@@ -191,6 +237,7 @@ export function AddYachtForm({
         languages: langs.join(","),
         captain_region: inputValue(form, "captain_region"),
         captain_wallet: inputValue(form, "captain_wallet"),
+        status: listingStatus,
         uploads: uploads.map((upload) => ({
           slot: String(upload.slot || ""),
           path: String(upload.path || ""),
@@ -203,7 +250,7 @@ export function AddYachtForm({
       });
       const json = classifyListingResponse(res.status, await res.text());
       if (!res.ok || json.error) throw new Error(messageFor(json.error));
-      onListed(json.yacht as Yacht);
+      onListed(json.yacht as Yacht, listingStatus);
       form.reset();
       setTraits([]);
       setLangs([]);
@@ -235,6 +282,7 @@ export function AddYachtForm({
         <div>
           <h2 className="text-lg font-extrabold">{c.title}</h2>
           <p className="mt-1 text-xs text-navy/60">{c.lead}</p>
+          <p className="mt-2 text-xs font-semibold text-navy/70">{manage.fileLimit}</p>
         </div>
         <button
           type="button"
@@ -254,7 +302,17 @@ export function AddYachtForm({
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.ownerId}
-          <input className={field} name="owner_id" type="file" accept="image/*" required />
+          <input
+            className={field}
+            name="owner_id"
+            type="file"
+            accept="image/*"
+            required
+            onChange={(e) => {
+              const list = Array.from(e.target.files || []);
+              if (rejectOversized(list)) e.target.value = "";
+            }}
+          />
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.ownerWallet}
@@ -280,9 +338,15 @@ export function AddYachtForm({
             type="file"
             accept="image/*"
             multiple
-            onChange={(e) =>
-              setPhotos(Array.from(e.target.files || []).slice(0, 5))
-            }
+            onChange={(e) => {
+              const list = Array.from(e.target.files || []).slice(0, 5);
+              if (rejectOversized(list)) {
+                e.target.value = "";
+                setPhotos([]);
+                return;
+              }
+              setPhotos(list);
+            }}
           />
         </label>
         {photos.length ? (
@@ -359,15 +423,45 @@ export function AddYachtForm({
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.captainId}
-          <input className={field} name="captain_id" type="file" accept="image/*,.pdf" required />
+          <input
+            className={field}
+            name="captain_id"
+            type="file"
+            accept="image/*,.pdf"
+            required
+            onChange={(e) => {
+              const list = Array.from(e.target.files || []);
+              if (rejectOversized(list)) e.target.value = "";
+            }}
+          />
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.mmc}
-          <input className={field} name="captain_mmc" type="file" accept="image/*,.pdf" required />
+          <input
+            className={field}
+            name="captain_mmc"
+            type="file"
+            accept="image/*,.pdf"
+            required
+            onChange={(e) => {
+              const list = Array.from(e.target.files || []);
+              if (rejectOversized(list)) e.target.value = "";
+            }}
+          />
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.captainPhoto}
-          <input className={field} name="captain_photo" type="file" accept="image/*" required />
+          <input
+            className={field}
+            name="captain_photo"
+            type="file"
+            accept="image/*"
+            required
+            onChange={(e) => {
+              const list = Array.from(e.target.files || []);
+              if (rejectOversized(list)) e.target.value = "";
+            }}
+          />
         </label>
         <p className="mt-3 text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.languages}
@@ -397,7 +491,8 @@ export function AddYachtForm({
         </div>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.region}
-          <input className={field} name="captain_region" required list="kaenz-regions" />
+          <span aria-hidden="true"> *</span>
+          <input className={field} name="captain_region" required aria-required="true" list="kaenz-regions" />
           <datalist id="kaenz-regions">
             {REGIONS.map((region) => (
               <option key={region} value={region} />
@@ -417,19 +512,32 @@ export function AddYachtForm({
 
       <PayoutsNotice locale={locale} />
 
+      <VerifySubmitNote locale={locale} verified={verified} />
+
       {message ? (
         <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
           {message}
         </p>
       ) : null}
 
-      <button
-        type="submit"
-        disabled={status === "sending"}
-        className="w-full rounded-xl bg-kaenz py-3 text-sm font-bold text-white disabled:opacity-60"
-      >
-        {status === "sending" ? c.sending : c.submit}
-      </button>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <button
+          type="submit"
+          value="listed"
+          disabled={status === "sending" || verified === false}
+          className="w-full rounded-xl bg-kaenz py-3 text-sm font-bold text-white disabled:opacity-60"
+        >
+          {status === "sending" ? c.sending : c.submit}
+        </button>
+        <button
+          type="submit"
+          value="draft"
+          disabled={status === "sending" || verified === false}
+          className="w-full rounded-xl border border-navy/15 py-3 text-sm font-bold text-navy disabled:opacity-60"
+        >
+          {status === "sending" ? c.sending : manage.saveDraft}
+        </button>
+      </div>
     </form>
   );
 }

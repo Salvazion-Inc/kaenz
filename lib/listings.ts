@@ -14,11 +14,13 @@ export const CAPTAIN_LANG_FLAGS: Record<CaptainLang, string> = {
   fr: "/flags/france.svg",
 };
 
+export type YachtListingStatus = "listed" | "draft" | "unpublished";
+
 export type YachtListing = {
   id: string;
   slug: string;
   createdBy: string;
-  status: "listed";
+  status: YachtListingStatus;
   ownerName: string;
   ownerWallet: string;
   name: string;

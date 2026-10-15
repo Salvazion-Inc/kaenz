@@ -1,8 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { VerifySubmitNote } from "@/components/VerifySubmitNote";
+import { useAccountVerified } from "@/components/useAccountVerified";
 import { t } from "@/lib/copy";
+import { loginUrl } from "@/lib/form-gate";
 import type { Locale } from "@/lib/locale";
+import { fetchAccountAccess } from "@/lib/submit-access";
+import { verifySubmitMessage } from "@/lib/yacht-manage-copy";
 import { mapHubs, placeById, placeCountry } from "@/lib/places";
 import {
   clampHours,
@@ -126,6 +131,7 @@ export function BookForm({
   defaultYacht?: string;
 }) {
   const c = t(locale);
+  const verified = useAccountVerified();
   const [status, setStatus] = useState<"idle" | "sending" | "ok" | "err">(
     "idle",
   );
@@ -154,6 +160,21 @@ export function BookForm({
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (verified === false) {
+      setStatus("err");
+      setMessage(verifySubmitMessage(locale));
+      return;
+    }
+    const access = await fetchAccountAccess();
+    if (access && !access.user) {
+      window.location.assign(loginUrl(`${window.location.pathname}${window.location.search}`));
+      return;
+    }
+    if (access && !access.verified) {
+      setStatus("err");
+      setMessage(verifySubmitMessage(locale));
+      return;
+    }
     setStatus("sending");
     const form = new FormData(e.currentTarget);
     const payload = Object.fromEntries(form.entries());
@@ -164,7 +185,14 @@ export function BookForm({
         body: JSON.stringify({ ...payload, locale }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error");
+      if (!res.ok) {
+        if (data.error === "unverified") throw new Error(verifySubmitMessage(locale));
+        if (data.error === "auth") {
+          window.location.assign(loginUrl("/book"));
+          return;
+        }
+        throw new Error(data.error || "Error");
+      }
       setStatus("ok");
       setMessage(c.form.success);
       e.currentTarget.reset();
@@ -303,9 +331,10 @@ export function BookForm({
           {c.from} {formatUsd(quote.total)} · {c.pricingTitle}
         </p>
       ) : null}
+      <VerifySubmitNote locale={locale} verified={verified} />
       <button
         type="submit"
-        disabled={status === "sending"}
+        disabled={status === "sending" || verified === false}
         className="mt-6 w-full rounded-md bg-kaenz py-3 text-lg font-bold text-white hover:bg-kaenz-deep disabled:opacity-60"
       >
         {status === "sending" ? c.form.sending : c.form.submit}

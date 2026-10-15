@@ -1,0 +1,105 @@
+import type { Locale } from "./locale";
+
+const verify: Record<Locale, string> = {
+  en: "Verify your email before submitting. Open the confirmation link we sent you, then try again.",
+  es: "Verifica tu correo antes de enviar. Abre el enlace de confirmación que te enviamos y vuelve a intentarlo.",
+  fr: "Vérifiez votre e-mail avant d’envoyer. Ouvrez le lien de confirmation que nous vous avons envoyé, puis réessayez.",
+  it: "Verifica la tua email prima di inviare. Apri il link di conferma che ti abbiamo inviato e riprova.",
+  pt: "Verifique seu e-mail antes de enviar. Abra o link de confirmação que enviamos e tente de novo.",
+};
+
+export function verifySubmitMessage(locale: Locale) {
+  return verify[locale];
+}
+
+const manage = {
+  en: {
+    fileLimit: "8 MB maximum per file.",
+    saveDraft: "Save as draft",
+    yourYachts: "Your yachts",
+    unpublish: "Unpublish",
+    delete: "Delete",
+    confirmDelete: "Delete yacht and files",
+    cancel: "Cancel",
+    draft: "Draft",
+    listed: "Public",
+    unpublished: "Unpublished",
+    savedDraft: "Saved as a draft. It is not public.",
+    unpublishedDone: "This yacht is no longer public.",
+    deleted: "Yacht deleted.",
+    manageError: "Could not update this yacht.",
+    working: "Working…",
+  },
+  es: {
+    fileLimit: "Máximo 8 MB por archivo.",
+    saveDraft: "Guardar como borrador",
+    yourYachts: "Tus yates",
+    unpublish: "Retirar de publicación",
+    delete: "Eliminar",
+    confirmDelete: "Eliminar yate y archivos",
+    cancel: "Cancelar",
+    draft: "Borrador",
+    listed: "Público",
+    unpublished: "No público",
+    savedDraft: "Guardado como borrador. No es público.",
+    unpublishedDone: "Este yate ya no es público.",
+    deleted: "Yate eliminado.",
+    manageError: "No se pudo actualizar este yate.",
+    working: "Trabajando…",
+  },
+  fr: {
+    fileLimit: "8 Mo maximum par fichier.",
+    saveDraft: "Enregistrer comme brouillon",
+    yourYachts: "Vos yachts",
+    unpublish: "Retirer de la publication",
+    delete: "Supprimer",
+    confirmDelete: "Supprimer le yacht et les fichiers",
+    cancel: "Annuler",
+    draft: "Brouillon",
+    listed: "Public",
+    unpublished: "Non public",
+    savedDraft: "Enregistré comme brouillon. Il n’est pas public.",
+    unpublishedDone: "Ce yacht n’est plus public.",
+    deleted: "Yacht supprimé.",
+    manageError: "Impossible de mettre à jour ce yacht.",
+    working: "Traitement…",
+  },
+  it: {
+    fileLimit: "Massimo 8 MB per file.",
+    saveDraft: "Salva come bozza",
+    yourYachts: "I tuoi yacht",
+    unpublish: "Rimuovi dalla pubblicazione",
+    delete: "Elimina",
+    confirmDelete: "Elimina yacht e file",
+    cancel: "Annulla",
+    draft: "Bozza",
+    listed: "Pubblico",
+    unpublished: "Non pubblico",
+    savedDraft: "Salvato come bozza. Non è pubblico.",
+    unpublishedDone: "Questo yacht non è più pubblico.",
+    deleted: "Yacht eliminato.",
+    manageError: "Impossibile aggiornare questo yacht.",
+    working: "Operazione in corso…",
+  },
+  pt: {
+    fileLimit: "Máximo de 8 MB por arquivo.",
+    saveDraft: "Salvar como rascunho",
+    yourYachts: "Seus iates",
+    unpublish: "Retirar da publicação",
+    delete: "Excluir",
+    confirmDelete: "Excluir iate e arquivos",
+    cancel: "Cancelar",
+    draft: "Rascunho",
+    listed: "Público",
+    unpublished: "Não público",
+    savedDraft: "Salvo como rascunho. Não é público.",
+    unpublishedDone: "Este iate não é mais público.",
+    deleted: "Iate excluído.",
+    manageError: "Não foi possível atualizar este iate.",
+    working: "Trabalhando…",
+  },
+} as const;
+
+export function yachtManageCopy(locale: Locale) {
+  return manage[locale];
+}

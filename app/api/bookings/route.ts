@@ -1,3 +1,4 @@
+import { isAccountVerified, unverifiedResponse } from "@/lib/account-verification";
 import { parseLocale } from "@/lib/locale";
 import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 import { getSupabase } from "@/lib/supabase";
@@ -17,6 +18,8 @@ export async function POST(req: Request) {
   const user = await readSession(
     cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
   );
+  if (!user) return Response.json({ error: "auth" }, { status: 401 });
+  if (!(await isAccountVerified(user))) return unverifiedResponse();
 
   const row = {
     full_name,
