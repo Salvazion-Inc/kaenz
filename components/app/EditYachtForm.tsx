@@ -7,6 +7,7 @@ import { yachtManageCopy } from "@/lib/yacht-manage-copy";
 import {
   CAPTAIN_LANGS,
   YACHT_TRAITS,
+  isHin,
   type CaptainLang,
   type YachtTrait,
 } from "@/lib/listings";
@@ -60,6 +61,11 @@ export function EditYachtForm({
     e.preventDefault();
     const form = e.currentTarget;
     setMessage("");
+    if (!isHin(inputValue(form, "hin"))) {
+      setStatus("err");
+      setMessage(c.needHin);
+      return;
+    }
     if (!traits.length) {
       setStatus("err");
       setMessage(c.needTrait);
@@ -130,7 +136,21 @@ export function EditYachtForm({
       </label>
       <label className="block text-xs font-bold uppercase tracking-wide text-navy/60">
         {c.hin}
-        <input className={field} name="hin" required minLength={12} maxLength={24} defaultValue={yacht.hin} />
+        <span aria-hidden="true"> *</span>
+        <input
+          className={field}
+          name="hin"
+          required
+          aria-required="true"
+          minLength={12}
+          maxLength={24}
+          defaultValue={yacht.hin}
+          onInvalid={(event) => {
+            event.preventDefault();
+            setStatus("err");
+            setMessage(c.needHin);
+          }}
+        />
       </label>
       <label className="block text-xs font-bold uppercase tracking-wide text-navy/60">
         {c.capacity}

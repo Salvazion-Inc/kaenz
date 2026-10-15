@@ -1,5 +1,5 @@
 import type { Locale } from "./locale";
-import type { Yacht } from "./yachts";
+import { yachtHeroSrc, type Yacht } from "./yachts";
 
 export const YACHT_TRAITS = ["luxurious", "fast", "small"] as const;
 export type YachtTrait = (typeof YACHT_TRAITS)[number];
@@ -94,7 +94,7 @@ export function listingToYacht(row: YachtListing): Yacht {
     hoursMin: 4,
     marina: row.homePort,
     marinaId: row.slug,
-    image: row.photos[0] || "",
+    image: yachtHeroSrc(row.id, row.photos[0]),
     lat: Number.NaN,
     lng: Number.NaN,
     etaMin: 0,

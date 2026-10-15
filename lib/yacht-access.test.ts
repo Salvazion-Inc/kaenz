@@ -10,6 +10,7 @@ import {
   rawListingFileTooBig,
 } from "./listing-files";
 import { readAccountAccess } from "./submit-access";
+import { yachtHeroSrc } from "./yachts";
 import {
   canManageListing,
   deleteListingStorageFiles,
@@ -337,4 +338,39 @@ test("verification uses the auth confirmation timestamp and blocks submit", () =
   assert.match(splash, /pointer-events-none/);
   const fleet = fs.readFileSync(new URL("../app/fleet/[id]/page.tsx", import.meta.url), "utf8");
   assert.match(fleet, /bookable === true && !user/);
+
+  const src = fs.readFileSync(new URL("../components/app/AddYachtForm.tsx", import.meta.url), "utf8");
+  const hin = src.slice(src.indexOf("{c.hin}"), src.indexOf("{c.hin}") + 520);
+  assert.match(hin, /\*/);
+  assert.match(hin, /onInvalid/);
+  assert.match(hin, /c\.needHin/);
+  assert.match(src, /accept="image\/\*,\.pdf"/);
+  const ownerAccept = src.indexOf('name="owner_id"');
+  assert.match(src.slice(ownerAccept, ownerAccept + 180), /accept="image\/\*,\.pdf"/);
+
+  for (const file of ["app/api/yachts/route.ts", "app/api/marinas/route.ts", "app/api/bookings/route.ts"]) {
+    const route = fs.readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
+    const postAt = route.indexOf("export async function POST");
+    assert.ok(postAt >= 0, file);
+    const nextExport = route.indexOf("export async function", postAt + 10);
+    const post = route.slice(postAt, nextExport === -1 ? undefined : nextExport);
+    const verifyAt = post.indexOf("isAccountVerified");
+    const fieldsAt = post.search(/error: "fields"|!full_name \|\| !email|!name \|\| !address/);
+    assert.ok(verifyAt >= 0 && fieldsAt > verifyAt, file);
+  }
+
+  const layout = fs.readFileSync(new URL("../app/layout.tsx", import.meta.url), "utf8");
+  assert.equal(layout.includes("next/font/google"), false);
+  assert.match(layout, /next\/font\/local/);
+  assert.match(layout, /Outfit-Variable\.ttf/);
+  const detail = fs.readFileSync(new URL("../components/pages/YachtDetail.tsx", import.meta.url), "utf8");
+  assert.match(detail, /yachtHeroSrc/);
+  assert.match(detail, /<img/);
+  assert.equal(detail.includes("next/image"), false);
+  const hero = fs.statSync(new URL("../public/fleet/kaenz/galeon.webp", import.meta.url));
+  assert.ok(hero.size > 10_000);
+  assert.equal(yachtHeroSrc("galeon", ""), "/fleet/kaenz/galeon.webp");
+  assert.equal(yachtHeroSrc("galeon", " "), "/fleet/kaenz/galeon.webp");
+  assert.equal(yachtHeroSrc("galeon", "null"), "/fleet/kaenz/galeon.webp");
+  assert.equal(yachtHeroSrc("galeon", "/fleet/kaenz/galeon.webp"), "/fleet/kaenz/galeon.webp");
 });

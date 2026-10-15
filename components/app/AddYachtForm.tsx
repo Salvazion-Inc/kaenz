@@ -19,6 +19,7 @@ import {
   CAPTAIN_LANG_FLAGS,
   CAPTAIN_LANGS,
   YACHT_TRAITS,
+  isHin,
   type CaptainLang,
   type YachtTrait,
 } from "@/lib/listings";
@@ -160,6 +161,11 @@ export function AddYachtForm({
       setMessage(verifySubmitMessage(locale));
       return;
     }
+    if (!isHin(inputValue(form, "hin"))) {
+      setStatus("err");
+      setMessage(c.needHin);
+      return;
+    }
     const submitter = (e.nativeEvent as SubmitEvent).submitter;
     const listingStatus =
       submitter instanceof HTMLButtonElement && submitter.value === "draft" ? "draft" : "listed";
@@ -180,7 +186,10 @@ export function AddYachtForm({
     });
     try {
       const prepared = [
-        { slot: "owner_id", file: await compressListingImage(ownerId) },
+        {
+          slot: "owner_id",
+          file: ownerId.type.startsWith("image/") ? await compressListingImage(ownerId) : ownerId,
+        },
         {
           slot: "captain_id",
           file: captainId.type.startsWith("image/")
@@ -341,7 +350,7 @@ export function AddYachtForm({
             className={field}
             name="owner_id"
             type="file"
-            accept="image/*"
+            accept="image/*,.pdf"
             required
             onChange={(e) => {
               const list = Array.from(e.target.files || []);
@@ -398,13 +407,20 @@ export function AddYachtForm({
         ) : null}
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.hin}
+          <span aria-hidden="true"> *</span>
           <input
             className={field}
             name="hin"
             required
+            aria-required="true"
             minLength={12}
             maxLength={24}
             placeholder={c.hinPlaceholder}
+            onInvalid={(event) => {
+              event.preventDefault();
+              setStatus("err");
+              setMessage(c.needHin);
+            }}
           />
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
