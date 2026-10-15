@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
   );
   if (!user) return Response.json({ error: "auth" }, { status: 401 });
-  if (!(await isAccountVerified(user))) return unverifiedResponse();
+  if (!(await isAccountVerified(user, req))) return unverifiedResponse();
 
   const row = {
     full_name,

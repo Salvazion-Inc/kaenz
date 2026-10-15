@@ -65,8 +65,10 @@ export function AddYachtForm({
   const [traits, setTraits] = useState<YachtTrait[]>([]);
   const [langs, setLangs] = useState<CaptainLang[]>([]);
   const [photos, setPhotos] = useState<File[]>([]);
-  const [status, setStatus] = useState<"idle" | "sending" | "err">("idle");
+  const [status, setStatus] = useState<"idle" | "preparing" | "uploading" | "saving" | "err">("idle");
+  const [progress, setProgress] = useState({ done: 0, total: 0, percent: 0 });
   const [message, setMessage] = useState("");
+  const busy = status === "preparing" || status === "uploading" || status === "saving";
 
   function toggleTrait(trait: YachtTrait) {
     setTraits((cur) =>
@@ -81,10 +83,16 @@ export function AddYachtForm({
   }
 
   function rejectOversized(list: File[]) {
-    if (!list.some((file) => rawListingFileTooBig(file))) return false;
-    setStatus("err");
-    setMessage(c.fileTooBig);
-    return true;
+    if (list.some((file) => rawListingFileTooBig(file))) {
+      setStatus("err");
+      setMessage(c.fileTooBig);
+      return true;
+    }
+    if (list.length > 0) {
+      setMessage((cur) => (cur === c.fileTooBig ? "" : cur));
+      setStatus((cur) => (cur === "err" ? "idle" : cur));
+    }
+    return false;
   }
 
   function messageFor(code: string) {
@@ -165,7 +173,11 @@ export function AddYachtForm({
       setMessage(verifySubmitMessage(locale));
       return;
     }
-    setStatus("sending");
+    setStatus("preparing");
+    setProgress({ done: 0, total: 0, percent: 0 });
+    await new Promise((resolve) => {
+      window.setTimeout(resolve, 50);
+    });
     try {
       const prepared = [
         { slot: "owner_id", file: await compressListingImage(ownerId) },
@@ -216,13 +228,36 @@ export function AddYachtForm({
         signedUrl?: string;
       }>;
       const bySlot = new Map(prepared.map((item) => [item.slot, item.file]));
+      const loaded = uploads.map(() => 0);
+      const totals = uploads.map(() => 0);
+      setStatus("uploading");
+      setProgress({ done: 0, total: uploads.length, percent: 0 });
+      const report = () => {
+        const sumLoaded = loaded.reduce((sum, value) => sum + value, 0);
+        const sumTotal = totals.reduce((sum, value) => sum + value, 0);
+        const done = loaded.filter((value, index) => totals[index] > 0 && value >= totals[index]).length;
+        setProgress({
+          done,
+          total: uploads.length,
+          percent: sumTotal > 0 ? Math.min(100, Math.round((sumLoaded / sumTotal) * 100)) : 0,
+        });
+      };
       await Promise.all(
-        uploads.map(async (upload) => {
+        uploads.map(async (upload, index) => {
           const file = upload.slot ? bySlot.get(upload.slot) : undefined;
           if (!file || !upload.signedUrl || !upload.path) throw new Error(c.uploadFailed);
-          await uploadSignedListingFile(upload.signedUrl, file);
+          await uploadSignedListingFile(upload.signedUrl, file, (sent, total) => {
+            loaded[index] = sent;
+            totals[index] = total;
+            report();
+          });
+          loaded[index] = file.size;
+          totals[index] = file.size;
+          report();
         }),
       );
+      setStatus("saving");
+      setProgress({ done: uploads.length, total: uploads.length, percent: 100 });
 
       const payload = directListingPayload({
         listingId: signed.listingId || "",
@@ -387,21 +422,33 @@ export function AddYachtForm({
         <p className="mt-3 text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.traits}
         </p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {YACHT_TRAITS.map((trait) => (
-            <button
-              key={trait}
-              type="button"
-              onClick={() => toggleTrait(trait)}
-              className={`rounded-full px-3 py-1.5 text-xs font-bold ${
-                traits.includes(trait)
-                  ? "bg-navy text-white"
-                  : "border border-navy/15 bg-white"
-              }`}
-            >
-              {c[trait]}
-            </button>
-          ))}
+        <div className="mt-2 grid gap-2 sm:grid-cols-3" role="group" aria-label={c.traits}>
+          {YACHT_TRAITS.map((trait) => {
+            const on = traits.includes(trait);
+            return (
+              <button
+                key={trait}
+                type="button"
+                aria-pressed={on}
+                onClick={() => toggleTrait(trait)}
+                className={`listing-option flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm ${
+                  on
+                    ? "border-navy bg-navy/5 font-semibold text-navy"
+                    : "border-navy/15 bg-white text-navy/80"
+                }`}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[10px] ${
+                    on ? "border-navy bg-navy text-white" : "border-navy/30 bg-white"
+                  }`}
+                >
+                  {on ? "✓" : ""}
+                </span>
+                {c[trait]}
+              </button>
+            );
+          })}
         </div>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.homePort}
@@ -520,22 +567,52 @@ export function AddYachtForm({
         </p>
       ) : null}
 
+      {busy ? (
+        <div role="status" aria-live="polite" className="space-y-2">
+          <p className="text-sm font-semibold text-navy">
+            {status === "preparing"
+              ? manage.preparing
+              : status === "saving"
+                ? manage.saving
+                : `${manage.uploading} ${progress.done}/${progress.total} · ${progress.percent}%`}
+          </p>
+          <div className="h-2 overflow-hidden rounded-full bg-navy/10">
+            <div
+              className="h-2 rounded-full bg-kaenz transition-[width] duration-200"
+              style={{ width: `${status === "preparing" ? 8 : progress.percent}%` }}
+            />
+          </div>
+        </div>
+      ) : null}
+
       <div className="grid gap-2 sm:grid-cols-2">
         <button
           type="submit"
           value="listed"
-          disabled={status === "sending" || verified === false}
+          disabled={busy || verified === false}
           className="w-full rounded-xl bg-kaenz py-3 text-sm font-bold text-white disabled:opacity-60"
         >
-          {status === "sending" ? c.sending : c.submit}
+          {busy
+            ? status === "preparing"
+              ? manage.preparing
+              : status === "saving"
+                ? manage.saving
+                : `${manage.uploading} ${progress.percent}%`
+            : c.submit}
         </button>
         <button
           type="submit"
           value="draft"
-          disabled={status === "sending" || verified === false}
+          disabled={busy || verified === false}
           className="w-full rounded-xl border border-navy/15 py-3 text-sm font-bold text-navy disabled:opacity-60"
         >
-          {status === "sending" ? c.sending : manage.saveDraft}
+          {busy
+            ? status === "preparing"
+              ? manage.preparing
+              : status === "saving"
+                ? manage.saving
+                : `${manage.uploading} ${progress.percent}%`
+            : manage.saveDraft}
         </button>
       </div>
     </form>

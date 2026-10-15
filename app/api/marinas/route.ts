@@ -31,7 +31,7 @@ export async function POST(req: Request) {
   if (!user) {
     return Response.json({ error: "auth" }, { status: 401 });
   }
-  if (!(await isAccountVerified(user))) return unverifiedResponse();
+  if (!(await isAccountVerified(user, req))) return unverifiedResponse();
   if (!getSupabaseAdmin()) {
     return Response.json({ error: "supabase" }, { status: 503 });
   }

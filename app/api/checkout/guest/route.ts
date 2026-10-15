@@ -11,7 +11,7 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export async function POST(req: Request) {
   const user = await readSession(cookieValue(req.headers.get("cookie"), SESSION_COOKIE));
   if (!user) return Response.json({ error: "auth" }, { status: 401 });
-  if (!(await isAccountVerified(user))) return unverifiedResponse();
+  if (!(await isAccountVerified(user, req))) return unverifiedResponse();
 
   const limited = rateLimit(`guest-checkout:${clientIp(req)}`, 8, 10 * 60 * 1000);
   if (!limited.ok) {

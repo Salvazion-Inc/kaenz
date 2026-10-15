@@ -16,10 +16,14 @@ export function YachtDetail({
   locale,
   yacht,
   canceled = false,
+  signedIn = false,
+  accountName = "",
 }: {
   locale: Locale;
   yacht: Yacht;
   canceled?: boolean;
+  signedIn?: boolean;
+  accountName?: string;
 }) {
   const c = t(locale);
   const [places, setPlaces] = useState<Place[]>(() => seedRealPlaces());
@@ -35,7 +39,7 @@ export function YachtDetail({
   }, [bookable]);
 
   return (
-    <Site locale={locale}>
+    <Site locale={locale} signedIn={signedIn} accountName={accountName}>
       <section className="mx-auto grid max-w-6xl gap-10 px-5 pb-24 md:grid-cols-2">
         <div>
           <div className="relative h-80 overflow-hidden rounded-2xl">

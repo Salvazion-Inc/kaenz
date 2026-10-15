@@ -48,15 +48,28 @@ export async function compressListingImage(file: File): Promise<File> {
 }
 
 /** PUT one file straight to Supabase Storage. The bytes never touch the Vercel function. */
-export async function uploadSignedListingFile(signedUrl: string, file: File) {
-  if (!isSupabaseSignedUploadUrl(signedUrl)) throw new Error("upload");
-  const body = new FormData();
-  body.append("cacheControl", "3600");
-  body.append("", file);
-  const res = await fetch(signedUrl, {
-    method: "PUT",
-    headers: { "x-upsert": "true" },
-    body,
+export function uploadSignedListingFile(
+  signedUrl: string,
+  file: File,
+  onProgress?: (loaded: number, total: number) => void,
+) {
+  if (!isSupabaseSignedUploadUrl(signedUrl)) return Promise.reject(new Error("upload"));
+  return new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", signedUrl);
+    xhr.setRequestHeader("x-upsert", "true");
+    xhr.upload.onprogress = (event) => {
+      if (!onProgress || !event.lengthComputable) return;
+      onProgress(event.loaded, event.total);
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve();
+      else reject(new Error("upload"));
+    };
+    xhr.onerror = () => reject(new Error("upload"));
+    const body = new FormData();
+    body.append("cacheControl", "3600");
+    body.append("", file);
+    xhr.send(body);
   });
-  if (!res.ok) throw new Error("upload");
 }
