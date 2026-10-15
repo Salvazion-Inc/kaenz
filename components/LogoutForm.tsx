@@ -1,23 +1,16 @@
-"use client";
+function esc(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
-import { disableBiometric } from "@/lib/auth/biometric";
-
+/**
+ * Real HTML form, not a React submit handler. The inline onsubmit runs before
+ * hydration and drops the biometric vault, then the browser POSTs.
+ */
 export function LogoutForm({ label, className }: { label: string; className: string }) {
-  return (
-    <form
-      action="/api/auth/logout"
-      method="post"
-      onSubmit={() => {
-        try {
-          disableBiometric();
-        } catch {
-          /* The browser still posts the form and clears the session. */
-        }
-      }}
-    >
-      <button type="submit" className={className}>
-        {label}
-      </button>
-    </form>
-  );
+  const html = `<form action="/api/auth/logout" method="post" onsubmit="try{localStorage.removeItem('kaenz.biometric.state');localStorage.removeItem('kaenz.biometric.vault')}catch(e){}"><button type="submit" class="${esc(className)}">${esc(label)}</button></form>`;
+  return <div dangerouslySetInnerHTML={{ __html: html }} />;
 }

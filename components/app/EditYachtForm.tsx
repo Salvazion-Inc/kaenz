@@ -7,8 +7,9 @@ import { yachtManageCopy } from "@/lib/yacht-manage-copy";
 import {
   CAPTAIN_LANGS,
   YACHT_TRAITS,
-  isHin,
+  firstEditYachtIssue,
   type CaptainLang,
+  type YachtFormIssue,
   type YachtTrait,
 } from "@/lib/listings";
 import type { YachtListingStatus } from "@/lib/yacht-owner";
@@ -16,6 +17,30 @@ import type { Locale } from "@/lib/locale";
 
 const field =
   "mt-1.5 w-full rounded-xl border border-navy/10 bg-white px-3 py-2.5 text-sm text-navy outline-none";
+
+function editIssueMessage(
+  c: ReturnType<typeof at>["addYacht"],
+  issue: YachtFormIssue,
+) {
+  const missing = (label: string) => c.missingField.replace("{field}", label);
+  const map: Record<YachtFormIssue, string> = {
+    owner_name: missing(c.ownerName),
+    owner_id: c.needOwnerId,
+    name: missing(c.yachtName),
+    photos: c.needPhotos,
+    hin: c.needHin,
+    guests: missing(c.capacity),
+    traits: c.needTrait,
+    home_port: missing(c.homePort),
+    captain_name: missing(c.captainName),
+    captain_id: c.needCaptainId,
+    mmc: c.needMmc,
+    captain_photo: c.needCaptainPhoto,
+    languages: c.needLanguage,
+    region: missing(c.region),
+  };
+  return map[issue];
+}
 
 export type EditableYacht = {
   id: string;
@@ -61,19 +86,20 @@ export function EditYachtForm({
     e.preventDefault();
     const form = e.currentTarget;
     setMessage("");
-    if (!isHin(inputValue(form, "hin"))) {
+    const issue = firstEditYachtIssue({
+      ownerName: inputValue(form, "owner_name"),
+      name: inputValue(form, "name"),
+      hin: inputValue(form, "hin"),
+      guests: inputValue(form, "guests"),
+      traitCount: traits.length,
+      homePort: inputValue(form, "home_port"),
+      captainName: inputValue(form, "captain_name"),
+      languageCount: langs.length,
+      region: inputValue(form, "captain_region"),
+    });
+    if (issue) {
       setStatus("err");
-      setMessage(c.needHin);
-      return;
-    }
-    if (!traits.length) {
-      setStatus("err");
-      setMessage(c.needTrait);
-      return;
-    }
-    if (!langs.length) {
-      setStatus("err");
-      setMessage(c.needLanguage);
+      setMessage(editIssueMessage(c, issue));
       return;
     }
     const submitter = (e.nativeEvent as SubmitEvent).submitter;
@@ -116,7 +142,7 @@ export function EditYachtForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="mt-3 space-y-3 rounded-xl border border-white/10 bg-white p-3 text-navy">
+    <form noValidate onSubmit={onSubmit} className="mt-3 space-y-3 rounded-xl border border-white/10 bg-white p-3 text-navy">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-extrabold">{manage.edit}</h3>
@@ -145,11 +171,6 @@ export function EditYachtForm({
           minLength={12}
           maxLength={24}
           defaultValue={yacht.hin}
-          onInvalid={(event) => {
-            event.preventDefault();
-            setStatus("err");
-            setMessage(c.needHin);
-          }}
         />
       </label>
       <label className="block text-xs font-bold uppercase tracking-wide text-navy/60">
