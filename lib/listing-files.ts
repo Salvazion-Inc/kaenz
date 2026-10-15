@@ -95,7 +95,7 @@ type SlotSpec = {
 
 function slotSpec(slot: string): SlotSpec | null {
   if (slot === "owner_id") {
-    return { base: "owner-id", kind: "doc", allowPdf: false, error: "owner_id" };
+    return { base: "owner-id", kind: "doc", allowPdf: true, error: "owner_id" };
   }
   if (slot === "captain_id") {
     return { base: "captain-id", kind: "doc", allowPdf: true, error: "captain_id" };
@@ -272,7 +272,7 @@ export function parseStoredListingBody(input: unknown) {
 
 export function assertListingPaths(userId: string, listingId: string, files: ListingStoredFiles) {
   const checks: Array<[string, string, boolean, string]> = [
-    [files.owner_id, "owner-id", false, "owner_id"],
+    [files.owner_id, "owner-id", true, "owner_id"],
     [files.captain_id, "captain-id", true, "captain_id"],
     [files.captain_mmc, "captain-mmc", true, "mmc"],
     [files.captain_photo, "captain-photo", false, "captain_photo"],

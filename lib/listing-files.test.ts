@@ -222,12 +222,25 @@ test("empty Solana wallets stay optional and foreign paths are rejected", () => 
     assertListingPaths(USER_ID, LISTING_ID, { ...files, owner_id: `${files.owner_id}/../catalog.json` }).ok,
     false,
   );
-  assert.equal(
-    validateListingFileSet([
-      { slot: "owner_id", name: "id.pdf", type: "application/pdf", size: 10 },
-    ]).ok,
-    false,
-  );
+  const ownerPdf = validateListingFileSet([
+    { slot: "owner_id", name: "id.pdf", type: "application/pdf", size: 1000 },
+    { slot: "captain_id", name: "id.pdf", type: "application/pdf", size: 1000 },
+    { slot: "captain_mmc", name: "licence.pdf", type: "application/pdf", size: 1000 },
+    { slot: "captain_photo", name: "face.jpg", type: "image/jpeg", size: 1000 },
+    { slot: "yacht_0", name: "boat.jpg", type: "image/jpeg", size: 1000 },
+  ]);
+  assert.equal(ownerPdf.ok, true);
+  if (ownerPdf.ok) assert.equal(ownerPdf.files[0].ext, "pdf");
+  const ownerPdfFiles = {
+    ...files,
+    owner_id: listingObjectPath(USER_ID, LISTING_ID, "owner-id", "pdf"),
+  };
+  assert.equal(assertListingPaths(USER_ID, LISTING_ID, ownerPdfFiles).ok, true);
+  const ownerText = validateListingFileSet([
+    { slot: "owner_id", name: "id.txt", type: "text/plain", size: 10 },
+  ]);
+  assert.equal(ownerText.ok, false);
+  if (!ownerText.ok) assert.equal(ownerText.error, "owner_id");
   const huge = validateListingFileSet([
     { slot: "owner_id", name: "id.jpg", type: "image/jpeg", size: mb(9) },
     { slot: "captain_id", name: "id.pdf", type: "application/pdf", size: 1000 },

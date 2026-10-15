@@ -4,6 +4,12 @@ import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 import { getSupabase } from "@/lib/supabase";
 
 export async function POST(req: Request) {
+  const user = await readSession(
+    cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
+  );
+  if (!user) return Response.json({ error: "auth" }, { status: 401 });
+  if (!(await isAccountVerified(user, req))) return unverifiedResponse();
+
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object" || Array.isArray(body)) {
     return Response.json({ error: "fields" }, { status: 400 });
@@ -14,12 +20,6 @@ export async function POST(req: Request) {
   if (!full_name || !email) {
     return Response.json({ error: "fields" }, { status: 400 });
   }
-
-  const user = await readSession(
-    cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
-  );
-  if (!user) return Response.json({ error: "auth" }, { status: 401 });
-  if (!(await isAccountVerified(user, req))) return unverifiedResponse();
 
   const row = {
     full_name,

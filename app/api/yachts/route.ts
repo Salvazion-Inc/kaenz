@@ -170,7 +170,7 @@ export async function POST(req: Request) {
   if (!captainLanguages.length) {
     return Response.json({ error: "languages" }, { status: 400 });
   }
-  if (!(ownerId instanceof File) || !isImage(ownerId) || tooBig(ownerId)) {
+  if (!(ownerId instanceof File) || !isDoc(ownerId) || tooBig(ownerId)) {
     return Response.json({ error: "owner_id" }, { status: 400 });
   }
   if (!(captainId instanceof File) || !isDoc(captainId) || tooBig(captainId)) {
