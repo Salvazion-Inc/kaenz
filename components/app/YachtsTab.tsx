@@ -3,7 +3,12 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { VerifySubmitNote } from "@/components/VerifySubmitNote";
+import { useAccountVerified } from "@/components/useAccountVerified";
 import { at } from "@/lib/app-copy";
+import { loginUrl } from "@/lib/form-gate";
+import { yachtManageCopy } from "@/lib/yacht-manage-copy";
+import type { YachtListingStatus } from "@/lib/yacht-owner";
 import { etaFromKm, haversineKm } from "@/lib/geo";
 import {
   CAPTAIN_LANG_FLAGS,
@@ -22,8 +27,18 @@ import { AddYachtForm } from "./AddYachtForm";
 import { IconBadge } from "./icons";
 import { OwnerDesk } from "./OwnerDesk";
 
+type OwnedYacht = {
+  id: string;
+  name: string;
+  status: YachtListingStatus;
+  homePort: string;
+  photo: string;
+};
+
 export function YachtsTab({ locale }: { locale: Locale }) {
   const c = at(locale);
+  const manage = yachtManageCopy(locale);
+  const verified = useAccountVerified();
   const { setTrip, trip } = useTrip();
   const { enrollOwner, enrollCaptain } = useOperator();
   const { profile } = useProfile();
@@ -31,7 +46,10 @@ export function YachtsTab({ locale }: { locale: Locale }) {
   const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [listings, setListings] = useState<Yacht[]>([]);
+  const [owned, setOwned] = useState<OwnedYacht[]>([]);
   const [notice, setNotice] = useState("");
+  const [confirmId, setConfirmId] = useState("");
+  const [manageId, setManageId] = useState("");
   const [klass, setKlass] = useState<"all" | YachtTrait>("all");
 
   useEffect(() => {
@@ -45,6 +63,44 @@ export function YachtsTab({ locale }: { locale: Locale }) {
       .then((data) => setListings(Array.isArray(data.yachts) ? data.yachts : []))
       .catch(() => setListings([]));
   }, []);
+
+  useEffect(() => {
+    fetch("/api/yachts/mine")
+      .then((res) => (res.ok ? res.json() : { yachts: [] }))
+      .then((data) => setOwned(Array.isArray(data.yachts) ? data.yachts : []))
+      .catch(() => setOwned([]));
+  }, []);
+
+  async function changeOwned(id: string, method: "PATCH" | "DELETE") {
+    setManageId(id);
+    setNotice("");
+    const res = await fetch(`/api/yachts/${id}`, {
+      method,
+      headers: method === "PATCH" ? { "Content-Type": "application/json" } : undefined,
+      body: method === "PATCH" ? JSON.stringify({ status: "unpublished" }) : undefined,
+    });
+    setManageId("");
+    if (res.status === 401) {
+      window.location.assign(loginUrl("/app/yachts"));
+      return;
+    }
+    if (!res.ok) {
+      setNotice(manage.manageError);
+      return;
+    }
+    if (method === "DELETE") {
+      setOwned((cur) => cur.filter((yacht) => yacht.id !== id));
+      setListings((cur) => cur.filter((yacht) => yacht.id !== id));
+      setConfirmId("");
+      setNotice(manage.deleted);
+      return;
+    }
+    setOwned((cur) =>
+      cur.map((yacht) => (yacht.id === id ? { ...yacht, status: "unpublished" } : yacht)),
+    );
+    setListings((cur) => cur.filter((yacht) => yacht.id !== id));
+    setNotice(manage.unpublishedDone);
+  }
 
   const list = useMemo(() => {
     const seen = new Set<string>();
@@ -95,18 +151,28 @@ export function YachtsTab({ locale }: { locale: Locale }) {
         <AddYachtForm
           locale={locale}
           onCancel={() => setAdding(false)}
-          onListed={(yacht) => {
-            setListings((cur) => [yacht, ...cur.filter((item) => item.id !== yacht.id)]);
-            enrollOwner({
+          onListed={(yacht, listingStatus) => {
+            const summary: OwnedYacht = {
               id: yacht.id,
               name: yacht.name,
-              image: yacht.image,
-              guests: yacht.guests,
-              marina: yacht.marina,
-            });
-            enrollCaptain();
+              status: listingStatus,
+              homePort: yacht.marina,
+              photo: yacht.image,
+            };
+            setOwned((cur) => [summary, ...cur.filter((item) => item.id !== yacht.id)]);
+            if (listingStatus === "listed") {
+              setListings((cur) => [yacht, ...cur.filter((item) => item.id !== yacht.id)]);
+              enrollOwner({
+                id: yacht.id,
+                name: yacht.name,
+                image: yacht.image,
+                guests: yacht.guests,
+                marina: yacht.marina,
+              });
+              enrollCaptain();
+            }
             setAdding(false);
-            setNotice(c.addYacht.listed);
+            setNotice(listingStatus === "draft" ? manage.savedDraft : c.addYacht.listed);
           }}
         />
       ) : null}
@@ -115,6 +181,71 @@ export function YachtsTab({ locale }: { locale: Locale }) {
         <p className="mt-3 rounded-xl border border-kaenz/40 bg-kaenz/10 px-3 py-2 text-sm text-kaenz">
           {notice}
         </p>
+      ) : null}
+
+      {owned.length ? (
+        <section className="mt-5">
+          <h2 className="text-sm font-extrabold">{manage.yourYachts}</h2>
+          <ul className="mt-2 space-y-2">
+            {owned.map((yacht) => (
+              <li
+                key={yacht.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2"
+              >
+                <div>
+                  <p className="text-sm font-bold">{yacht.name}</p>
+                  <p className="text-[11px] text-white/55">
+                    {yacht.homePort} · {manage[yacht.status]}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {yacht.status === "listed" ? (
+                    <button
+                      type="button"
+                      disabled={manageId === yacht.id}
+                      onClick={() => changeOwned(yacht.id, "PATCH")}
+                      className="rounded-full border border-white/20 px-3 py-1 text-[11px] font-bold"
+                    >
+                      {manageId === yacht.id ? manage.working : manage.unpublish}
+                    </button>
+                  ) : null}
+                  {confirmId === yacht.id ? (
+                    <>
+                      <button
+                        type="button"
+                        disabled={manageId === yacht.id}
+                        onClick={() => changeOwned(yacht.id, "DELETE")}
+                        className="rounded-full bg-red-500 px-3 py-1 text-[11px] font-bold text-white"
+                      >
+                        {manage.confirmDelete}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmId("")}
+                        className="rounded-full border border-white/20 px-3 py-1 text-[11px] font-bold"
+                      >
+                        {manage.cancel}
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmId(yacht.id)}
+                      className="rounded-full border border-white/20 px-3 py-1 text-[11px] font-bold"
+                    >
+                      {manage.delete}
+                    </button>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+      {verified === false ? (
+        <div className="mt-3">
+          <VerifySubmitNote locale={locale} verified={verified} />
+        </div>
       ) : null}
 
       <div className="mt-4 flex flex-wrap gap-2">

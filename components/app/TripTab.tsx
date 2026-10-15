@@ -2,7 +2,11 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
+import { useAccountVerified } from "@/components/useAccountVerified";
 import { at } from "@/lib/app-copy";
+import { loginUrl } from "@/lib/form-gate";
+import { fetchAccountAccess } from "@/lib/submit-access";
+import { verifySubmitMessage } from "@/lib/yacht-manage-copy";
 import { crew } from "@/lib/crew";
 import { type Locale } from "@/lib/locale";
 import { nowStamp, settleCharge } from "@/lib/pricing";
@@ -21,6 +25,7 @@ import { TripLiveMap } from "./TripLiveMap";
 
 export function TripTab({ locale }: { locale: Locale }) {
   const c = at(locale);
+  const verified = useAccountVerified();
   const {
     trip,
     setTrip,
@@ -162,6 +167,19 @@ export function TripTab({ locale }: { locale: Locale }) {
     setError("");
     setNotice("");
     if (!yacht || !fare || !profile) return;
+    if (verified === false) {
+      setError(verifySubmitMessage(locale));
+      return;
+    }
+    const access = await fetchAccountAccess();
+    if (access && !access.user) {
+      window.location.assign(loginUrl("/app/trip"));
+      return;
+    }
+    if (access && !access.verified) {
+      setError(verifySubmitMessage(locale));
+      return;
+    }
     setBusy(true);
     const when =
       trip.whenMode === "now" ? nowStamp() : { date: trip.date, time: trip.time };
@@ -192,6 +210,10 @@ export function TripTab({ locale }: { locale: Locale }) {
       if (!res.ok) {
         if (data.error === "stripe_unconfigured") {
           setError(c.stripeMissing);
+          return;
+        }
+        if (data.error === "unverified") {
+          setError(verifySubmitMessage(locale));
           return;
         }
         throw new Error(data.error || "Error");

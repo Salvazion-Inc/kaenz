@@ -4,6 +4,23 @@ import { isHin, optionalWallet, parseLangs, parseTraits } from "./listings";
 export const LISTING_MAX_BYTES = 8 * 1024 * 1024;
 
 /**
+ * PDFs and other non-images are uploaded as-is, so an over-cap file must fail
+ * before the request. Photos may still be compressed under the cap.
+ */
+export function rawListingFileTooBig(file: { size: number; type?: string; name?: string }) {
+  if (!Number.isFinite(file.size) || file.size <= LISTING_MAX_BYTES) return false;
+  const type = String(file.type || "").toLowerCase();
+  const name = String(file.name || "").toLowerCase();
+  const image =
+    type.startsWith("image/") ||
+    name.endsWith(".jpg") ||
+    name.endsWith(".jpeg") ||
+    name.endsWith(".png") ||
+    name.endsWith(".webp");
+  return !image;
+}
+
+/**
  * Vercel rejects a serverless request before the function runs when the body
  * is over ~4.5 MB, with a plain-text "Request Entity Too Large" body
  * (x-vercel-error: FUNCTION_PAYLOAD_TOO_LARGE).
@@ -212,6 +229,7 @@ export function parseStoredListingBody(input: unknown) {
   // Empty or invalid Solana wallets are stored as "" and never block listing.
   const ownerWallet = optionalWallet(body.owner_wallet);
   const captainWallet = optionalWallet(body.captain_wallet);
+  const status = body.status === "draft" ? ("draft" as const) : ("listed" as const);
   if (!ownerName || !name || !captainName || !homePort || !captainRegion) {
     return { ok: false as const, error: "fields" };
   }
@@ -247,6 +265,7 @@ export function parseStoredListingBody(input: unknown) {
     captainLanguages,
     captainRegion,
     captainWallet,
+    status,
     files: stored,
   };
 }
@@ -293,6 +312,7 @@ export function directListingPayload(input: {
   languages: string;
   captain_region: string;
   captain_wallet: string;
+  status?: string;
   uploads: Array<{ slot: string; path: string }>;
 }) {
   const pathFor = (slot: string) => input.uploads.find((item) => item.slot === slot)?.path || "";
@@ -313,6 +333,7 @@ export function directListingPayload(input: {
     languages: input.languages,
     captain_region: input.captain_region,
     captain_wallet: input.captain_wallet,
+    status: input.status === "draft" ? "draft" : "listed",
     files: {
       owner_id: pathFor("owner_id"),
       captain_id: pathFor("captain_id"),

@@ -1,12 +1,18 @@
+import { isAccountVerified, unverifiedResponse } from "@/lib/account-verification";
 import { createTripCheckout, type CheckoutBody } from "@/lib/checkout";
 import { publicErrorCode } from "@/lib/public-error";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 
 export const runtime = "nodejs";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req: Request) {
+  const user = await readSession(cookieValue(req.headers.get("cookie"), SESSION_COOKIE));
+  if (!user) return Response.json({ error: "auth" }, { status: 401 });
+  if (!(await isAccountVerified(user))) return unverifiedResponse();
+
   const limited = rateLimit(`guest-checkout:${clientIp(req)}`, 8, 10 * 60 * 1000);
   if (!limited.ok) {
     return Response.json(
@@ -54,7 +60,7 @@ export async function POST(req: Request) {
       locale: body.locale,
       guest: true,
     },
-    user: null,
+    user,
     guest: true,
   });
   if ("error" in result) {
