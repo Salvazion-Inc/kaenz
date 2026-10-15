@@ -3,6 +3,7 @@ import {
   LISTING_MAX_BYTES,
   listingObjectPath,
   mimeMatchesExt,
+  type OwnedListingEdit,
   type PreparedListingFile,
 } from "./listing-files";
 import {
@@ -14,12 +15,11 @@ import {
   type YachtTrait,
 } from "./listings";
 import {
-  filesInListingFolder,
+  deleteListingStorageFiles,
   isPublicListingStatus,
   listingStatus,
   listingStorageTargets,
 } from "./yacht-owner";
-
 const PHOTO_BUCKET = "kaenz-listings";
 const DOC_BUCKET = "kaenz-docs";
 const CATALOG = "catalog.json";
@@ -347,47 +347,130 @@ async function assertOwner(userId: string, yachtId: string) {
   if (row.createdBy !== userId) throw new Error("forbidden");
 }
 
-async function removeStoragePrefix(
-  bucket: string,
-  folder: string,
-  depth = 0,
-): Promise<void> {
-  const admin = getSupabaseAdmin();
-  if (!admin) throw new Error("supabase");
-  if (depth > 4) return;
-  const files: string[] = [];
-  let offset = 0;
-  for (;;) {
-    const listed = await admin.storage.from(bucket).list(folder, { limit: 100, offset });
-    if (listed.error) {
-      const missing = /not found|404/i.test(listed.error.message || "");
-      if (missing) break;
-      throw new Error("save");
-    }
-    if (!listed.data?.length) break;
-    const split = filesInListingFolder(folder, listed.data);
-    files.push(...split.files);
-    for (const child of split.folders) {
-      await removeStoragePrefix(bucket, child, depth + 1);
-    }
-    if (listed.data.length < 100) break;
-    offset += listed.data.length;
-  }
-  if (!files.length) return;
-  const removed = await admin.storage.from(bucket).remove(files);
-  if (removed.error) throw new Error("save");
-}
-
 /** Deletes kaenz-docs/<owner>/<yachtId>/* and kaenz-listings/<owner>/<yachtId>/*. */
 export async function removeListingStorage(userId: string, yachtId: string) {
-  const targets = listingStorageTargets(userId, yachtId);
-  for (const target of targets) {
-    await removeStoragePrefix(target.bucket, target.folder);
+  const admin = getSupabaseAdmin();
+  if (!admin) throw new Error("supabase");
+  await deleteListingStorageFiles(
+    {
+      async list(bucket, folder, offset) {
+        const listed = await admin.storage.from(bucket).list(folder, { limit: 100, offset });
+        if (listed.error) {
+          const missing = /not found|404/i.test(listed.error.message || "");
+          if (missing) return null;
+          throw new Error("save");
+        }
+        return listed.data || [];
+      },
+      async remove(bucket, paths) {
+        const removed = await admin.storage.from(bucket).remove(paths);
+        if (removed.error) throw new Error("save");
+      },
+    },
+    userId,
+    yachtId,
+  );
+}
+
+export async function getOwnedListing(userId: string, yachtId: string) {
+  listingStorageTargets(userId, yachtId);
+  await assertOwner(userId, yachtId);
+  const admin = getSupabaseAdmin();
+  if (!admin) throw new Error("supabase");
+  const { data, error } = await admin
+    .from("yacht_listings")
+    .select(OWNED_COLUMNS)
+    .eq("id", yachtId)
+    .maybeSingle();
+  if (error && error.code !== "PGRST205") throw new Error("save");
+  if (data) {
+    if (data.created_by !== userId) throw new Error("forbidden");
+    return fromRow(data as DbRow);
   }
-  // Multipart uploads used to land at <yachtId>/* with no owner prefix.
-  for (const bucket of ["kaenz-docs", "kaenz-listings"] as const) {
-    await removeStoragePrefix(bucket, yachtId);
-  }
+  const catalog = await loadCatalog();
+  const row = catalog?.find((item) => item.id === yachtId && item.createdBy === userId);
+  if (!row) throw new Error("missing");
+  return { ...row, status: listingStatus(row.status) };
+}
+
+export async function setOwnedListingStatus(
+  userId: string,
+  yachtId: string,
+  status: YachtListingStatus,
+) {
+  listingStorageTargets(userId, yachtId);
+  await assertOwner(userId, yachtId);
+  const admin = getSupabaseAdmin();
+  if (!admin) throw new Error("supabase");
+  const { error } = await admin
+    .from("yacht_listings")
+    .update({ status })
+    .eq("id", yachtId)
+    .eq("created_by", userId);
+  if (error && error.code !== "PGRST205") throw new Error("save");
+  const catalog = await loadCatalog();
+  if (!catalog) return;
+  let changed = false;
+  const next = catalog.map((row) => {
+    if (row.id !== yachtId || row.createdBy !== userId) return row;
+    changed = true;
+    return { ...row, status };
+  });
+  if (changed) await writeCatalog(next);
+}
+
+export async function updateOwnedListing(
+  userId: string,
+  yachtId: string,
+  edit: OwnedListingEdit,
+) {
+  listingStorageTargets(userId, yachtId);
+  await assertOwner(userId, yachtId);
+  const admin = getSupabaseAdmin();
+  if (!admin) throw new Error("supabase");
+  const hin = edit.hin.replace(/\s+/g, "").toUpperCase();
+  const { error } = await admin
+    .from("yacht_listings")
+    .update({
+      status: edit.status,
+      owner_name: edit.ownerName,
+      owner_wallet: edit.ownerWallet,
+      name: edit.name,
+      hin,
+      guests: edit.guests,
+      traits: edit.traits,
+      home_port: edit.homePort,
+      captain_name: edit.captainName,
+      captain_languages: edit.captainLanguages,
+      captain_region: edit.captainRegion,
+      captain_wallet: edit.captainWallet,
+    })
+    .eq("id", yachtId)
+    .eq("created_by", userId);
+  if (error && error.code !== "PGRST205") throw new Error("save");
+  const catalog = await loadCatalog();
+  if (!catalog) return;
+  let changed = false;
+  const next = catalog.map((row) => {
+    if (row.id !== yachtId || row.createdBy !== userId) return row;
+    changed = true;
+    return {
+      ...row,
+      status: edit.status,
+      ownerName: edit.ownerName,
+      ownerWallet: edit.ownerWallet,
+      name: edit.name,
+      hin,
+      guests: edit.guests,
+      traits: edit.traits,
+      homePort: edit.homePort,
+      captainName: edit.captainName,
+      captainLanguages: edit.captainLanguages,
+      captainRegion: edit.captainRegion,
+      captainWallet: edit.captainWallet,
+    };
+  });
+  if (changed) await writeCatalog(next);
 }
 
 export async function listOwnedYachtListings(userId: string): Promise<YachtListing[]> {
@@ -402,34 +485,14 @@ export async function listOwnedYachtListings(userId: string): Promise<YachtListi
     if (error) {
       if (error.code !== "PGRST205") return [];
       const catalog = await loadCatalog();
-      return (catalog || []).filter((row) => row.createdBy === userId);
+      return (catalog || [])
+      .filter((row) => row.createdBy === userId)
+      .map((row) => ({ ...row, status: listingStatus(row.status) }));
     }
     return (data as DbRow[]).map(fromRow);
   } catch {
     return [];
   }
-}
-
-export async function unpublishOwnedListing(userId: string, yachtId: string) {
-  listingStorageTargets(userId, yachtId);
-  await assertOwner(userId, yachtId);
-  const admin = getSupabaseAdmin();
-  if (!admin) throw new Error("supabase");
-  const { error } = await admin
-    .from("yacht_listings")
-    .update({ status: "unpublished" })
-    .eq("id", yachtId)
-    .eq("created_by", userId);
-  if (error && error.code !== "PGRST205") throw new Error("save");
-  const catalog = await loadCatalog();
-  if (!catalog) return;
-  let changed = false;
-  const next = catalog.map((row) => {
-    if (row.id !== yachtId || row.createdBy !== userId) return row;
-    changed = true;
-    return { ...row, status: "unpublished" as const };
-  });
-  if (changed) await writeCatalog(next);
 }
 
 export async function deleteOwnedListing(userId: string, yachtId: string) {

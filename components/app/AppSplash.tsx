@@ -35,8 +35,8 @@ export function AppSplash({ children }: { children: React.ReactNode }) {
       {children}
       {visible ? (
         <div
-          className={`fixed inset-0 z-[100] isolate flex items-center justify-center bg-navy transition-opacity duration-500 ${
-            fading ? "pointer-events-none opacity-0" : "opacity-100"
+          className={`pointer-events-none fixed inset-0 z-[100] isolate flex items-center justify-center bg-navy transition-opacity duration-500 ${
+            fading ? "opacity-0" : "opacity-100"
           }`}
           role="status"
           aria-live="polite"

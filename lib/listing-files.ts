@@ -293,6 +293,71 @@ export function assertListingPaths(userId: string, listingId: string, files: Lis
   return { ok: true as const };
 }
 
+export type OwnedListingEdit = {
+  status: "listed" | "draft" | "unlisted";
+  ownerName: string;
+  ownerWallet: string;
+  name: string;
+  hin: string;
+  guests: number;
+  traits: ReturnType<typeof parseTraits>;
+  homePort: string;
+  captainName: string;
+  captainLanguages: ReturnType<typeof parseLangs>;
+  captainRegion: string;
+  captainWallet: string;
+};
+
+/** Text fields for an owner edit. Existing files stay in storage. */
+export function parseOwnedListingEdit(input: unknown) {
+  if (!input || typeof input !== "object") return { ok: false as const, error: "fields" };
+  const body = input as Record<string, unknown>;
+  const status =
+    body.status === "draft"
+      ? "draft"
+      : body.status === "unlisted" || body.status === "unpublished"
+        ? "unlisted"
+        : body.status === "listed"
+          ? "listed"
+          : null;
+  if (!status) return { ok: false as const, error: "fields" };
+  const ownerName = String(body.owner_name || "").trim();
+  const name = String(body.name || "").trim();
+  const hin = String(body.hin || "").trim();
+  const guests = Number(body.guests);
+  const traits = parseTraits(body.traits);
+  const homePort = String(body.home_port || "").trim();
+  const captainName = String(body.captain_name || "").trim();
+  const captainLanguages = parseLangs(body.languages);
+  const captainRegion = String(body.captain_region || "").trim();
+  const ownerWallet = optionalWallet(body.owner_wallet);
+  const captainWallet = optionalWallet(body.captain_wallet);
+  if (!ownerName || !name || !captainName || !homePort || !captainRegion) {
+    return { ok: false as const, error: "fields" };
+  }
+  if (!isHin(hin)) return { ok: false as const, error: "hin" };
+  if (!Number.isFinite(guests) || guests < 1 || guests > 50) {
+    return { ok: false as const, error: "guests" };
+  }
+  if (!traits.length) return { ok: false as const, error: "traits" };
+  if (!captainLanguages.length) return { ok: false as const, error: "languages" };
+  const edit: OwnedListingEdit = {
+    status,
+    ownerName,
+    ownerWallet,
+    name,
+    hin,
+    guests,
+    traits,
+    homePort,
+    captainName,
+    captainLanguages,
+    captainRegion,
+    captainWallet,
+  };
+  return { ok: true as const, edit };
+}
+
 export type SignedListingUpload = {
   slot: string;
   path: string;

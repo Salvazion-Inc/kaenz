@@ -7,11 +7,21 @@ import type { Yacht } from "@/lib/yachts";
 export function YachtDetailClient({
   yacht,
   canceled = false,
+  signedIn = false,
+  accountName = "",
 }: {
   yacht: Yacht;
   canceled?: boolean;
+  signedIn?: boolean;
+  accountName?: string;
 }) {
   return (
-    <WithLocale Component={YachtDetail} yacht={yacht} canceled={canceled} />
+    <WithLocale
+      Component={YachtDetail}
+      yacht={yacht}
+      canceled={canceled}
+      signedIn={signedIn}
+      accountName={accountName}
+    />
   );
 }

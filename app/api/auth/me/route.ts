@@ -7,6 +7,6 @@ export async function GET(req: Request) {
     cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
   );
   if (!user) return NextResponse.json({ user: null, verified: false });
-  const verified = await isAccountVerified(user);
+  const verified = await isAccountVerified(user, req);
   return NextResponse.json({ user, verified });
 }

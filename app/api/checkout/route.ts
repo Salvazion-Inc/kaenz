@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   const user = await readSession(
     cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
   );
-  if (user && !(await isAccountVerified(user))) return unverifiedResponse();
+  if (user && !(await isAccountVerified(user, req))) return unverifiedResponse();
   const body = (await req.json().catch(() => ({}))) as CheckoutBody;
   const result = await createTripCheckout({
     req,

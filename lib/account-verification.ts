@@ -63,7 +63,17 @@ async function findAuthUser(user: SessionUser): Promise<AuthConfirmRow | null> {
   );
 }
 
-export async function isAccountVerified(user: SessionUser) {
+/**
+ * Preview-only switch for the unverified-email 403. Ignored unless
+ * VERCEL_ENV is exactly "preview", so production never honors the header.
+ */
+export function previewUnverifiedOverride(req: { headers: Headers }) {
+  if (process.env.VERCEL_ENV !== "preview") return false;
+  return req.headers.get("x-kaenz-preview-unverified") === "1";
+}
+
+export async function isAccountVerified(user: SessionUser, req?: Request) {
+  if (req && previewUnverifiedOverride(req)) return false;
   try {
     const row = await findAuthUser(user);
     return signalAllowsSubmit(confirmationSignal(row));

@@ -23,7 +23,7 @@ import {
 import { useOperator } from "@/lib/operator-store";
 import { useProfile } from "@/lib/profile-store";
 import { compressPhoto } from "@/lib/trip-log";
-import { disableBiometric } from "@/lib/auth/biometric";
+import { LogoutForm } from "@/components/LogoutForm";
 import { BiometricControl } from "../auth/BiometricControl";
 import { HolderKey } from "./HolderKey";
 import { PayoutsSection } from "./PayoutsSection";
@@ -149,12 +149,6 @@ export function AccountTab({ locale }: { locale: Locale }) {
       setStatus("err");
       setErrorKey(err instanceof Error ? err.message : "save");
     }
-  }
-
-  async function logout() {
-    disableBiometric();
-    await fetch("/api/auth/logout", { method: "POST" });
-    window.location.href = "/login";
   }
 
   async function onPhoto(file: File | undefined) {
@@ -533,13 +527,10 @@ export function AccountTab({ locale }: { locale: Locale }) {
         </button>
       </form>
 
-      <button
-        type="button"
-        onClick={logout}
+      <LogoutForm
+        label={a.logout}
         className="mt-6 w-full rounded-xl border border-white/20 py-3 text-sm font-semibold text-white/80"
-      >
-        {a.logout}
-      </button>
+      />
     </div>
   );
 }
