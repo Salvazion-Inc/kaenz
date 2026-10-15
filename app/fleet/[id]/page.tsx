@@ -1,7 +1,10 @@
+import { cookies } from "next/headers";
+import { notFound, redirect } from "next/navigation";
 import { YachtDetailClient } from "@/components/pages/YachtDetailClient";
+import { loginUrl } from "@/lib/form-gate";
 import { resolveInventoryYacht } from "@/lib/inventory";
+import { readSession, SESSION_COOKIE } from "@/lib/session";
 import { yachts } from "@/lib/yachts";
-import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
@@ -21,7 +24,20 @@ export default async function Page({
   const query = await searchParams;
   const yacht = await resolveInventoryYacht(id);
   if (!yacht) notFound();
+  const jar = await cookies();
+  const user = await readSession(jar.get(SESSION_COOKIE)?.value);
+  if (yacht.bookable === true && !user) {
+    const next = query.checkout
+      ? `/fleet/${encodeURIComponent(id)}?checkout=${encodeURIComponent(query.checkout)}`
+      : `/fleet/${encodeURIComponent(id)}`;
+    redirect(loginUrl(next));
+  }
   return (
-    <YachtDetailClient yacht={yacht} canceled={query.checkout === "cancel"} />
+    <YachtDetailClient
+      yacht={yacht}
+      canceled={query.checkout === "cancel"}
+      signedIn={Boolean(user)}
+      accountName={user?.name || ""}
+    />
   );
 }

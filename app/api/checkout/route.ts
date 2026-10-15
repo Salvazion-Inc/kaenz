@@ -1,3 +1,4 @@
+import { isAccountVerified, unverifiedResponse } from "@/lib/account-verification";
 import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 import { createTripCheckout, type CheckoutBody } from "@/lib/checkout";
 import { publicErrorCode } from "@/lib/public-error";
@@ -9,6 +10,7 @@ export async function POST(req: Request) {
   const user = await readSession(
     cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
   );
+  if (user && !(await isAccountVerified(user, req))) return unverifiedResponse();
   const body = (await req.json().catch(() => ({}))) as CheckoutBody;
   const result = await createTripCheckout({
     req,

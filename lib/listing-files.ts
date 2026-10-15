@@ -4,6 +4,23 @@ import { isHin, optionalWallet, parseLangs, parseTraits } from "./listings";
 export const LISTING_MAX_BYTES = 8 * 1024 * 1024;
 
 /**
+ * PDFs and other non-images are uploaded as-is, so an over-cap file must fail
+ * before the request. Photos may still be compressed under the cap.
+ */
+export function rawListingFileTooBig(file: { size: number; type?: string; name?: string }) {
+  if (!Number.isFinite(file.size) || file.size <= LISTING_MAX_BYTES) return false;
+  const type = String(file.type || "").toLowerCase();
+  const name = String(file.name || "").toLowerCase();
+  const image =
+    type.startsWith("image/") ||
+    name.endsWith(".jpg") ||
+    name.endsWith(".jpeg") ||
+    name.endsWith(".png") ||
+    name.endsWith(".webp");
+  return !image;
+}
+
+/**
  * Vercel rejects a serverless request before the function runs when the body
  * is over ~4.5 MB, with a plain-text "Request Entity Too Large" body
  * (x-vercel-error: FUNCTION_PAYLOAD_TOO_LARGE).
@@ -78,7 +95,7 @@ type SlotSpec = {
 
 function slotSpec(slot: string): SlotSpec | null {
   if (slot === "owner_id") {
-    return { base: "owner-id", kind: "doc", allowPdf: false, error: "owner_id" };
+    return { base: "owner-id", kind: "doc", allowPdf: true, error: "owner_id" };
   }
   if (slot === "captain_id") {
     return { base: "captain-id", kind: "doc", allowPdf: true, error: "captain_id" };
@@ -212,6 +229,7 @@ export function parseStoredListingBody(input: unknown) {
   // Empty or invalid Solana wallets are stored as "" and never block listing.
   const ownerWallet = optionalWallet(body.owner_wallet);
   const captainWallet = optionalWallet(body.captain_wallet);
+  const status = body.status === "draft" ? ("draft" as const) : ("listed" as const);
   if (!ownerName || !name || !captainName || !homePort || !captainRegion) {
     return { ok: false as const, error: "fields" };
   }
@@ -247,13 +265,14 @@ export function parseStoredListingBody(input: unknown) {
     captainLanguages,
     captainRegion,
     captainWallet,
+    status,
     files: stored,
   };
 }
 
 export function assertListingPaths(userId: string, listingId: string, files: ListingStoredFiles) {
   const checks: Array<[string, string, boolean, string]> = [
-    [files.owner_id, "owner-id", false, "owner_id"],
+    [files.owner_id, "owner-id", true, "owner_id"],
     [files.captain_id, "captain-id", true, "captain_id"],
     [files.captain_mmc, "captain-mmc", true, "mmc"],
     [files.captain_photo, "captain-photo", false, "captain_photo"],
@@ -272,6 +291,71 @@ export function assertListingPaths(userId: string, listingId: string, files: Lis
     }
   }
   return { ok: true as const };
+}
+
+export type OwnedListingEdit = {
+  status: "listed" | "draft" | "unlisted";
+  ownerName: string;
+  ownerWallet: string;
+  name: string;
+  hin: string;
+  guests: number;
+  traits: ReturnType<typeof parseTraits>;
+  homePort: string;
+  captainName: string;
+  captainLanguages: ReturnType<typeof parseLangs>;
+  captainRegion: string;
+  captainWallet: string;
+};
+
+/** Text fields for an owner edit. Existing files stay in storage. */
+export function parseOwnedListingEdit(input: unknown) {
+  if (!input || typeof input !== "object") return { ok: false as const, error: "fields" };
+  const body = input as Record<string, unknown>;
+  const status =
+    body.status === "draft"
+      ? "draft"
+      : body.status === "unlisted" || body.status === "unpublished"
+        ? "unlisted"
+        : body.status === "listed"
+          ? "listed"
+          : null;
+  if (!status) return { ok: false as const, error: "fields" };
+  const ownerName = String(body.owner_name || "").trim();
+  const name = String(body.name || "").trim();
+  const hin = String(body.hin || "").trim();
+  const guests = Number(body.guests);
+  const traits = parseTraits(body.traits);
+  const homePort = String(body.home_port || "").trim();
+  const captainName = String(body.captain_name || "").trim();
+  const captainLanguages = parseLangs(body.languages);
+  const captainRegion = String(body.captain_region || "").trim();
+  const ownerWallet = optionalWallet(body.owner_wallet);
+  const captainWallet = optionalWallet(body.captain_wallet);
+  if (!ownerName || !name || !captainName || !homePort || !captainRegion) {
+    return { ok: false as const, error: "fields" };
+  }
+  if (!isHin(hin)) return { ok: false as const, error: "hin" };
+  if (!Number.isFinite(guests) || guests < 1 || guests > 50) {
+    return { ok: false as const, error: "guests" };
+  }
+  if (!traits.length) return { ok: false as const, error: "traits" };
+  if (!captainLanguages.length) return { ok: false as const, error: "languages" };
+  const edit: OwnedListingEdit = {
+    status,
+    ownerName,
+    ownerWallet,
+    name,
+    hin,
+    guests,
+    traits,
+    homePort,
+    captainName,
+    captainLanguages,
+    captainRegion,
+    captainWallet,
+  };
+  return { ok: true as const, edit };
 }
 
 export type SignedListingUpload = {
@@ -293,6 +377,7 @@ export function directListingPayload(input: {
   languages: string;
   captain_region: string;
   captain_wallet: string;
+  status?: string;
   uploads: Array<{ slot: string; path: string }>;
 }) {
   const pathFor = (slot: string) => input.uploads.find((item) => item.slot === slot)?.path || "";
@@ -313,6 +398,7 @@ export function directListingPayload(input: {
     languages: input.languages,
     captain_region: input.captain_region,
     captain_wallet: input.captain_wallet,
+    status: input.status === "draft" ? "draft" : "listed",
     files: {
       owner_id: pathFor("owner_id"),
       captain_id: pathFor("captain_id"),

@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { cookies } from "next/headers";
-import { Outfit } from "next/font/google";
+import localFont from "next/font/local";
 import { LocaleProvider } from "@/lib/locale-context";
 import { LocationProvider } from "@/lib/location";
 import { LOCALE_COOKIE, parseLocale } from "@/lib/locale";
 import "./globals.css";
 
-const outfit = Outfit({
-  subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600", "700", "800"],
+// Self-hosted so `next build` never fetches fonts.google.com.
+const outfit = localFont({
+  src: "./fonts/Outfit-Variable.ttf",
+  weight: "100 900",
   display: "swap",
+  fallback: ["ui-sans-serif", "system-ui", "sans-serif"],
+  adjustFontFallback: false,
 });
 
 export const viewport = {

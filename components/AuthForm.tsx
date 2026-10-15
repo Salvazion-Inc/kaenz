@@ -6,6 +6,7 @@ import { useState } from "react";
 import { BiometricLogin } from "@/components/auth/BiometricLogin";
 import { useBiometricGate } from "@/components/auth/useBiometric";
 import { t } from "@/lib/copy";
+import { safeNextPath } from "@/lib/form-gate";
 import { useLocale } from "@/lib/locale-context";
 import { Site } from "./Site";
 
@@ -20,7 +21,7 @@ export function AuthForm({
   const c = t(locale);
   const router = useRouter();
   const search = useSearchParams();
-  const next = search.get("next") || "/app";
+  const next = safeNextPath(search.get("next"));
   const [status, setStatus] = useState<"idle" | "sending" | "err">("idle");
   const [message, setMessage] = useState("");
   const [passwordFallback, setPasswordFallback] = useState(false);
@@ -81,7 +82,7 @@ export function AuthForm({
       if (!res.ok) {
         throw new Error("auth");
       }
-      router.replace(next.startsWith("/") ? next : "/app");
+      router.replace(next);
       router.refresh();
     } catch {
       setStatus("err");
