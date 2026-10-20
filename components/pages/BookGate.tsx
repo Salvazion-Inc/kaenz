@@ -2,13 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { GuestBookForm } from "@/components/pages/GuestBookForm";
 import { VerifyEmailScreen } from "@/components/VerifyEmailScreen";
 import { t } from "@/lib/copy";
 import type { Locale } from "@/lib/locale";
+import type { Yacht } from "@/lib/yachts";
 
-export function BookGate({ locale, next }: { locale: Locale; next: string }) {
+export function BookGate({ locale, yacht }: { locale: Locale; yacht: Yacht }) {
   const c = t(locale);
-  const [state, setState] = useState<"loading" | "anon" | "unverified" | "verified">("loading");
+  const next = `/fleet/${yacht.id}`;
+  const [state, setState] = useState<"anon" | "unverified" | "verified">("anon");
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -21,28 +24,25 @@ export function BookGate({ locale, next }: { locale: Locale; next: string }) {
       .catch(() => setState("anon"));
   }, []);
 
-  if (state === "loading") {
-    return <p className="mt-6 text-sm text-white/50">{c.form.sending}</p>;
-  }
   if (state === "unverified") {
     return <VerifyEmailScreen />;
   }
   if (state === "verified") {
-    return (
-      <Link href="/app" className="btn-kaenz btn-book mt-6 text-sm">
-        {c.nav.app}
-      </Link>
-    );
+    return <GuestBookForm locale={locale} yacht={yacht} places={[]} />;
   }
+  const signup = `/signup?next=${encodeURIComponent(next)}`;
+  const login = `/login?next=${encodeURIComponent(next)}`;
   return (
     <div className="mt-6">
       <p className="text-white/75">{c.verifyToBook}</p>
-      <Link
-        href={`/login?next=${encodeURIComponent(next)}`}
-        className="btn-kaenz btn-book mt-6 text-sm"
-      >
-        {c.verifyLogin}
-      </Link>
+      <div className="mt-6 flex flex-wrap gap-3">
+        <Link href={signup} className="btn-kaenz btn-book text-sm">
+          {c.verifySignup}
+        </Link>
+        <Link href={login} className="btn-kaenz btn-book text-sm">
+          {c.verifyLogin}
+        </Link>
+      </div>
     </div>
   );
 }

@@ -106,7 +106,7 @@ export async function isAccountVerified(user: SessionUser, req?: Request) {
 
 export function unverifiedResponse() {
   return Response.json(
-    { error: "unverified", message: "Verifica tu correo" },
+    { error: "unverified", message: "Verify your email" },
     { status: 403 },
   );
 }

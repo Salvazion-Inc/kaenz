@@ -1,13 +1,16 @@
-import { requireVerifiedUser } from "@/lib/account-verification";
-
 export const runtime = "nodejs";
 
-/** Guest checkout is closed. A verified account books through /api/checkout. */
-export async function POST(req: Request) {
-  const gate = await requireVerifiedUser(req);
-  if ("response" in gate) return gate.response;
+/** Guest checkout is closed. Verified accounts book with POST /api/checkout. */
+export async function POST() {
   return Response.json(
-    { error: "guest", message: "Verifica tu correo" },
-    { status: 403 },
+    { error: "gone", message: "Guest checkout is closed." },
+    { status: 410 },
+  );
+}
+
+export async function GET() {
+  return Response.json(
+    { error: "gone", message: "Guest checkout is closed." },
+    { status: 410 },
   );
 }

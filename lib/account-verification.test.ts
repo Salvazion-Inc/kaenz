@@ -6,6 +6,7 @@ import { POST as postCheckout } from "../app/api/checkout/route.ts";
 import { POST as postGuest } from "../app/api/checkout/guest/route.ts";
 import { POST as postSignup } from "../app/api/auth/signup/route.ts";
 import { POST as postYacht } from "../app/api/yachts/route.ts";
+import { emailConfirmRedirect } from "./email-verification.ts";
 import {
   accessDecision,
   confirmationSignal,
@@ -113,7 +114,7 @@ async function expectGate(
     assert.equal(unverified.status, 403);
     const body = (await unverified.json()) as { error?: string; message?: string };
     assert.equal(body.error, "unverified");
-    assert.equal(body.message, "Verifica tu correo");
+    assert.equal(body.message, "Verify your email");
   } finally {
     if (previous === undefined) delete process.env.VERCEL_ENV;
     else process.env.VERCEL_ENV = previous;
@@ -126,7 +127,27 @@ async function expectGate(
   allowed(verified.status, verifiedBody);
 }
 
-test("booking, checkout, guest checkout, and yacht listing gate the three cases", async () => {
+test("confirmation email returns to the request origin plus /app", () => {
+  const preview = emailConfirmRedirect(
+    new Request("https://kaenz.com/api/auth/signup", {
+      headers: {
+        "x-forwarded-host": "kaenz-preview.vercel.app",
+        "x-forwarded-proto": "https",
+      },
+    }),
+  );
+  assert.equal(preview, "https://kaenz-preview.vercel.app/app");
+  const prod = emailConfirmRedirect(new Request("https://kaenz.com/api/auth/signup"));
+  assert.equal(prod, "https://kaenz.com/app");
+  const local = emailConfirmRedirect(
+    new Request("http://localhost:3000/api/auth/verify-email", {
+      headers: { host: "localhost:3000" },
+    }),
+  );
+  assert.equal(local, "http://localhost:3000/app");
+});
+
+test("booking, checkout, and yacht listing gate the three cases", async () => {
   await expectGate(postBooking, "/api/bookings", (status, body) => {
     assert.equal(status, 400);
     assert.equal(body.error, "fields");
@@ -134,12 +155,28 @@ test("booking, checkout, guest checkout, and yacht listing gate the three cases"
   await expectGate(postCheckout, "/api/checkout", (status) => {
     assert.ok(status === 400 || status === 503);
   });
-  await expectGate(postGuest, "/api/checkout/guest", (status, body) => {
-    assert.equal(status, 403);
-    assert.equal(body.error, "guest");
-  });
   await expectGate(postYacht, "/api/yachts", (status, body) => {
     assert.equal(status, 503);
     assert.equal(body.error, "supabase");
   });
+});
+
+test("guest checkout is gone for every session state", async () => {
+  const anonymous = await postGuest(
+    new Request("https://kaenz.com/api/checkout/guest", { method: "POST", body: "{}" }),
+  );
+  assert.equal(anonymous.status, 410);
+  const previous = process.env.VERCEL_ENV;
+  process.env.VERCEL_ENV = "preview";
+  try {
+    const unverified = await postGuest(await sessionRequest("/api/checkout/guest", true));
+    assert.equal(unverified.status, 410);
+  } finally {
+    if (previous === undefined) delete process.env.VERCEL_ENV;
+    else process.env.VERCEL_ENV = previous;
+  }
+  const verified = await postGuest(await sessionRequest("/api/checkout/guest", false));
+  assert.equal(verified.status, 410);
+  const body = (await verified.json()) as { error?: string };
+  assert.equal(body.error, "gone");
 });

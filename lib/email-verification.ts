@@ -2,6 +2,20 @@ import { createClient } from "@supabase/supabase-js";
 import { confirmationSignal } from "./account-verification";
 import { getSupabaseAdmin } from "./supabase";
 
+/**
+ * Confirmation links must return to the host that started signup (preview or
+ * production), not a fixed kaenz.com origin.
+ */
+export function emailConfirmRedirect(req: Request) {
+  const forwardedHost = req.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const url = new URL(req.url);
+  const host = (forwardedHost || req.headers.get("host") || url.host).split("/")[0].trim();
+  const forwardedProto = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const local = host.startsWith("localhost") || host.startsWith("127.");
+  const proto = forwardedProto || (local ? "http" : "https");
+  return `${proto}://${host}/app`;
+}
+
 /** Anon key is the Auth API that sends Supabase's signup confirmation. It is not a data fallback. */
 export function getAuthClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

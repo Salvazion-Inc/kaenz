@@ -1,5 +1,4 @@
-import { resendSignupVerification } from "@/lib/email-verification";
-import { publicOrigin } from "@/lib/google-oauth";
+import { emailConfirmRedirect, resendSignupVerification } from "@/lib/email-verification";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 
@@ -23,7 +22,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "email" }, { status: 400 });
   }
 
-  const result = await resendSignupVerification(email, `${publicOrigin(req)}/app`);
+  const result = await resendSignupVerification(email, emailConfirmRedirect(req));
   if (result === "unconfigured") {
     return Response.json({ error: "unconfigured" }, { status: 503 });
   }

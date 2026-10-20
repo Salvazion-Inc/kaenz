@@ -97,11 +97,10 @@ export function GuestBookForm({
     setMessage("");
     const form = new FormData(e.currentTarget);
     try {
-      const res = await fetch("/api/checkout/guest", {
+      const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          guest: true,
           yachtId: yacht.id,
           kind,
           hours,
@@ -120,6 +119,9 @@ export function GuestBookForm({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        if (data.error === "unverified" || res.status === 401) {
+          throw new Error(c.verifyTitle);
+        }
         if (data.error === "stripe_unconfigured") {
           throw new Error(c.stripeMissing);
         }

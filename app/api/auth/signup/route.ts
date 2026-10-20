@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { registerUnconfirmedUser } from "@/lib/email-verification";
-import { publicOrigin } from "@/lib/google-oauth";
+import { emailConfirmRedirect, registerUnconfirmedUser } from "@/lib/email-verification";
 import { hashPassword } from "@/lib/passwords";
 import {
   ACCOUNTS_COOKIE,
@@ -41,7 +40,7 @@ export async function POST(req: Request) {
     email,
     password,
     name,
-    redirectTo: `${publicOrigin(req)}/app`,
+    redirectTo: emailConfirmRedirect(req),
   });
   if (!registered.ok) {
     const status = registered.error === "exists" ? 409 : registered.error === "unconfigured" ? 503 : 502;

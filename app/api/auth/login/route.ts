@@ -58,7 +58,7 @@ export async function POST(req: Request) {
     const message = String(error?.message || "");
     if (code === "email_not_confirmed" || /not confirmed/i.test(message)) {
       return NextResponse.json(
-        { error: "unverified", message: "Verifica tu correo" },
+        { error: "unverified", message: "Verify your email" },
         { status: 403 },
       );
     }

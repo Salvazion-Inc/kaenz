@@ -67,22 +67,16 @@ if (sessionId) {
 }
 
 const checks = {
-  checkoutUrl: String(cheap.json?.url || "").includes("checkout.stripe.com"),
-  checkoutStatus: cheap.status === 200,
-  ignoredClientPrice: receipt ? receipt.amount > 10 : false,
-  receiptHours: receipt?.hours === 4,
-  receiptKind: receipt?.kind === "tour",
-  receiptYacht: receipt?.yachtId === "galeon",
-  maskedSession: Boolean(receipt?.sessionId && receipt.sessionId.includes("••••")),
-  unknownYacht: yacht.status === 400 && yacht.json?.error === "yacht",
-  badEmail: email.status === 400 && email.json?.error === "profile",
+  guestClosed: cheap.status === 410 && yacht.status === 410 && email.status === 410,
+  noGuestLoginCopy: !galeon.text.includes("No app login required"),
   appLoginWall:
     app.status === 307 ||
     app.status === 308 ||
     app.location.includes("/login"),
   fleetBookable: fleet.text.includes("Bookable now"),
   fleetNoAppYachts: !fleet.text.includes("/app/yachts"),
-  galeonCta: galeon.text.includes("Pay with Stripe"),
+  galeonCta:
+    galeon.text.includes("/login?next=") && galeon.text.includes("/signup?next="),
   cancelMessage: canceled.text.includes("Checkout was canceled"),
   joinForm: join.text.includes("Apply to join") || join.text.includes("name="),
   joinNotAppPrimary: !join.text.includes("/app/yachts"),

@@ -91,8 +91,7 @@ export function YachtDetail({
           {bookable ? (
             <>
               <h2 className="text-2xl font-bold">{c.bookStripe}</h2>
-              <p className="mt-3 text-white/70">{c.bookStripeLead}</p>
-              <BookGate locale={locale} next={`/fleet/${yacht.id}`} />
+              <BookGate locale={locale} yacht={yacht} />
               <p className="mt-6 text-center text-sm text-white/50">
                 <Link
                   href={pathFor(locale, "/join")}
