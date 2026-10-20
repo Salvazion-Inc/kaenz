@@ -5,6 +5,7 @@ import { placePhoto } from "@/lib/place-photo";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { WorldMap } from "@/components/WorldMap";
+import { selectActiveTrip } from "@/lib/active-trip";
 import { at } from "@/lib/app-copy";
 import {
   FEATURED_KINDS,
@@ -84,10 +85,34 @@ export function PlacesTab({ locale }: { locale: Locale }) {
   const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [notice, setNotice] = useState("");
+  const [activeTrip, setActiveTrip] = useState<{ origin: string; destination: string } | null>(
+    null,
+  );
+  const [tripsReady, setTripsReady] = useState(false);
 
   useEffect(() => {
     const add = new URLSearchParams(window.location.search).get("add");
     if (add === "marina" || add === "port") setAdding(true);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/trips")
+      .then((res) => (res.ok ? res.json() : { trips: [] }))
+      .then((data) => {
+        if (cancelled) return;
+        const trips = Array.isArray(data?.trips) ? data.trips : [];
+        setActiveTrip(selectActiveTrip(trips));
+        setTripsReady(true);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setActiveTrip(null);
+        setTripsReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const gps = located ? here : null;
@@ -153,6 +178,8 @@ export function PlacesTab({ locale }: { locale: Locale }) {
           locale={locale}
           variant="app"
           hubs={hubs}
+          activeTrip={activeTrip}
+          tripsReady={tripsReady}
           onPickup={(p) => go(p.id, "originId")}
           onDropoff={(p) => go(p.id, "destinationId")}
         />

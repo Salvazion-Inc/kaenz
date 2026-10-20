@@ -97,8 +97,9 @@ export function AuthForm({
         }
         throw new Error("auth");
       }
-      if (data.verified === false) {
-        router.replace("/app");
+      if (mode === "signup" && data.verified !== true) {
+        const address = email.trim();
+        router.replace(`/check-email?email=${encodeURIComponent(address)}`);
         router.refresh();
         return;
       }

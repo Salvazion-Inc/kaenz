@@ -5,9 +5,16 @@ import { LogoutButton } from "@/components/LogoutButton";
 import { t } from "@/lib/copy";
 import { useLocale } from "@/lib/locale-context";
 
-export function VerifyEmailScreen({ email }: { email?: string }) {
+export function VerifyEmailScreen({
+  email,
+  variant = "verify",
+}: {
+  email?: string;
+  variant?: "verify" | "check";
+}) {
   const { locale } = useLocale();
   const c = t(locale);
+  const title = variant === "check" ? c.checkEmailTitle : c.verifyTitle;
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "err">("idle");
 
   async function resend() {
@@ -27,8 +34,8 @@ export function VerifyEmailScreen({ email }: { email?: string }) {
 
   return (
     <section className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-5 py-16 text-white">
-      <p className="text-sm font-semibold text-kaenz">{c.verifyTitle}</p>
-      <h1 className="mt-2 text-4xl font-extrabold">{c.verifyTitle}</h1>
+      <p className="text-sm font-semibold text-kaenz">{title}</p>
+      <h1 className="mt-2 text-4xl font-extrabold">{title}</h1>
       <p className="mt-4 text-white/75">{c.verifyBody}</p>
       {email ? <p className="mt-3 text-sm text-white/55">{email}</p> : null}
       <button

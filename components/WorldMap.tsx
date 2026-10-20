@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import { t } from "@/lib/copy";
@@ -23,6 +24,40 @@ import { mapHubs, placeById, placeCountry, type Place } from "@/lib/places";
 
 const FLORIDA: [number, number] = [26.05, -80.14];
 const WORLD: [number, number] = [22, 8];
+
+function AppTripBanner({
+  locale,
+  activeTrip,
+  showEmpty,
+}: {
+  locale: Locale;
+  activeTrip: { origin: string; destination: string } | null;
+  showEmpty: boolean;
+}) {
+  const c = t(locale);
+  if (activeTrip) {
+    return (
+      <div className="pointer-events-none absolute bottom-3 left-3 max-w-[17rem] rounded-2xl border border-white/15 bg-navy/84 px-3 py-2.5 shadow-lg backdrop-blur-md md:bottom-4 md:left-4">
+        <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-kaenz">
+          <span className="kaenz-live-dot" />
+          {c.liveBadge} · {c.liveTrip}
+        </p>
+        <p className="mt-1 text-xs font-semibold text-white">
+          {activeTrip.origin} → {activeTrip.destination}
+        </p>
+      </div>
+    );
+  }
+  if (!showEmpty) return null;
+  return (
+    <div className="pointer-events-auto absolute bottom-3 left-3 max-w-[17rem] rounded-2xl border border-white/15 bg-navy/84 px-3 py-2.5 shadow-lg backdrop-blur-md md:bottom-4 md:left-4">
+      <p className="text-xs font-semibold text-white">{c.noLiveTrip}</p>
+      <Link href="/fleet" className="mt-2 inline-block text-[11px] font-bold text-kaenz">
+        {c.seeBookable}
+      </Link>
+    </div>
+  );
+}
 
 function tooltipFor(place: Place, locale: Locale) {
   const c = t(locale);
@@ -132,12 +167,16 @@ export function WorldMap({
   hubs,
   onPickup,
   onDropoff,
+  activeTrip = null,
+  tripsReady = false,
 }: {
   locale: Locale;
   variant?: "site" | "app";
   hubs?: Place[];
   onPickup?: (place: Place) => void;
   onDropoff?: (place: Place) => void;
+  activeTrip?: { origin: string; destination: string } | null;
+  tripsReady?: boolean;
 }) {
   const c = t(locale);
   const a = at(locale);
@@ -324,6 +363,7 @@ export function WorldMap({
   }, [ready, pins]);
 
   useEffect(() => {
+    if (variant === "app") return;
     const L = leafletRef.current;
     const map = mapRef.current;
     if (!L || !map || !ready || !demoOrigin || !demoDest) return;
@@ -491,7 +531,13 @@ export function WorldMap({
         }`}
       >
         <div ref={host} className="h-full w-full" />
-        {demoOrigin && demoDest ? (
+        {variant === "app" ? (
+          <AppTripBanner
+            locale={locale}
+            activeTrip={tripsReady ? activeTrip : null}
+            showEmpty={tripsReady && !activeTrip}
+          />
+        ) : demoOrigin && demoDest ? (
           <div className="pointer-events-none absolute bottom-3 left-3 max-w-[17rem] rounded-2xl border border-white/15 bg-navy/84 px-3 py-2.5 shadow-lg backdrop-blur-md md:bottom-4 md:left-4">
             <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-kaenz">
               <span className="kaenz-live-dot" />
