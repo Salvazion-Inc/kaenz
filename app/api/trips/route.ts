@@ -1,3 +1,4 @@
+import { requireVerifiedUser } from "@/lib/account-verification";
 import {
   cookieValue,
   readSession,
@@ -116,6 +117,8 @@ export async function POST(req: Request) {
     cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
   );
   if (!user) return Response.json({ error: "auth" }, { status: 401 });
+  const gate = await requireVerifiedUser(req);
+  if ("response" in gate) return gate.response;
   const trip = asTrip(await req.json().catch(() => null));
   if (!trip) return Response.json({ error: "trip" }, { status: 400 });
 

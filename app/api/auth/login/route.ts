@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { confirmationSignal } from "@/lib/account-verification";
 import { verifyPassword } from "@/lib/passwords";
 import {
   ACCOUNTS_COOKIE,
@@ -47,10 +48,19 @@ export async function POST(req: Request) {
           String(data.user.user_metadata?.full_name || "") ||
           (data.user.email || email),
       };
+      const verified = confirmationSignal(data.user) !== "unconfirmed";
       const session = await createSessionToken(user);
-      const res = NextResponse.json({ user });
+      const res = NextResponse.json({ user, verified });
       res.headers.append("Set-Cookie", sessionCookie(session));
       return res;
+    }
+    const code = String((error as { code?: string } | null)?.code || "");
+    const message = String(error?.message || "");
+    if (code === "email_not_confirmed" || /not confirmed/i.test(message)) {
+      return NextResponse.json(
+        { error: "unverified", message: "Verifica tu correo" },
+        { status: 403 },
+      );
     }
     } catch {
       /* fall through to 401 */

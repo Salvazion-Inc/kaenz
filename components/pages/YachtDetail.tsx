@@ -2,14 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { CaptainAvatar } from "@/components/CaptainAvatar";
-import { GuestBookForm } from "@/components/pages/GuestBookForm";
+import { BookGate } from "@/components/pages/BookGate";
 import { Site } from "@/components/Site";
-import { seedRealPlaces } from "@/lib/bookable-seed";
 import { t, tripKindLabel } from "@/lib/copy";
 import { pathFor, type Locale } from "@/lib/locale";
-import type { Place } from "@/lib/places";
 import { formatUsd, type Yacht } from "@/lib/yachts";
 
 export function YachtDetail({
@@ -22,17 +19,8 @@ export function YachtDetail({
   canceled?: boolean;
 }) {
   const c = t(locale);
-  const [places, setPlaces] = useState<Place[]>(() => seedRealPlaces());
   const bookable = yacht.bookable === true;
   const kinds = (yacht.kinds || []).map((kind) => tripKindLabel(locale, kind));
-
-  useEffect(() => {
-    if (!bookable) return;
-    fetch("/api/marinas")
-      .then((res) => res.json())
-      .then((data) => setPlaces(Array.isArray(data.places) ? data.places : []))
-      .catch(() => setPlaces(seedRealPlaces()));
-  }, [bookable]);
 
   return (
     <Site locale={locale}>
@@ -104,7 +92,7 @@ export function YachtDetail({
             <>
               <h2 className="text-2xl font-bold">{c.bookStripe}</h2>
               <p className="mt-3 text-white/70">{c.bookStripeLead}</p>
-              <GuestBookForm locale={locale} yacht={yacht} places={places} />
+              <BookGate locale={locale} next={`/fleet/${yacht.id}`} />
               <p className="mt-6 text-center text-sm text-white/50">
                 <Link
                   href={pathFor(locale, "/join")}

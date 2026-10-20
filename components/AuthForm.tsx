@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { BiometricLogin } from "@/components/auth/BiometricLogin";
+import { VerifyEmailScreen } from "@/components/VerifyEmailScreen";
 import { useBiometricGate } from "@/components/auth/useBiometric";
 import { t } from "@/lib/copy";
 import { useLocale } from "@/lib/locale-context";
@@ -24,6 +25,7 @@ export function AuthForm({
   const [status, setStatus] = useState<"idle" | "sending" | "err">("idle");
   const [message, setMessage] = useState("");
   const [passwordFallback, setPasswordFallback] = useState(false);
+  const [verifyEmail, setVerifyEmail] = useState("");
   const { ready: biometricReady, enabled: biometricEnabled } = useBiometricGate();
   const thumbGate =
     mode === "login" && biometricReady && biometricEnabled && !passwordFallback;
@@ -78,8 +80,27 @@ export function AuthForm({
           body: JSON.stringify({ email, password, full_name }),
         },
       );
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        verified?: boolean;
+      };
       if (!res.ok) {
+        if (data.error === "unverified") {
+          setVerifyEmail(email);
+          setStatus("idle");
+          return;
+        }
+        if (data.error === "send" || data.error === "unconfigured") {
+          setStatus("err");
+          setMessage(c.verifySendError);
+          return;
+        }
         throw new Error("auth");
+      }
+      if (data.verified === false) {
+        router.replace("/app");
+        router.refresh();
+        return;
       }
       router.replace(next.startsWith("/") ? next : "/app");
       router.refresh();
@@ -87,6 +108,14 @@ export function AuthForm({
       setStatus("err");
       setMessage(mode === "login" ? c.loginError : c.signupError);
     }
+  }
+
+  if (verifyEmail) {
+    return (
+      <Site locale={locale}>
+        <VerifyEmailScreen email={verifyEmail} />
+      </Site>
+    );
   }
 
   return (

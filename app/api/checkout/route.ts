@@ -1,4 +1,4 @@
-import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
+import { requireVerifiedUser } from "@/lib/account-verification";
 import { createTripCheckout, type CheckoutBody } from "@/lib/checkout";
 import { publicErrorCode } from "@/lib/public-error";
 import { getStripe, maskStripeId, stripeConfigured } from "@/lib/stripe";
@@ -6,15 +6,14 @@ import { getStripe, maskStripeId, stripeConfigured } from "@/lib/stripe";
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
-  const user = await readSession(
-    cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
-  );
+  const gate = await requireVerifiedUser(req);
+  if ("response" in gate) return gate.response;
   const body = (await req.json().catch(() => ({}))) as CheckoutBody;
   const result = await createTripCheckout({
     req,
     body,
-    user,
-    guest: !user,
+    user: gate.user,
+    guest: false,
   });
   if ("error" in result) {
     return Response.json(
