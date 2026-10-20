@@ -247,6 +247,17 @@ create index if not exists pending_payouts_partner_pending_idx
   on public.pending_payouts (partner_user_id)
   where status = 'pending';
 
+-- Explicit Data API grants (Supabase rule, 30 Oct 2026).
+-- See supabase/migrations/20261020_grants.sql. Server-only tables:
+-- anon and authenticated get nothing; service_role gets DML only, never TRUNCATE.
+revoke all on table public.profiles from anon, authenticated;
+revoke all on table public.partner_payout_accounts from anon, authenticated;
+revoke all on table public.pending_payouts from anon, authenticated;
+
+grant select, insert, update, delete on table public.profiles to service_role;
+grant select, insert, update, delete on table public.partner_payout_accounts to service_role;
+grant select, insert, update, delete on table public.pending_payouts to service_role;
+
 -- seed-real bookable inventory (Miami Beach–FLL–Hollywood–Palm Beach).
 -- Evidence: origin catalog slugs already published on /fleet at public marinas.
 insert into public.yachts (

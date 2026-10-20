@@ -8,7 +8,7 @@
     "build": "next build",
     "test": "node --experimental-strip-types --experimental-detect-module --test lib/salvazion-key.test.ts",
     "start": "next start",
-    "test": "tsx --test lib/listing-files.test.ts lib/fare-allocation.test.ts",
+    "test": "tsx --test lib/listing-files.test.ts lib/fare-allocation.test.ts lib/supabase-client.test.ts",
     "cap:sync": "npx cap sync",
     "cap:open:android": "npx cap open android",
     "cap:open:ios": "npx cap open ios"
