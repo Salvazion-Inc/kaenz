@@ -1,10 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { VerifySubmitNote } from "@/components/VerifySubmitNote";
+import { useAccountVerified } from "@/components/useAccountVerified";
 import { at } from "@/lib/app-copy";
+import { loginUrl } from "@/lib/form-gate";
 import { pathFor, type Locale } from "@/lib/locale";
+import { fetchAccountAccess } from "@/lib/submit-access";
+import { verifySubmitMessage } from "@/lib/yacht-manage-copy";
 import { useLocation } from "@/lib/location";
 import {
   clampHours,
@@ -38,6 +43,8 @@ export function RequestTab({ locale }: { locale: Locale }) {
   const kinds: TripKind[] = ["commute", "tour", "special"];
   const whenModes: WhenMode[] = ["now", "schedule"];
   const hoursRange = HOURS_RANGE[trip.kind];
+  const verified = useAccountVerified();
+  const [blocked, setBlocked] = useState("");
 
   useEffect(() => {
     if (trip.whenMode !== "now") return;
@@ -56,8 +63,22 @@ export function RequestTab({ locale }: { locale: Locale }) {
     setTrip({ whenMode: "schedule" });
   }
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
+    setBlocked("");
+    if (verified === false) {
+      setBlocked(verifySubmitMessage(locale));
+      return;
+    }
+    const access = await fetchAccountAccess();
+    if (access && !access.user) {
+      window.location.assign(loginUrl(`${window.location.pathname}${window.location.search}`));
+      return;
+    }
+    if (access && !access.verified) {
+      setBlocked(verifySubmitMessage(locale));
+      return;
+    }
     const stamp =
       trip.whenMode === "now"
         ? nowStamp()
@@ -318,9 +339,16 @@ export function RequestTab({ locale }: { locale: Locale }) {
             <p className="text-xs text-white/55">{c.payAfterQuote}</p>
           </div>
         ) : null}
+        <VerifySubmitNote locale={locale} verified={verified} />
+        {blocked ? (
+          <p role="alert" className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+            {blocked}
+          </p>
+        ) : null}
         <button
           type="submit"
-          className="w-full rounded-xl bg-kaenz py-3 text-sm font-bold text-white"
+          disabled={verified === false}
+          className="w-full rounded-xl bg-kaenz py-3 text-sm font-bold text-white disabled:opacity-60"
         >
           {c.continueTrip}
         </button>

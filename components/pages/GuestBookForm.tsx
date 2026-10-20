@@ -1,7 +1,12 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { VerifySubmitNote } from "@/components/VerifySubmitNote";
+import { useAccountVerified } from "@/components/useAccountVerified";
 import { t, tripKindLabel } from "@/lib/copy";
+import { loginUrl } from "@/lib/form-gate";
+import { fetchAccountAccess } from "@/lib/submit-access";
+import { verifySubmitMessage } from "@/lib/yacht-manage-copy";
 import { defaultDestinationId, seedRealPlaces } from "@/lib/bookable-seed";
 import type { Locale } from "@/lib/locale";
 import { placeById, type Place } from "@/lib/places";
@@ -47,6 +52,7 @@ export function GuestBookForm({
     "idle" | "sending" | "redirect" | "err"
   >("idle");
   const [message, setMessage] = useState("");
+  const verified = useAccountVerified();
   const inflight = useRef(false);
 
   const origin = hubs.find((p) => p.id === originId) || placeById(originId);
@@ -92,6 +98,23 @@ export function GuestBookForm({
       setMessage(invalid);
       return;
     }
+    if (verified === false) {
+      setStatus("err");
+      setMessage(verifySubmitMessage(locale));
+      return;
+    }
+    const access = await fetchAccountAccess();
+    if (access && !access.user) {
+      window.location.assign(
+        loginUrl(`${window.location.pathname}${window.location.search}`),
+      );
+      return;
+    }
+    if (access && !access.verified) {
+      setStatus("err");
+      setMessage(verifySubmitMessage(locale));
+      return;
+    }
     inflight.current = true;
     setStatus("sending");
     setMessage("");
@@ -131,6 +154,16 @@ export function GuestBookForm({
         }
         if (data.error === "rate") {
           throw new Error(c.formError);
+        }
+        if (data.error === "unverified") {
+          throw new Error(verifySubmitMessage(locale));
+        }
+        if (data.error === "auth") {
+          inflight.current = false;
+          window.location.assign(
+            loginUrl(`${window.location.pathname}${window.location.search}`),
+          );
+          return;
         }
         throw new Error(c.formError);
       }
@@ -297,9 +330,10 @@ export function GuestBookForm({
       <p className="text-xs font-semibold uppercase tracking-wide text-white/50">
         {c.stripeTrust}
       </p>
+      <VerifySubmitNote locale={locale} verified={verified} />
       <button
         type="submit"
-        disabled={busy}
+        disabled={busy || verified === false}
         className="btn-kaenz btn-book w-full text-sm disabled:cursor-not-allowed disabled:opacity-60"
       >
         {status === "sending" || status === "redirect"

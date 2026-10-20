@@ -1,3 +1,4 @@
+import { isAccountVerified, unverifiedResponse } from "@/lib/account-verification";
 import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 import { listBookableYachts } from "@/lib/inventory";
 import {
@@ -107,6 +108,7 @@ async function postStoredListing(req: Request, userId: string) {
       captainLanguages: parsed.captainLanguages,
       captainRegion: parsed.captainRegion,
       captainWallet: parsed.captainWallet,
+      status: parsed.status,
     });
     return Response.json({ yacht: listingToYacht(listing) });
   } catch (err) {
@@ -121,6 +123,7 @@ export async function POST(req: Request) {
   if (!user) {
     return Response.json({ error: "auth" }, { status: 401 });
   }
+  if (!(await isAccountVerified(user, req))) return unverifiedResponse();
   if (!getSupabaseAdmin()) {
     return Response.json({ error: "supabase" }, { status: 503 });
   }
@@ -145,6 +148,7 @@ export async function POST(req: Request) {
   const captainLanguages = parseLangs(form.get("languages"));
   const captainRegion = String(form.get("captain_region") || "").trim();
   const captainWallet = optionalWallet(form.get("captain_wallet"));
+  const listingStatus = String(form.get("status") || "") === "draft" ? "draft" : "listed";
 
   const ownerId = form.get("owner_id");
   const captainId = form.get("captain_id");
@@ -166,7 +170,7 @@ export async function POST(req: Request) {
   if (!captainLanguages.length) {
     return Response.json({ error: "languages" }, { status: 400 });
   }
-  if (!(ownerId instanceof File) || !isImage(ownerId) || tooBig(ownerId)) {
+  if (!(ownerId instanceof File) || !isDoc(ownerId) || tooBig(ownerId)) {
     return Response.json({ error: "owner_id" }, { status: 400 });
   }
   if (!(captainId instanceof File) || !isDoc(captainId) || tooBig(captainId)) {
@@ -234,6 +238,7 @@ export async function POST(req: Request) {
       captainLanguages,
       captainRegion,
       captainWallet,
+      status: listingStatus,
     });
     return Response.json({ yacht: listingToYacht(listing) });
   } catch {

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CaptainAvatar } from "@/components/CaptainAvatar";
@@ -10,16 +9,36 @@ import { seedRealPlaces } from "@/lib/bookable-seed";
 import { t, tripKindLabel } from "@/lib/copy";
 import { pathFor, type Locale } from "@/lib/locale";
 import type { Place } from "@/lib/places";
-import { formatUsd, type Yacht } from "@/lib/yachts";
+import { formatUsd, yachtHeroSrc, type Yacht } from "@/lib/yachts";
+
+function YachtHero({ yacht }: { yacht: Yacht }) {
+  const seeded = yachtHeroSrc(yacht.id, "");
+  const initial = yachtHeroSrc(yacht.id, yacht.image) || seeded;
+  const [src, setSrc] = useState(initial);
+  return (
+    <img
+      src={src}
+      alt={yacht.name}
+      className="h-80 w-full object-cover"
+      onError={() => {
+        if (seeded && src !== seeded) setSrc(seeded);
+      }}
+    />
+  );
+}
 
 export function YachtDetail({
   locale,
   yacht,
   canceled = false,
+  signedIn = false,
+  accountName = "",
 }: {
   locale: Locale;
   yacht: Yacht;
   canceled?: boolean;
+  signedIn?: boolean;
+  accountName?: string;
 }) {
   const c = t(locale);
   const [places, setPlaces] = useState<Place[]>(() => seedRealPlaces());
@@ -35,17 +54,11 @@ export function YachtDetail({
   }, [bookable]);
 
   return (
-    <Site locale={locale}>
+    <Site locale={locale} signedIn={signedIn} accountName={accountName}>
       <section className="mx-auto grid max-w-6xl gap-10 px-5 pb-24 md:grid-cols-2">
         <div>
-          <div className="relative h-80 overflow-hidden rounded-2xl">
-            <Image
-              src={yacht.image}
-              alt={yacht.name}
-              fill
-              className="object-cover"
-              priority
-            />
+          <div className="relative overflow-hidden rounded-2xl bg-white/5">
+            <YachtHero yacht={yacht} />
             {bookable ? (
               <span className="absolute left-3 top-3 rounded-full bg-kaenz px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-navy">
                 {c.bookableNow}

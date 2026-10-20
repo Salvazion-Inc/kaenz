@@ -1,8 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { VerifySubmitNote } from "@/components/VerifySubmitNote";
+import { useAccountVerified } from "@/components/useAccountVerified";
 import { at } from "@/lib/app-copy";
+import { loginUrl } from "@/lib/form-gate";
 import type { Locale } from "@/lib/locale";
+import { fetchAccountAccess } from "@/lib/submit-access";
+import { verifySubmitMessage } from "@/lib/yacht-manage-copy";
 import type { Place } from "@/lib/places";
 import { PayoutsNotice } from "./PayoutsSection";
 
@@ -28,6 +33,7 @@ export function AddMarinaForm({
   onListed: (place: Place) => void;
 }) {
   const c = at(locale).addMarina;
+  const verified = useAccountVerified();
   const [status, setStatus] = useState<"idle" | "sending" | "err">("idle");
   const [message, setMessage] = useState("");
 
@@ -35,6 +41,21 @@ export function AddMarinaForm({
     e.preventDefault();
     const form = e.currentTarget;
     setMessage("");
+    if (verified === false) {
+      setStatus("err");
+      setMessage(verifySubmitMessage(locale));
+      return;
+    }
+    const access = await fetchAccountAccess();
+    if (access && !access.user) {
+      window.location.assign(loginUrl(`${window.location.pathname}${window.location.search}`));
+      return;
+    }
+    if (access && !access.verified) {
+      setStatus("err");
+      setMessage(verifySubmitMessage(locale));
+      return;
+    }
     setStatus("sending");
     const data = new FormData(form);
     try {
@@ -58,6 +79,7 @@ export function AddMarinaForm({
       if (!res.ok) {
         const map: Record<string, string> = {
           auth: c.needAuth,
+          unverified: verifySubmitMessage(locale),
           wallet: c.needWallet,
           coords: c.needCoords,
           website: c.needUrl,
@@ -147,6 +169,8 @@ export function AddMarinaForm({
 
       <PayoutsNotice locale={locale} />
 
+      <VerifySubmitNote locale={locale} verified={verified} />
+
       {message ? (
         <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
           {message}
@@ -155,7 +179,7 @@ export function AddMarinaForm({
 
       <button
         type="submit"
-        disabled={status === "sending"}
+        disabled={status === "sending" || verified === false}
         className="w-full rounded-xl bg-kaenz py-3 text-sm font-bold text-white disabled:opacity-60"
       >
         {status === "sending" ? c.sending : c.submit}

@@ -6,6 +6,7 @@ import {
   localeFromPath,
   stripLocalePrefix,
 } from "@/lib/locale";
+import { sessionGateNext } from "@/lib/form-gate";
 import { SESSION_COOKIE, readSession } from "@/lib/session";
 
 const APP_HOSTS = new Set(["app.kaenz.com", "www.app.kaenz.com"]);
@@ -55,12 +56,13 @@ export async function middleware(request: NextRequest) {
     return res;
   }
 
-  if (pathname.startsWith("/app")) {
+  const gateNext = sessionGateNext(pathname, search);
+  if (gateNext) {
     const user = await readSession(request.cookies.get(SESSION_COOKIE)?.value);
     if (!user) {
       const login = request.nextUrl.clone();
       login.pathname = "/login";
-      login.search = `?next=${encodeURIComponent(pathname + search)}`;
+      login.search = `?next=${encodeURIComponent(gateNext)}`;
       return NextResponse.redirect(login);
     }
   }

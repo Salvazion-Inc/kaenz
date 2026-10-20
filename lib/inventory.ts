@@ -11,7 +11,7 @@ import { listingToPlace } from "./marina-listings";
 import { listMarinaListings } from "./marina-store";
 import { placeById, type Place } from "./places";
 import { getSupabase, getSupabaseAdmin } from "./supabase";
-import { yachtById, type Yacht } from "./yachts";
+import { yachtById, yachtHeroSrc, type Yacht } from "./yachts";
 
 export type InventoryMeta = {
   source: "seed-real" | "supabase+seed-real";
@@ -74,7 +74,7 @@ function fromYachtTable(row: YachtTableRow): Yacht | null {
         hoursMin: Number(row.hours_min) || 4,
         marina: marinaName,
         marinaId,
-        image: String(row.image_url || ""),
+        image: yachtHeroSrc(slug, row.image_url),
         lat: Number.NaN,
         lng: Number.NaN,
         etaMin: 0,
@@ -105,7 +105,7 @@ function fromYachtTable(row: YachtTableRow): Yacht | null {
       guests: Number(row.guests) || base.guests,
       hoursMin: Number(row.hours_min) || base.hoursMin,
       marina: marinaName || base.marina,
-      image: String(row.image_url || base.image),
+      image: yachtHeroSrc(slug, row.image_url || base.image),
     },
     isSeedRealId(slug) ? "seed-real" : "live",
   );

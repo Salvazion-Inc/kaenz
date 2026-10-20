@@ -47,6 +47,14 @@ function blurb(en: string, es: string, fr: string, it: string, pt: string): Loca
 
 export const DEFAULT_YACHT_ID = "tempest-42";
 
+/** Catalog photo when a listing or table row has no usable image URL. */
+export function yachtHeroSrc(id: string, image?: string | null) {
+  const value = String(image || "").trim();
+  const seeded = yachts.find((yacht) => yacht.id === id)?.image || "";
+  if (value.startsWith("/") || /^https?:\/\//i.test(value)) return value;
+  return seeded;
+}
+
 export const yachts: Yacht[] = [
   {
     id: "galeon",
