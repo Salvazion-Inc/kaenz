@@ -13,7 +13,11 @@ import { getSupabaseAdmin } from "./supabase";
  *   transfer_group + source_transaction. Kaenz keeps the remainder (25%).
  * - A share whose partner has not connected (or is not active yet) stays on the
  *   platform balance and is recorded in pending_payouts. It is released when the
- *   partner's account becomes active. There is never a fixed fallback account.
+ *   partner's account becomes active.
+ * - A pickup or dropoff marina with no Kaenz partner listing, or a listing
+ *   whose user has no Stripe account, is not registered. That 3.5% is added
+ *   to the yacht owner instead of pending_payouts. There is never a fixed
+ *   fallback Stripe account.
  */
 
 export type PayoutRole = "owner" | "captain" | "marina_pickup" | "marina_dropoff";
@@ -268,12 +272,19 @@ export async function refreshByAccountId(stripe: Stripe, accountId: string) {
 
 /* --------------------------------------------------------- trip partners */
 
-export type TripPartners = Record<PayoutRole, { userId: string; ref: string }>;
+export type TripPartnerSlot = {
+  userId: string;
+  ref: string;
+  /** Marina listing read failed. The share stays pending, not with the owner. */
+  lookupFailed?: boolean;
+};
+
+export type TripPartners = Record<PayoutRole, TripPartnerSlot>;
 
 /**
  * Who gets each share of a trip: the yacht listing's owner/captain and the
- * partner who listed each marina/port. Seed catalog yachts and catalog places
- * without a Kaenz partner resolve to an empty userId (share stays pending).
+ * partner who listed each marina/port. A catalog place with no Kaenz partner
+ * resolves to an empty userId; that marina share is paid to the yacht owner.
  */
 export async function resolveTripPartners(opts: {
   yachtId: string;
@@ -328,22 +339,55 @@ export async function resolveTripPartners(opts: {
   }
 
   async function placeUser(id: string) {
-    if (!id) return "";
+    if (!id) return { userId: "", lookupFailed: false };
     try {
       const column = isUuid(id) ? "id" : "slug";
-      const { data } = await admin!
+      const { data, error } = await admin!
         .from("marina_listings")
         .select("created_by")
         .eq(column, id)
         .maybeSingle();
-      return String(data?.created_by || "");
+      if (error) return { userId: "", lookupFailed: true };
+      return { userId: String(data?.created_by || ""), lookupFailed: false };
     } catch {
-      return "";
+      return { userId: "", lookupFailed: true };
     }
   }
-  out.marina_pickup.userId = await placeUser(opts.originId);
-  out.marina_dropoff.userId = await placeUser(opts.destinationId);
+  const pickup = await placeUser(opts.originId);
+  const dropoff = await placeUser(opts.destinationId);
+  out.marina_pickup.userId = pickup.userId;
+  out.marina_pickup.lookupFailed = pickup.lookupFailed;
+  out.marina_dropoff.userId = dropoff.userId;
+  out.marina_dropoff.lookupFailed = dropoff.lookupFailed;
   return out;
+}
+
+/**
+ * Reads whether a partner user has a Stripe Connect account.
+ * `lookupFailed` means the read itself failed, which is not the same as
+ * "this user has no account".
+ */
+export async function readPartnerStripeAccount(userId: string): Promise<{
+  accountId: string;
+  lookupFailed: boolean;
+}> {
+  if (!userId) return { accountId: "", lookupFailed: false };
+  const admin = getSupabaseAdmin();
+  if (!admin) return { accountId: "", lookupFailed: true };
+  try {
+    const { data, error } = await admin
+      .from("partner_payout_accounts")
+      .select("stripe_account_id")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (error) return { accountId: "", lookupFailed: true };
+    return {
+      accountId: String(data?.stripe_account_id || ""),
+      lookupFailed: false,
+    };
+  } catch {
+    return { accountId: "", lookupFailed: true };
+  }
 }
 
 /* ------------------------------------------------------- pending shares */

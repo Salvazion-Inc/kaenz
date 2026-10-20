@@ -1,8 +1,14 @@
 import Stripe from "stripe";
+import {
+  allocateBookingShares,
+  marinaShareParty,
+  type MarinaShareParty,
+} from "./fare-allocation";
 import type { ChargeBreakdown } from "./pricing";
 import {
   fetchTransfersStatus,
   getPartnerAccount,
+  readPartnerStripeAccount,
   recordPending,
   type PayoutRole,
   type TripPartners,
@@ -40,15 +46,17 @@ export type TripShareResult = {
   amount: number;
   id?: string;
   destination?: string;
-  skipped?: "zero" | "pending";
+  skipped?: "zero" | "pending" | "owner";
   reason?: string;
 };
 
 /**
  * Pays each partner's share of a paid trip into that partner's own connected
- * account (separate charges and transfers). Kaenz keeps the remainder.
- * A share whose partner is missing or not active stays on the platform balance
- * and is recorded in pending_payouts; there is no fixed fallback account.
+ * account (separate charges and transfers). Kaenz keeps the platform remainder.
+ * Owner, captain, and a registered marina whose Stripe account is not active
+ * yet stay on the platform balance in pending_payouts. An unregistered pickup
+ * or dropoff marina (no partner listing, or no Stripe account) does not:
+ * that 3.5% is added to the yacht owner. There is no fixed fallback account.
  */
 export async function transferTripShares(opts: {
   stripe: Stripe;
@@ -128,10 +136,68 @@ export async function transferTripShares(opts: {
     }
   }
 
-  await send("owner", charge.ownerCents);
-  await send("captain", charge.captainTotalCents);
-  await send("marina_pickup", charge.marinaOriginCents);
-  await send("marina_dropoff", charge.marinaDestCents);
+  async function partyFor(
+    role: "marina_pickup" | "marina_dropoff",
+  ): Promise<MarinaShareParty> {
+    const slot = partners[role];
+    if (slot.lookupFailed || !slot.userId) {
+      return marinaShareParty({
+        listingUserId: slot.userId,
+        stripeAccountId: "",
+        lookupFailed: slot.lookupFailed,
+      });
+    }
+    const account = await readPartnerStripeAccount(slot.userId);
+    return marinaShareParty({
+      listingUserId: slot.userId,
+      stripeAccountId: account.accountId,
+      lookupFailed: account.lookupFailed,
+    });
+  }
+
+  const pickupParty = await partyFor("marina_pickup");
+  const dropoffParty = await partyFor("marina_dropoff");
+  const allocated = allocateBookingShares({
+    ownerCents: charge.ownerCents,
+    captainCents: charge.captainTotalCents,
+    marinaOriginCents: charge.marinaOriginCents,
+    marinaDestCents: charge.marinaDestCents,
+    pickup: pickupParty,
+    dropoff: dropoffParty,
+  });
+
+  async function sendMarina(
+    role: "marina_pickup" | "marina_dropoff",
+    party: MarinaShareParty,
+    originalCents: number,
+    amountCents: number,
+  ) {
+    if (party === "unregistered") {
+      results.push({
+        role,
+        amount: originalCents,
+        skipped: originalCents > 0 ? "owner" : "zero",
+        ...(originalCents > 0 ? { reason: "unregistered_marina" } : {}),
+      });
+      return;
+    }
+    await send(role, amountCents);
+  }
+
+  await send("owner", allocated.ownerCents);
+  await send("captain", allocated.captainCents);
+  await sendMarina(
+    "marina_pickup",
+    pickupParty,
+    charge.marinaOriginCents,
+    allocated.marinaPickupCents,
+  );
+  await sendMarina(
+    "marina_dropoff",
+    dropoffParty,
+    charge.marinaDestCents,
+    allocated.marinaDropoffCents,
+  );
   return results;
 }
 
