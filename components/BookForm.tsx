@@ -164,7 +164,19 @@ export function BookForm({
         body: JSON.stringify({ ...payload, locale }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error");
+      if (!res.ok) {
+        if (res.status === 401 || data.error === "auth") {
+          setStatus("err");
+          setMessage(c.verifyToBook);
+          return;
+        }
+        if (data.error === "unverified") {
+          setStatus("err");
+          setMessage(c.verifyTitle);
+          return;
+        }
+        throw new Error(data.error || "Error");
+      }
       setStatus("ok");
       setMessage(c.form.success);
       e.currentTarget.reset();

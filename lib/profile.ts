@@ -1,9 +1,11 @@
 import { isSolanaWallet } from "./listings";
 import {
+  cookieValue,
   readSignedValue,
   signValue,
   type SessionUser,
 } from "./session";
+import { getSupabase } from "./supabase";
 
 export const PROFILE_COOKIE = "kaenz_profiles";
 const DAY = 60 * 60 * 24;
@@ -239,6 +241,64 @@ export async function signProfileMap(profiles: Record<string, UserProfile>) {
 
 export function profileCookie(token: string) {
   return `${PROFILE_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${400 * DAY}`;
+}
+
+export type BookingContact = {
+  fullName: string;
+  email: string;
+  phone: string;
+};
+
+function firstText(...values: Array<string | null | undefined>) {
+  for (const value of values) {
+    const text = String(value || "").trim();
+    if (text) return text;
+  }
+  return "";
+}
+
+export function bookingContact(
+  user: SessionUser,
+  profile?: Partial<Pick<UserProfile, "fullName" | "email" | "phone">> | null,
+  remote?: Partial<Pick<UserProfile, "fullName" | "email" | "phone">> | null,
+): BookingContact {
+  return {
+    fullName: firstText(remote?.fullName, profile?.fullName, user.name),
+    email: firstText(remote?.email, profile?.email, user.email),
+    phone: firstText(remote?.phone, profile?.phone),
+  };
+}
+
+const PROFILE_UUID =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export async function loadBookingContact(
+  cookieHeader: string | null | undefined,
+  user: SessionUser,
+): Promise<BookingContact> {
+  const map = await readProfileMap(cookieValue(cookieHeader, PROFILE_COOKIE));
+  const local = map[user.id];
+  let remote: { fullName: string; email: string; phone: string } | null = null;
+  const supabase = PROFILE_UUID.test(user.id) ? getSupabase() : null;
+  if (supabase) {
+    try {
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name, email, phone")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (data) {
+        remote = {
+          fullName: data.full_name || "",
+          email: data.email || "",
+          phone: data.phone || "",
+        };
+      }
+    } catch {
+      remote = null;
+    }
+  }
+  return bookingContact(user, local, remote);
 }
 
 export function publicProfile(profile: UserProfile): UserProfile {

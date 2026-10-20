@@ -1,3 +1,4 @@
+import { requireVerifiedUser } from "@/lib/account-verification";
 import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 import { signListingUploads } from "@/lib/listing-store";
 import { validateListingFileSet } from "@/lib/listing-files";
@@ -11,6 +12,8 @@ export async function POST(req: Request) {
     cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
   );
   if (!user) return Response.json({ error: "auth" }, { status: 401 });
+  const gate = await requireVerifiedUser(req);
+  if ("response" in gate) return gate.response;
   if (!getSupabaseAdmin()) return Response.json({ error: "supabase" }, { status: 503 });
 
   const body = (await req.json().catch(() => null)) as { files?: unknown } | null;

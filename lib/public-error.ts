@@ -8,6 +8,8 @@ const PUBLIC_CODES = new Set([
   "session",
   "fields",
   "auth",
+  "unverified",
+  "guest",
 ]);
 
 const SECRETISH =

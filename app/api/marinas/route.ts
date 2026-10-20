@@ -1,3 +1,4 @@
+import { requireVerifiedUser } from "@/lib/account-verification";
 import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 import { listBookablePlaces } from "@/lib/inventory";
 import { optionalWallet } from "@/lib/listings";
@@ -30,6 +31,8 @@ export async function POST(req: Request) {
   if (!user) {
     return Response.json({ error: "auth" }, { status: 401 });
   }
+  const gate = await requireVerifiedUser(req);
+  if ("response" in gate) return gate.response;
   if (!getSupabaseAdmin()) {
     return Response.json({ error: "supabase" }, { status: 503 });
   }

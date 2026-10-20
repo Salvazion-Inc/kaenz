@@ -4,10 +4,19 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { Logo } from "./Logo";
+import { LogoutButton } from "./LogoutButton";
 import { t } from "@/lib/copy";
 import { pathFor, type Locale } from "@/lib/locale";
 
-export function Nav({ locale }: { locale: Locale }) {
+export type NavViewer = { name: string; email: string };
+
+export function Nav({
+  locale,
+  viewer = null,
+}: {
+  locale: Locale;
+  viewer?: NavViewer | null;
+}) {
   const c = t(locale);
   const [scrolled, setScrolled] = useState(false);
 
@@ -26,23 +35,44 @@ export function Nav({ locale }: { locale: Locale }) {
         </Link>
         <div className="hidden items-center gap-5 text-sm font-semibold text-white/88 md:flex">
           <LanguageSwitcher />
-          <Link
-            href="/login"
-            className="rounded-full border border-white/20 px-3.5 py-1.5 text-xs tracking-wide text-white/90 transition hover:border-kaenz hover:text-kaenz"
-          >
-            {c.nav.login}
-          </Link>
+          {viewer ? (
+            <span className="flex items-center gap-2">
+              <span className="max-w-[10rem] truncate text-xs font-semibold text-white/90" title={viewer.email}>
+                {viewer.name}
+              </span>
+              <LogoutButton
+                label={c.nav.logout}
+                className="rounded-full border border-white/20 px-3.5 py-1.5 text-xs tracking-wide text-white/90 transition hover:border-kaenz hover:text-kaenz"
+              />
+            </span>
+          ) : (
+            <Link
+              href="/login"
+              className="rounded-full border border-white/20 px-3.5 py-1.5 text-xs tracking-wide text-white/90 transition hover:border-kaenz hover:text-kaenz"
+            >
+              {c.nav.login}
+            </Link>
+          )}
           <Link href="/app" className="btn-kaenz !px-4 !py-2 text-xs">
             {c.nav.app}
           </Link>
         </div>
         <div className="flex items-center gap-2 md:hidden">
-          <Link
-            href="/login"
-            className="text-xs font-bold tracking-wide text-white/90"
-          >
-            {c.nav.login}
-          </Link>
+          {viewer ? (
+            <>
+              <span className="max-w-[7rem] truncate text-xs font-bold text-white/90">
+                {viewer.name}
+              </span>
+              <LogoutButton
+                label={c.nav.logout}
+                className="text-xs font-bold tracking-wide text-white/90"
+              />
+            </>
+          ) : (
+            <Link href="/login" className="text-xs font-bold tracking-wide text-white/90">
+              {c.nav.login}
+            </Link>
+          )}
           <Link href="/app" className="btn-kaenz !px-3.5 !py-1.5 text-xs">
             {c.nav.app}
           </Link>

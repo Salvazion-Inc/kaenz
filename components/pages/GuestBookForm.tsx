@@ -12,6 +12,7 @@ import {
   HOURS_RANGE,
   type TripKind,
 } from "@/lib/pricing";
+import type { BookingContact } from "@/lib/profile";
 import { formatUsd, type Yacht } from "@/lib/yachts";
 
 const KINDS: TripKind[] = ["commute", "tour", "special"];
@@ -21,10 +22,12 @@ export function GuestBookForm({
   locale,
   yacht,
   places,
+  contact = null,
 }: {
   locale: Locale;
   yacht: Yacht;
   places: Place[];
+  contact?: BookingContact | null;
 }) {
   const c = t(locale);
   const hubs: Place[] =
@@ -41,8 +44,9 @@ export function GuestBookForm({
   const [destinationId, setDestinationId] = useState(
     defaultDestinationId(yacht, "tour"),
   );
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState(contact?.fullName || "");
+  const [email, setEmail] = useState(contact?.email || "");
+  const [phone, setPhone] = useState(contact?.phone || "");
   const [status, setStatus] = useState<
     "idle" | "sending" | "redirect" | "err"
   >("idle");
@@ -97,11 +101,10 @@ export function GuestBookForm({
     setMessage("");
     const form = new FormData(e.currentTarget);
     try {
-      const res = await fetch("/api/checkout/guest", {
+      const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          guest: true,
           yachtId: yacht.id,
           kind,
           hours,
@@ -114,12 +117,15 @@ export function GuestBookForm({
           destination: destination?.name || yacht.marina,
           full_name: name.trim(),
           email: email.trim(),
-          phone: String(form.get("phone") || "").trim(),
+          phone: phone.trim(),
           locale,
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        if (data.error === "unverified" || res.status === 401) {
+          throw new Error(c.verifyTitle);
+        }
         if (data.error === "stripe_unconfigured") {
           throw new Error(c.stripeMissing);
         }
@@ -288,6 +294,8 @@ export function GuestBookForm({
           type="tel"
           autoComplete="tel"
           disabled={busy}
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
         />
       </label>
       <p className="text-lg font-extrabold text-kaenz">

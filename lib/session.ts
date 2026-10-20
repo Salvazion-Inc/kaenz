@@ -121,7 +121,45 @@ export function sessionCookie(token: string) {
 }
 
 export function clearSessionCookie() {
-  return `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`;
+  return expireCookie(SESSION_COOKIE, false);
+}
+
+/** Auth cookies this app sets. Profile, trip, and locale cookies are not sessions. */
+export const KAEZ_AUTH_COOKIES = [SESSION_COOKIE, ACCOUNTS_COOKIE, "kaenz_oauth"] as const;
+
+export function sessionCookieNames(cookieHeader: string | null | undefined) {
+  const names = new Set<string>(KAEZ_AUTH_COOKIES);
+  if (!cookieHeader) return [...names];
+  for (const part of cookieHeader.split(";")) {
+    const name = part.trim().split("=")[0]?.trim();
+    if (name?.startsWith("sb-")) names.add(name);
+  }
+  return [...names];
+}
+
+export function hasSupabaseAuthCookie(cookieHeader: string | null | undefined) {
+  return sessionCookieNames(cookieHeader).some(
+    (name) => name.startsWith("sb-") && !name.includes("code-verifier"),
+  );
+}
+
+/**
+ * Expire one cookie twice: with and without Secure. Host-only, Path=/, no Domain,
+ * matching how Kaenz and Supabase SSR set these cookies. A Secure cookie set on
+ * HTTPS is not deleted by a non-Secure Set-Cookie.
+ */
+export function clearSessionCookieHeaders(cookieHeader: string | null | undefined) {
+  const headers: string[] = [];
+  for (const name of sessionCookieNames(cookieHeader)) {
+    headers.push(expireCookie(name, false));
+    headers.push(expireCookie(name, true));
+  }
+  return headers;
+}
+
+function expireCookie(name: string, secure: boolean) {
+  const base = `${name}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+  return secure ? `${base}; Secure` : base;
 }
 
 export function accountsCookie(token: string) {

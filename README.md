@@ -58,7 +58,7 @@ Without Supabase, booking and join requests still succeed locally (no persistenc
 
 After a request, the client pays the algorithm fare plus optional captain gratuity with Stripe Checkout. The fare splits **owner 38% / captain 30% / Kaenz 25% / pickup marina 3.5% / dropoff marina 3.5%**. Gratuity is on top and goes only to the captain. Each partner connects their own Stripe account from **Account → Receive your earnings** (Accounts v2, Express dashboard, recipient configuration). After payment the webhook at `/api/stripe/webhook` transfers each share to that partner's own account (separate charges and transfers, `transfer_group` + `source_transaction`). A share whose partner has not connected yet stays on the Kaenz platform balance in `pending_payouts` and is released automatically once that partner's account is active. There is no fixed fallback account.
 
-Guests book from `/fleet/{id}` (bookable yachts) with email + name → `POST /api/checkout/guest` → Stripe Checkout. Success lands on `/book/confirmed`. Owners and captains still list boats from `/join`. There is no demo pay path.
+A verified account books from `/fleet/{id}` (bookable yachts) → `POST /api/checkout` → Stripe Checkout. Success lands on `/book/confirmed`. `POST /api/checkout/guest` is closed (410). Owners and captains still list boats from `/join`. There is no demo pay path.
 
 ## Supabase
 
@@ -73,14 +73,12 @@ If the Supabase project is paused, unpause it in the dashboard. Minimum env: `NE
 ```bash
 curl -s https://kaenz.com/api/yachts
 curl -s https://kaenz.com/api/marinas
-curl -s -X POST https://kaenz.com/api/checkout/guest \
-  -H 'content-type: application/json' \
-  -d '{"yachtId":"galeon","kind":"tour","hours":4,"guests":4,"originId":"miami-beach-marina","destinationId":"miami-beach-marina","full_name":"Guest Test","email":"guest@example.com","amount":1}'
+curl -s -o /dev/null -w '%{http_code}\n' -X POST https://kaenz.com/api/checkout/guest
 ```
 
-Click path: `/fleet` → **Bookable now** → a yacht → **Book this trip — pay with Stripe** → name/email/hours/guests → Stripe Checkout. Cancel returns to `/fleet/{id}?checkout=cancel` with a calm message. Success shows `/book/confirmed` (yacht, kind, hours, email, masked session id, **Book another**). Catalog cards stay on `/fleet/{id}` — they never send guests to `/app/yachts`. Owners/captains apply on `/join`. `/app` stays behind login.
+The guest route answers 410. A signed-in, verified account uses `POST /api/checkout` from the yacht page. Click path: `/fleet` → **Bookable now** → a yacht. Without a session the page links to `/signup?next=` and `/login?next=`. With a verified session the booking form posts to `/api/checkout` and Stripe Checkout. Cancel returns to `/fleet/{id}?checkout=cancel`. Success shows `/book/confirmed`. Catalog cards stay on `/fleet/{id}`. Owners/captains apply on `/join`. `/app` stays behind login and a verified email.
 
-Fare is always computed server-side from yacht + kind + hours. Client `amount` / `price` / `total` on `POST /api/checkout/guest` are ignored. Unknown `yachtId` is rejected. Email must be valid. The guest endpoint is rate-limited. Bookings are marked paid only after a verified Stripe webhook (`checkout.session.completed` or `checkout.session.async_payment_succeeded`, and only when `payment_status` is not `unpaid`).
+Fare is always computed server-side from yacht + kind + hours. Client `amount` / `price` / `total` on `POST /api/checkout` are ignored. Unknown `yachtId` is rejected. Email must be valid. Bookings are marked paid only after a verified Stripe webhook (`checkout.session.completed` or `checkout.session.async_payment_succeeded`, and only when `payment_status` is not `unpaid`).
 
 ## Product notes
 

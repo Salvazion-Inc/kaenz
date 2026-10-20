@@ -1,7 +1,7 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 
-type PendingCookie = {
+export type PendingCookie = {
   name: string;
   value: string;
   options?: CookieOptions;

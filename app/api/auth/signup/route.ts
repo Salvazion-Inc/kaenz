@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { emailConfirmRedirect, registerUnconfirmedUser } from "@/lib/email-verification";
+import { applyCookies, createRouteSupabase, type PendingCookie } from "@/lib/supabase-route";
 import { hashPassword } from "@/lib/passwords";
 import {
   ACCOUNTS_COOKIE,
@@ -10,7 +12,6 @@ import {
   signAccounts,
   type AccountRecord,
 } from "@/lib/session";
-import { getSupabase } from "@/lib/supabase";
 
 export const runtime = "nodejs";
 
@@ -36,9 +37,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "exists" }, { status: 409 });
   }
 
-  const id = crypto.randomUUID();
+  const pending: PendingCookie[] = [];
+  const registered = await registerUnconfirmedUser({
+    email,
+    password,
+    name,
+    redirectTo: emailConfirmRedirect(req),
+    auth: createRouteSupabase(req, pending),
+  });
+  if (!registered.ok) {
+    const status = registered.error === "exists" ? 409 : registered.error === "unconfigured" ? 503 : 502;
+    return NextResponse.json({ error: registered.error }, { status });
+  }
+
   const account: AccountRecord = {
-    id,
+    id: registered.id,
     email,
     name,
     hash: hashPassword(password),
@@ -46,29 +59,14 @@ export async function POST(req: Request) {
   users.push(account);
   if (users.length > 25) users.splice(0, users.length - 25);
 
-  const supabase = getSupabase();
-  if (supabase) {
-    try {
-      await supabase.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-        user_metadata: { full_name: name },
-      });
-    } catch {
-      /* local session still works */
-    }
-    try {
-      await supabase.from("profiles").upsert({ id, full_name: name, role: "client" });
-    } catch {
-      /* optional */
-    }
-  }
-
-  const session = await createSessionToken({ id, email, name });
+  const session = await createSessionToken({ id: registered.id, email, name });
   const vault = await signAccounts(users);
-  const res = NextResponse.json({ user: { id, email, name } });
+  const res = NextResponse.json({
+    user: { id: registered.id, email, name },
+    verified: registered.confirmed,
+  });
   res.headers.append("Set-Cookie", sessionCookie(session));
   res.headers.append("Set-Cookie", accountsCookie(vault));
+  applyCookies(res, pending);
   return res;
 }
