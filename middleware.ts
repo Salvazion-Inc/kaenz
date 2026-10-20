@@ -6,7 +6,7 @@ import {
   localeFromPath,
   stripLocalePrefix,
 } from "@/lib/locale";
-import { SESSION_COOKIE, readSession } from "@/lib/session";
+import { resolveRequestSession } from "@/lib/account-verification";
 
 const APP_HOSTS = new Set(["app.kaenz.com", "www.app.kaenz.com"]);
 const SITE = "https://kaenz.com";
@@ -18,6 +18,7 @@ export async function middleware(request: NextRequest) {
 
   // Shared Supabase Site URL is kaenz.com. Mapucoin Google login lands
   // here with ?code= when mapucoin.com is not on the redirect allow-list.
+  // Kaenz email confirmation uses /auth/callback and must stay on this host.
   const oauthCode = request.nextUrl.searchParams.get("code");
   if (
     oauthCode &&
@@ -56,8 +57,8 @@ export async function middleware(request: NextRequest) {
   }
 
   if (pathname.startsWith("/app")) {
-    const user = await readSession(request.cookies.get(SESSION_COOKIE)?.value);
-    if (!user) {
+    const session = await resolveRequestSession(request.headers.get("cookie"), request);
+    if (!session.user) {
       const login = request.nextUrl.clone();
       login.pathname = "/login";
       login.search = `?next=${encodeURIComponent(pathname + search)}`;

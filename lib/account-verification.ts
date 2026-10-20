@@ -1,6 +1,12 @@
 import type { SessionUser } from "./session";
-import { cookieValue, readSession, SESSION_COOKIE } from "./session";
+import {
+  cookieValue,
+  hasSupabaseAuthCookie,
+  readSession,
+  SESSION_COOKIE,
+} from "./session";
 import { getSupabaseAdmin } from "./supabase";
+import { createRouteSupabase } from "./supabase-route";
 
 /**
  * Verification is not a column on `profiles`. The signal is Supabase Auth
@@ -111,14 +117,134 @@ export function unverifiedResponse() {
   );
 }
 
+export type LiveAuthUser = AuthConfirmRow & {
+  id: string;
+  email?: string | null;
+  user_metadata?: { full_name?: string; email_verified?: boolean } | null;
+};
+
+export type SessionDecision = {
+  user: SessionUser | null;
+  verified: boolean;
+  signal: ConfirmationSignal;
+};
+
+/**
+ * A Kaenz cookie is not a session by itself when Supabase can be reached.
+ * A live Supabase user wins. A presented sb-* cookie that Supabase rejects is
+ * logged out. A confirmed account with no live Supabase session is logged out.
+ * An unconfirmed account may keep the Kaenz cookie so the verify screen can
+ * render (signup does not issue an sb session until the link is opened).
+ * An unreachable Supabase project does not lock the platform.
+ */
+export function decideSession(input: {
+  cookieUser: SessionUser | null;
+  liveUser: SessionUser | null;
+  configured: boolean;
+  reachable: boolean;
+  sbCookiesPresent: boolean;
+  signal: ConfirmationSignal;
+}): SessionDecision {
+  if (input.liveUser) {
+    return {
+      user: input.liveUser,
+      verified: signalAllowsUse(input.signal),
+      signal: input.signal,
+    };
+  }
+  if (!input.cookieUser) {
+    return { user: null, verified: false, signal: "unknown" };
+  }
+  if (!input.configured || !input.reachable) {
+    return {
+      user: input.cookieUser,
+      verified: signalAllowsUse(input.signal),
+      signal: input.signal,
+    };
+  }
+  if (input.sbCookiesPresent || input.signal === "confirmed") {
+    return { user: null, verified: false, signal: input.signal };
+  }
+  return {
+    user: input.cookieUser,
+    verified: signalAllowsUse(input.signal),
+    signal: input.signal,
+  };
+}
+
+type LiveAuthResult = {
+  configured: boolean;
+  reachable: boolean;
+  user: LiveAuthUser | null;
+};
+
+async function readLiveSupabaseUser(req: Request): Promise<LiveAuthResult> {
+  const pending: { name: string; value: string }[] = [];
+  const supabase = createRouteSupabase(req, pending);
+  if (!supabase) return { configured: false, reachable: false, user: null };
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    if (data?.user?.id) {
+      return { configured: true, reachable: true, user: data.user };
+    }
+    const message = String(error?.message || "").toLowerCase();
+    const status = (error as { status?: number } | null)?.status || 0;
+    const network =
+      status >= 500 ||
+      message.includes("fetch") ||
+      message.includes("network") ||
+      message.includes("timeout");
+    if (network) return { configured: true, reachable: false, user: null };
+    return { configured: true, reachable: true, user: null };
+  } catch {
+    return { configured: true, reachable: false, user: null };
+  }
+}
+
+function sessionUserFromAuth(row: LiveAuthUser, cookieUser: SessionUser | null): SessionUser | null {
+  const email = String(row.email || cookieUser?.email || "").trim().toLowerCase();
+  if (!email) return cookieUser;
+  const metaName = String(row.user_metadata?.full_name || "").trim();
+  return {
+    id: row.id,
+    email,
+    name: cookieUser?.name || metaName || email,
+  };
+}
+
+/** Cookie plus a Supabase Auth check. Used by /app and /api/auth/me. */
+export async function resolveRequestSession(
+  cookieHeader: string | null | undefined,
+  req?: Request,
+): Promise<SessionDecision> {
+  const cookieUser = await readSession(cookieValue(cookieHeader, SESSION_COOKIE));
+  const headers = new Headers(req?.headers);
+  if (cookieHeader) headers.set("cookie", cookieHeader);
+  const probe = new Request(req?.url || "https://kaenz.com/", { headers });
+  const live = await readLiveSupabaseUser(probe);
+  const sbCookiesPresent = hasSupabaseAuthCookie(cookieHeader);
+  const liveUser = live.user ? sessionUserFromAuth(live.user, cookieUser) : null;
+
+  let signal: ConfirmationSignal = "unknown";
+  if (req && previewUnverifiedOverride(req)) signal = "unconfirmed";
+  else if (live.user) signal = confirmationSignal(live.user);
+  else if (cookieUser) signal = await accountSignal(cookieUser, req);
+
+  return decideSession({
+    cookieUser,
+    liveUser,
+    configured: live.configured,
+    reachable: live.reachable,
+    sbCookiesPresent,
+    signal,
+  });
+}
+
 export async function requireVerifiedUser(
   req: Request,
 ): Promise<{ user: SessionUser } | { response: Response }> {
-  const user = await readSession(cookieValue(req.headers.get("cookie"), SESSION_COOKIE));
-  const decision = accessDecision(
-    user,
-    user ? await accountSignal(user, req) : "unknown",
-  );
+  const { user, signal } = await resolveRequestSession(req.headers.get("cookie"), req);
+  const decision = accessDecision(user, signal);
   if (decision === "anonymous") {
     return { response: Response.json({ error: "auth" }, { status: 401 }) };
   }

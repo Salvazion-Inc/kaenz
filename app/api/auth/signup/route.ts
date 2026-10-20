@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { emailConfirmRedirect, registerUnconfirmedUser } from "@/lib/email-verification";
+import { applyCookies, createRouteSupabase, type PendingCookie } from "@/lib/supabase-route";
 import { hashPassword } from "@/lib/passwords";
 import {
   ACCOUNTS_COOKIE,
@@ -36,11 +37,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "exists" }, { status: 409 });
   }
 
+  const pending: PendingCookie[] = [];
   const registered = await registerUnconfirmedUser({
     email,
     password,
     name,
     redirectTo: emailConfirmRedirect(req),
+    auth: createRouteSupabase(req, pending),
   });
   if (!registered.ok) {
     const status = registered.error === "exists" ? 409 : registered.error === "unconfigured" ? 503 : 502;
@@ -64,5 +67,6 @@ export async function POST(req: Request) {
   });
   res.headers.append("Set-Cookie", sessionCookie(session));
   res.headers.append("Set-Cookie", accountsCookie(vault));
+  applyCookies(res, pending);
   return res;
 }

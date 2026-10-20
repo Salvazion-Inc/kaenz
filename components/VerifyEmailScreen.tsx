@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { LogoutButton } from "@/components/LogoutButton";
 import { t } from "@/lib/copy";
 import { useLocale } from "@/lib/locale-context";
 
@@ -22,11 +23,6 @@ export function VerifyEmailScreen({ email }: { email?: string }) {
     } catch {
       setStatus("err");
     }
-  }
-
-  async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" }).catch(() => undefined);
-    window.location.assign("/login");
   }
 
   return (
@@ -53,13 +49,10 @@ export function VerifyEmailScreen({ email }: { email?: string }) {
           {c.verifyResendError}
         </p>
       ) : null}
-      <button
-        type="button"
-        onClick={logout}
+      <LogoutButton
+        label={c.nav.logout}
         className="mt-6 text-sm font-semibold text-white/70 underline-offset-4 hover:underline"
-      >
-        {c.nav.logout}
-      </button>
+      />
     </section>
   );
 }

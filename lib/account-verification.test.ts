@@ -127,7 +127,10 @@ async function expectGate(
   allowed(verified.status, verifiedBody);
 }
 
-test("confirmation email returns to the request origin plus /app", () => {
+test("confirmation email returns to the request origin callback, not the site root", () => {
+  const sender = readFileSync(new URL("./email-verification.ts", import.meta.url), "utf8");
+  assert.match(sender, /emailRedirectTo: opts\.redirectTo/);
+  assert.match(sender, /emailRedirectTo: redirectTo/);
   const preview = emailConfirmRedirect(
     new Request("https://kaenz.com/api/auth/signup", {
       headers: {
@@ -136,15 +139,17 @@ test("confirmation email returns to the request origin plus /app", () => {
       },
     }),
   );
-  assert.equal(preview, "https://kaenz-preview.vercel.app/app");
+  assert.equal(preview, "https://kaenz-preview.vercel.app/auth/callback");
   const prod = emailConfirmRedirect(new Request("https://kaenz.com/api/auth/signup"));
-  assert.equal(prod, "https://kaenz.com/app");
+  assert.equal(prod, "https://kaenz.com/auth/callback");
+  assert.notEqual(prod, "https://kaenz.com");
+  assert.notEqual(prod, "https://kaenz.com/");
   const local = emailConfirmRedirect(
     new Request("http://localhost:3000/api/auth/verify-email", {
       headers: { host: "localhost:3000" },
     }),
   );
-  assert.equal(local, "http://localhost:3000/app");
+  assert.equal(local, "http://localhost:3000/auth/callback");
 });
 
 test("booking, checkout, and yacht listing gate the three cases", async () => {

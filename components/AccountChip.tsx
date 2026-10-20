@@ -8,6 +8,7 @@ import { t } from "@/lib/copy";
 import { pathFor, type Locale } from "@/lib/locale";
 import { useProfile } from "@/lib/profile-store";
 import type { SessionUser } from "@/lib/session";
+import { LogoutButton } from "./LogoutButton";
 import { ProfileAvatar } from "./app/ProfileAvatar";
 
 export function AccountChip({ locale }: { locale: Locale }) {
@@ -25,11 +26,6 @@ export function AccountChip({ locale }: { locale: Locale }) {
   }, []);
 
   if (!user) return null;
-
-  async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    window.location.href = "/login";
-  }
 
   const label = profile?.fullName || user.name || user.email;
 
@@ -50,13 +46,10 @@ export function AccountChip({ locale }: { locale: Locale }) {
           ) : null}
         </span>
       </Link>
-      <button
-        type="button"
-        onClick={logout}
+      <LogoutButton
+        label={c.nav.logout}
         className="rounded-full border border-white/25 px-2 py-1 text-[11px] text-white/80"
-      >
-        {c.nav.logout}
-      </button>
+      />
     </div>
   );
 }

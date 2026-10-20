@@ -1,19 +1,28 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { confirmationSignal } from "./account-verification";
 import { getSupabaseAdmin } from "./supabase";
 
 /**
- * Confirmation links must return to the host that started signup (preview or
- * production), not a fixed kaenz.com origin.
+ * Supabase only honors emailRedirectTo when the URL matches Authentication →
+ * URL Configuration → Redirect URLs. Otherwise the message falls back to the
+ * Site URL root (https://kaenz.com). The allow-list is:
+ * https://kaenz.com/** and https://*-salvazion.vercel.app/**
  */
-export function emailConfirmRedirect(req: Request) {
+export const EMAIL_CONFIRM_PATH = "/auth/callback";
+
+export function requestOrigin(req: Request) {
   const forwardedHost = req.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
   const url = new URL(req.url);
   const host = (forwardedHost || req.headers.get("host") || url.host).split("/")[0].trim();
   const forwardedProto = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
   const local = host.startsWith("localhost") || host.startsWith("127.");
   const proto = forwardedProto || (local ? "http" : "https");
-  return `${proto}://${host}/app`;
+  return `${proto}://${host}`;
+}
+
+/** Confirmation links return to this host's /auth/callback, not the site root. */
+export function emailConfirmRedirect(req: Request) {
+  return `${requestOrigin(req)}${EMAIL_CONFIRM_PATH}`;
 }
 
 /** Anon key is the Auth API that sends Supabase's signup confirmation. It is not a data fallback. */
@@ -31,11 +40,12 @@ export async function registerUnconfirmedUser(opts: {
   password: string;
   name: string;
   redirectTo: string;
+  auth?: SupabaseClient | null;
 }): Promise<
   | { ok: true; id: string; confirmed: boolean }
   | { ok: false; error: "exists" | "send" | "unconfigured" }
 > {
-  const auth = getAuthClient();
+  const auth = opts.auth === undefined ? getAuthClient() : opts.auth;
   const admin = getSupabaseAdmin();
   if (!auth || !admin) return { ok: false, error: "unconfigured" };
 

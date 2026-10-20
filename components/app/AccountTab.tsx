@@ -151,12 +151,6 @@ export function AccountTab({ locale }: { locale: Locale }) {
     }
   }
 
-  async function logout() {
-    disableBiometric();
-    await fetch("/api/auth/logout", { method: "POST" });
-    window.location.href = "/login";
-  }
-
   async function onPhoto(file: File | undefined) {
     if (!file || !file.type.startsWith("image/")) return;
     setPhotoBusy(true);
@@ -533,13 +527,19 @@ export function AccountTab({ locale }: { locale: Locale }) {
         </button>
       </form>
 
-      <button
-        type="button"
-        onClick={logout}
-        className="mt-6 w-full rounded-xl border border-white/20 py-3 text-sm font-semibold text-white/80"
+      <form
+        action="/api/auth/logout"
+        method="POST"
+        className="mt-6"
+        onSubmit={() => disableBiometric()}
       >
-        {a.logout}
-      </button>
+        <button
+          type="submit"
+          className="w-full rounded-xl border border-white/20 py-3 text-sm font-semibold text-white/80"
+        >
+          {a.logout}
+        </button>
+      </form>
     </div>
   );
 }
