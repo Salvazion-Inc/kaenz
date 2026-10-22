@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   BiometricCancelledError,
+  disableBiometric,
   persistBiometricVault,
   unlockWithBiometric,
 } from "@/lib/auth/biometric";
@@ -41,6 +42,14 @@ export function BiometricLogin({
         body: JSON.stringify({ token: vault.token }),
       });
       if (!res.ok) {
+        const failed = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          stale?: boolean;
+        };
+        if (failed.stale || failed.error === "expired") {
+          disableBiometric();
+          onUsePassword();
+        }
         setError(c.biometricExpired);
         return;
       }
