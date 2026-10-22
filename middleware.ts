@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { applySecurityHeaders } from "@/lib/security-headers";
 import {
   LOCALE_COOKIE,
   localeCookieHeader,
@@ -31,21 +32,21 @@ export async function middleware(request: NextRequest) {
   ) {
     const dest = new URL("/auth/callback", MAPUCOIN);
     dest.search = request.nextUrl.search;
-    return NextResponse.redirect(dest);
+    return applySecurityHeaders(NextResponse.redirect(dest));
   }
 
   if (host === "www.kaenz.com") {
     const url = request.nextUrl.clone();
     url.host = "kaenz.com";
     url.protocol = "https:";
-    return NextResponse.redirect(url, 308);
+    return applySecurityHeaders(NextResponse.redirect(url, 308));
   }
 
   if (APP_HOSTS.has(host)) {
     const dest = pathname.startsWith("/app")
       ? `${SITE}${pathname}${search}`
       : `${SITE}/app${pathname === "/" ? "" : pathname}${search}`;
-    return NextResponse.redirect(dest, 308);
+    return applySecurityHeaders(NextResponse.redirect(dest, 308));
   }
 
   const prefixed = localeFromPath(pathname);
@@ -53,7 +54,7 @@ export async function middleware(request: NextRequest) {
     const dest = new URL(stripLocalePrefix(pathname) + search, request.url);
     const res = NextResponse.redirect(dest, 308);
     res.headers.append("Set-Cookie", localeCookieHeader(prefixed));
-    return res;
+    return applySecurityHeaders(res);
   }
 
   if (pathname.startsWith("/app")) {
@@ -62,14 +63,23 @@ export async function middleware(request: NextRequest) {
       const login = request.nextUrl.clone();
       login.pathname = "/login";
       login.search = `?next=${encodeURIComponent(pathname + search)}`;
-      return NextResponse.redirect(login);
+      const redirect = NextResponse.redirect(login);
+      redirect.headers.set("X-Robots-Tag", "noindex, nofollow");
+      return applySecurityHeaders(redirect);
     }
   }
 
   const locale = request.cookies.get(LOCALE_COOKIE)?.value;
   const res = NextResponse.next();
   if (locale) res.headers.set("x-kaenz-locale", locale);
-  return res;
+  if (
+    pathname.startsWith("/app") ||
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/mapucoin-auth")
+  ) {
+    res.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
+  return applySecurityHeaders(res);
 }
 
 export const config = {

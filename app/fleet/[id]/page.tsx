@@ -1,11 +1,93 @@
 import { cookies, headers } from "next/headers";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { YachtDetailClient } from "@/components/pages/YachtDetailClient";
 import { resolveRequestSession } from "@/lib/account-verification";
 import { fleetAccess } from "@/lib/fleet-access";
 import { resolveInventoryYacht } from "@/lib/inventory";
 import { loadBookingContact } from "@/lib/profile";
-import { yachts } from "@/lib/yachts";
+import { yachtById, yachts, type Yacht } from "@/lib/yachts";
+
+const SITE = "https://kaenz.com";
+
+function yachtJsonLd(yacht: Yacht) {
+  const url = `${SITE}/fleet/${yacht.id}`;
+  const image = yacht.image.startsWith("http") ? yacht.image : `${SITE}${yacht.image}`;
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Product",
+        name: yacht.name,
+        description: yacht.blurb.en,
+        image,
+        url,
+        brand: { "@type": "Brand", name: "Kaenz" },
+        category: "Yacht",
+        additionalProperty: [
+          { "@type": "PropertyValue", name: "Length", value: `${yacht.lengthFt} ft` },
+          { "@type": "PropertyValue", name: "Guests", value: String(yacht.guests) },
+          { "@type": "PropertyValue", name: "Marina", value: yacht.marina },
+        ],
+        ...(yacht.priceFromUsd
+          ? {
+              offers: {
+                "@type": "Offer",
+                priceCurrency: "USD",
+                price: String(yacht.priceFromUsd),
+                availability: "https://schema.org/InStock",
+                url,
+              },
+            }
+          : {}),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Kaenz", item: SITE },
+          { "@type": "ListItem", position: 2, name: "Yachts", item: `${SITE}/fleet` },
+          { "@type": "ListItem", position: 3, name: yacht.name, item: url },
+        ],
+      },
+    ],
+  };
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(data).replace(/</g, "\\u003c"),
+      }}
+    />
+  );
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const yacht = yachtById(id);
+  if (!yacht) {
+    return {
+      title: "Yacht | Kaenz",
+      description:
+        "Commute, Tour, and Special Occasion yacht trips on Kaenz. Independent captains run each trip.",
+    };
+  }
+  const description = yacht.blurb.en;
+  return {
+    title: `${yacht.name} | Kaenz`,
+    description,
+    alternates: { canonical: `/fleet/${yacht.id}` },
+    openGraph: {
+      title: `${yacht.name} | Kaenz`,
+      description,
+      url: `${SITE}/fleet/${yacht.id}`,
+      images: [yacht.image],
+    },
+  };
+}
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
@@ -47,12 +129,15 @@ export default async function Page({
     : null;
 
   return (
-    <YachtDetailClient
-      yacht={yacht}
-      canceled={query.checkout === "cancel"}
-      viewer={viewer}
-      access={access}
-      contact={access === "verified" ? contact : null}
-    />
+    <>
+      {yachtJsonLd(yacht)}
+      <YachtDetailClient
+        yacht={yacht}
+        canceled={query.checkout === "cancel"}
+        viewer={viewer}
+        access={access}
+        contact={access === "verified" ? contact : null}
+      />
+    </>
   );
 }

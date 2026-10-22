@@ -1,0 +1,28 @@
+# Kaenz
+
+> Skip the traffic. Travel by yacht. Kaenz is an end-to-end platform for Commute, Tour, and Special Occasion yacht trips in marinas and ports worldwide. Independent owners, captains, and marinas run each trip. Kaenz is not a charter operator.
+
+Kaenz is the yacht platform at https://kaenz.com, operated by Salvazion, Inc. (a Delaware corporation). An algorithm sets the price from trip type, duration, yacht type, guests, and date. Payment is Stripe. Languages: English, Spanish, French, Italian, and Portuguese. Tagline in Spanish: Salta el tráfico. Viaja en yate.
+
+## Product
+
+- [Home](https://kaenz.com/): Commute, Tour, and Special Occasion
+- [Yachts](https://kaenz.com/fleet): private, captained yachts
+- [Join](https://kaenz.com/join): owners and captains list a yacht
+- [Sign up](https://kaenz.com/signup)
+- [Log in](https://kaenz.com/login)
+
+## Legal
+
+- [Terms](https://kaenz.com/terms)
+- [Privacy](https://kaenz.com/privacy)
+- [Términos](https://kaenz.com/terminos)
+- [Privacidad](https://kaenz.com/privacidad)
+
+## Optional
+
+- [Full brief](https://kaenz.com/llms-full.txt): facts worth citing
+- [AI usage policy](https://kaenz.com/.well-known/ai.txt): public pages may be searched, cited, and used to train models. The signed-in app and API are private.
+- [AI usage policy JSON](https://kaenz.com/.well-known/ai.json)
+- [Sitemap](https://kaenz.com/sitemap.xml): every public yacht page
+- [Instagram](https://www.instagram.com/kaenz_yachts/): @kaenz_yachts

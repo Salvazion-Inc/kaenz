@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { cookies } from "next/headers";
 import { Outfit } from "next/font/google";
+import { SiteJsonLd } from "@/components/seo/JsonLd";
 import { LocaleProvider } from "@/lib/locale-context";
 import { LocationProvider } from "@/lib/location";
 import { LOCALE_COOKIE, parseLocale } from "@/lib/locale";
@@ -23,15 +24,46 @@ export const metadata: Metadata = {
   title: "Kaenz: Commute, Tour & Special Occasion by yacht",
   description:
     "Kaenz is an end-to-end yacht platform — not a charter operator — for Commute, Tour, and Special Occasion trips worldwide. Pay with Stripe.",
+  applicationName: "Kaenz",
+  authors: [{ name: "Salvazion, Inc.", url: "https://salvazion.org" }],
+  creator: "Salvazion, Inc.",
+  publisher: "Salvazion, Inc.",
+  category: "Travel",
+  keywords: [
+    "Kaenz",
+    "yacht commute",
+    "yacht tour",
+    "special occasion yacht",
+    "marina",
+    "Skip the traffic. Travel by yacht.",
+  ],
   alternates: {
-    canonical: "https://kaenz.com",
+    canonical: "./",
     languages: {
-      en: "https://kaenz.com",
-      es: "https://kaenz.com",
-      fr: "https://kaenz.com",
-      it: "https://kaenz.com",
-      pt: "https://kaenz.com",
-      "x-default": "https://kaenz.com",
+      en: "./",
+      es: "./",
+      fr: "./",
+      it: "./",
+      pt: "./",
+      "x-default": "./",
+    },
+    types: {
+      "text/plain": [
+        { url: "/llms.txt", title: "LLM brief" },
+        { url: "/llms-full.txt", title: "LLM citation brief" },
+        { url: "/.well-known/ai.txt", title: "AI usage policy" },
+      ],
+    },
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
     },
   },
   manifest: "/manifest.json",
@@ -54,6 +86,24 @@ export const metadata: Metadata = {
       "Kaenz is an end-to-end yacht platform for Commute, Tour, and Special Occasion trips worldwide. Pay with Stripe.",
     type: "website",
     url: "https://kaenz.com",
+    siteName: "Kaenz",
+    locale: "en_US",
+    images: [
+      {
+        url: "/hero-poster.jpg",
+        alt: "Skip the traffic. Travel by yacht.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Kaenz: Commute, Tour & Special Occasion by yacht",
+    description:
+      "Skip the traffic. Travel by yacht. Commute, Tour, and Special Occasion.",
+    images: ["/hero-poster.jpg"],
+  },
+  other: {
+    "tdm-reservation": "0",
   },
 };
 
@@ -65,6 +115,7 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body className={`${outfit.className} antialiased`}>
+        <SiteJsonLd />
         <LocaleProvider initialLocale={locale}>
           <LocationProvider>{children}</LocationProvider>
         </LocaleProvider>

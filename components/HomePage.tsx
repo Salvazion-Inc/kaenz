@@ -41,10 +41,16 @@ export function HomePage({ locale }: { locale: Locale }) {
             size={256}
             className="h-44 w-44 sm:h-52 sm:w-52 md:h-56 md:w-56"
           />
-          <h1 className="hero-title mt-4 max-w-5xl text-4xl font-extrabold leading-[1.05] text-white md:text-6xl lg:text-7xl">
+          <h1
+            id="hero-heading"
+            className="hero-title mt-4 max-w-5xl text-4xl font-extrabold leading-[1.05] text-white md:text-6xl lg:text-7xl"
+          >
             {c.heroTitle}
           </h1>
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-white/80 md:text-lg">
+          <p
+            id="hero-lead"
+            className="mt-6 max-w-2xl text-base leading-relaxed text-white/80 md:text-lg"
+          >
             {c.heroLead}
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
