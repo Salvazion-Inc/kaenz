@@ -55,12 +55,11 @@ export function AuthForm({
   const justVerified = mode === "login" && search.get("verified") === "1";
   const [status, setStatus] = useState<"idle" | "sending" | "err">("idle");
   const [message, setMessage] = useState("");
-  const [passwordFallback, setPasswordFallback] = useState(false);
+  const [biometricDismissed, setBiometricDismissed] = useState(false);
   const [verifyEmail, setVerifyEmail] = useState("");
   const { ready: biometricReady, enabled: biometricEnabled } = useBiometricGate();
-  const thumbGate =
-    mode === "login" && biometricReady && biometricEnabled && !passwordFallback;
-  const waitingGate = mode === "login" && !biometricReady;
+  const offerBiometric =
+    mode === "login" && biometricReady && biometricEnabled && !biometricDismissed;
   const reason =
     googleReason ||
     (search.get("auth") === "google" ? search.get("reason") : null) ||
@@ -115,6 +114,7 @@ export function AuthForm({
             role: prefill.role,
             yacht: prefill.yacht,
             marina: prefill.marina,
+            company_website: String(form.get("company_website") || ""),
           }),
         },
       );
@@ -140,8 +140,7 @@ export function AuthForm({
         mode === "signup" &&
         (data.confirmationRequired === true || data.verified !== true)
       ) {
-        const address = email.trim();
-        router.replace(`/check-email?email=${encodeURIComponent(address)}`);
+        router.replace("/check-email");
         router.refresh();
         return;
       }
@@ -164,16 +163,13 @@ export function AuthForm({
   return (
     <Site locale={locale}>
       <section className="mx-auto max-w-md px-5 pb-24">
-        {waitingGate ? (
-          <p className="text-sm text-white/50">{c.biometricProcessing}</p>
-        ) : thumbGate ? (
+        {offerBiometric ? (
           <BiometricLogin
             locale={locale}
             next={next}
-            onUsePassword={() => setPasswordFallback(true)}
+            onUsePassword={() => setBiometricDismissed(true)}
           />
-        ) : (
-          <>
+        ) : null}
         {justVerified ? (
           <p className="mb-4 rounded-xl border border-kaenz/40 bg-kaenz/10 px-4 py-3 text-sm text-white">
             {EMAIL_VERIFIED_SIGN_IN}
@@ -190,8 +186,22 @@ export function AuthForm({
         ) : null}
         <form
           onSubmit={onSubmit}
-          className="mt-8 rounded-2xl border border-white/10 bg-white p-6 text-navy"
+          className="relative mt-8 rounded-2xl border border-white/10 bg-white p-6 text-navy"
         >
+          {mode === "signup" ? (
+            <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
+              <label>
+                Company website
+                <input
+                  type="text"
+                  name="company_website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  defaultValue=""
+                />
+              </label>
+            </div>
+          ) : null}
           {message || googleMessage ? (
             <div
               role="alert"
@@ -276,8 +286,6 @@ export function AuthForm({
             </Link>
           )}
         </p>
-          </>
-        )}
       </section>
     </Site>
   );

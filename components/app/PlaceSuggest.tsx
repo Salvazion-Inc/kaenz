@@ -67,6 +67,7 @@ export function PlaceSuggest({
   places,
   here,
   onSelect,
+  onText,
 }: {
   locale: Locale;
   label: string;
@@ -75,6 +76,7 @@ export function PlaceSuggest({
   places: Place[];
   here: { lat: number; lng: number };
   onSelect: (id: string) => void;
+  onText?: (value: string) => void;
 }) {
   const c = at(locale);
   const selected = places.find((p) => p.id === valueId);
@@ -113,6 +115,7 @@ export function PlaceSuggest({
 
   function pick(place: Place) {
     onSelect(place.id);
+    onText?.(place.name);
     setQuery(labelFor(place, locale));
     setOpen(false);
   }
@@ -149,7 +152,12 @@ export function PlaceSuggest({
           placeholder={placeholder}
           value={query}
           onChange={(e) => {
-            setQuery(e.target.value);
+            const value = e.target.value;
+            setQuery(value);
+            onText?.(value);
+            if (selected && value.trim() !== labelFor(selected, locale).trim()) {
+              onSelect("");
+            }
             setOpen(true);
             setActive(0);
           }}

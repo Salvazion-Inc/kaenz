@@ -7,8 +7,8 @@ export const runtime = "nodejs";
 
 /**
  * Payout onboarding binds a Stripe account to a Kaenz session user id. That is
- * only safe when sessions are signed with a private AUTH_SECRET (the fallback
- * key in lib/session.ts is public in this repo), so fail closed without it.
+ * only safe when sessions are signed with a private AUTH_SECRET. Production
+ * refuses to sign without that variable. Fail closed here when it is unset.
  */
 function guard() {
   if (!process.env.AUTH_SECRET) return "auth_secret";

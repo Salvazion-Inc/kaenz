@@ -25,6 +25,24 @@ export function buildYachtDraft(input: {
   };
 }
 
+export type DraftAccess = "delete" | "missing" | "forbidden";
+
+/** A draft can be removed only by the account that saved it. Listed yachts stay. */
+export function draftDeleteDecision(
+  row: { createdBy: string; status: string } | null | undefined,
+  userId: string,
+): DraftAccess {
+  if (!row?.createdBy) return "missing";
+  if (row.createdBy !== userId || row.status !== "draft") return "forbidden";
+  return "delete";
+}
+
+export function missingPublishDocuments(present: Iterable<string>) {
+  const have = new Set(present);
+  const required = ["owner_id", "captain_id", "captain_mmc", "captain_photo", "yacht_0"] as const;
+  return required.filter((slot) => !have.has(slot));
+}
+
 export function buildMarinaDraft(input: { name: unknown }) {
   const name = clip(input.name);
   if (name.length < 2) return { ok: false as const, error: "fields" as const };
