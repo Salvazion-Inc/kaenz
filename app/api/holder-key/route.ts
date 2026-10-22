@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { readApiSession } from "@/lib/account-verification";
 import { PROFILE_COOKIE, readProfileMap } from "@/lib/profile";
 import { resolveHolderKey } from "@/lib/salvazion-key";
-import { SESSION_COOKIE, cookieValue, readSession } from "@/lib/session";
+import { cookieValue } from "@/lib/session";
 import { getSupabase } from "@/lib/supabase";
 
 export const runtime = "nodejs";
@@ -11,9 +12,7 @@ export const runtime = "nodejs";
  * No session → 401. The flag defaults off. This route never writes.
  */
 export async function GET(req: Request) {
-  const user = await readSession(
-    cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
-  );
+  const user = await readApiSession(req);
   if (!user) {
     return NextResponse.json({ error: "auth" }, { status: 401 });
   }

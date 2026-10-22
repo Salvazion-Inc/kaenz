@@ -528,7 +528,7 @@ export const copy = {
     joinFee:
       "Se cobra con Stripe. Dueño 38%. Capitán 30%. Kaenz 25%. Marina de origen 3.5%. Marina de destino 3.5%. Gratificación opcional al capitán (15–20%) va directo al capitán.",
     joinCaptains:
-      "Capitanes: credencial USCG OUPV Six-Pack o licencia local equivalente, y verificación de antecedentes.",
+      "Capitanes: licencia de patrón USCG OUPV (hasta 6 pasajeros) o licencia local equivalente, y verificación de antecedentes.",
     joinOwners:
       "Dueños: registro del yate, HIN y seguro marítimo comercial (mín. $1,000,000).",
     formError: "No se pudo enviar. Inténtalo de nuevo.",

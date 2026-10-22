@@ -5,6 +5,7 @@ import {
   readSession,
   SESSION_COOKIE,
 } from "./session";
+import { shouldClearDeviceSession, type AuthFailure } from "./stale-session";
 import { getSupabase, getSupabaseAdmin } from "./supabase";
 import { createRouteSupabase } from "./supabase-route";
 
@@ -165,6 +166,7 @@ export type SessionDecision = {
   user: SessionUser | null;
   verified: boolean;
   signal: ConfirmationSignal;
+  stale: boolean;
 };
 
 /**
@@ -188,25 +190,28 @@ export function decideSession(input: {
       user: input.liveUser,
       verified: signalAllowsUse(input.signal),
       signal: input.signal,
+      stale: false,
     };
   }
   if (!input.cookieUser) {
-    return { user: null, verified: false, signal: "unknown" };
+    return { user: null, verified: false, signal: "unknown", stale: false };
   }
   if (!input.configured || !input.reachable) {
     return {
       user: input.cookieUser,
       verified: signalAllowsUse(input.signal),
       signal: input.signal,
+      stale: false,
     };
   }
   if (input.sbCookiesPresent || input.signal === "confirmed") {
-    return { user: null, verified: false, signal: input.signal };
+    return { user: null, verified: false, signal: input.signal, stale: false };
   }
   return {
     user: input.cookieUser,
     verified: signalAllowsUse(input.signal),
     signal: input.signal,
+    stale: false,
   };
 }
 
@@ -214,28 +219,36 @@ type LiveAuthResult = {
   configured: boolean;
   reachable: boolean;
   user: LiveAuthUser | null;
+  error: AuthFailure | null;
 };
+
+function authFailure(error: unknown): AuthFailure | null {
+  if (!error || typeof error !== "object") return null;
+  const row = error as { message?: string; code?: string };
+  return { message: row.message || "", code: row.code || "" };
+}
 
 async function readLiveSupabaseUser(req: Request): Promise<LiveAuthResult> {
   const pending: { name: string; value: string }[] = [];
   const supabase = createRouteSupabase(req, pending);
-  if (!supabase) return { configured: false, reachable: false, user: null };
+  if (!supabase) return { configured: false, reachable: false, user: null, error: null };
   try {
     const { data, error } = await supabase.auth.getUser();
     if (data?.user?.id) {
-      return { configured: true, reachable: true, user: data.user };
+      return { configured: true, reachable: true, user: data.user, error: null };
     }
-    const message = String(error?.message || "").toLowerCase();
+    const failure = authFailure(error);
+    const message = String(failure?.message || "").toLowerCase();
     const status = (error as { status?: number } | null)?.status || 0;
     const network =
       status >= 500 ||
       message.includes("fetch") ||
       message.includes("network") ||
       message.includes("timeout");
-    if (network) return { configured: true, reachable: false, user: null };
-    return { configured: true, reachable: true, user: null };
-  } catch {
-    return { configured: true, reachable: false, user: null };
+    if (network) return { configured: true, reachable: false, user: null, error: failure };
+    return { configured: true, reachable: true, user: null, error: failure };
+  } catch (err) {
+    return { configured: true, reachable: false, user: null, error: authFailure(err) };
   }
 }
 
@@ -272,7 +285,7 @@ export async function resolveRequestSession(
     if (signal === "confirmed") void syncConfirmedProfile(adminRow || live.user);
   } else if (cookieUser) signal = await accountSignal(cookieUser, req);
 
-  return decideSession({
+  const decision = decideSession({
     cookieUser,
     liveUser,
     configured: live.configured,
@@ -280,6 +293,25 @@ export async function resolveRequestSession(
     sbCookiesPresent,
     signal,
   });
+  return {
+    ...decision,
+    stale: shouldClearDeviceSession({
+      reachable: live.reachable,
+      live: Boolean(live.user),
+      sbCookiesPresent,
+      confirmed: signal === "confirmed",
+      error: live.error,
+    }),
+  };
+}
+
+/**
+ * Caller for every API route. Same decision as GET /api/auth/me: a live
+ * Supabase user wins when the Kaenz cookie was signed with an older key.
+ */
+export async function readApiSession(req: Request): Promise<SessionUser | null> {
+  const { user } = await resolveRequestSession(req.headers.get("cookie"), req);
+  return user;
 }
 
 export async function requireVerifiedUser(

@@ -270,6 +270,9 @@ test("check-email shows only the signed signup cookie", async () => {
   assert.match(page, /invalid/);
   const screen = readFileSync(new URL("../components/VerifyEmailScreen.tsx", import.meta.url), "utf8");
   assert.match(screen, /linkInvalid/);
+  assert.match(screen, /invalid \? null :/);
+  assert.match(screen, /verifyBody/);
+  assert.match(t("en").verifyBody, /We sent you a verification link/);
   assert.equal(screen.includes("LINK_INVALID"), false);
   assert.match(screen, /\/api\/auth\/me/);
   assert.match(screen, /hasSession/);
@@ -309,7 +312,9 @@ test("signup honeypot and burst limit do not create an account", async () => {
     const ignored = await trap.json();
     assert.equal(ignored.confirmationRequired, true);
     assert.equal(ignored.user, undefined);
-    assert.equal(String(trap.headers.get("set-cookie") || "").includes("kaenz_session="), false);
+    const trapCookies = trap.headers.getSetCookie?.().join("\n") || trap.headers.get("set-cookie") || "";
+    assert.equal(trapCookies.includes("kaenz_session="), false);
+    assert.equal(trapCookies.includes("kaenz_check_email="), false);
 
     const again = await postSignup(
       new Request("https://kaenz.com/api/auth/signup", {
@@ -380,6 +385,10 @@ test("production refuses to sign sessions without AUTH_SECRET", () => {
   assert.match(limiter, /in memory/i);
   assert.match(limiter, /Upstash/);
   assert.match(limiter, /no rate-limit table/i);
+  const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
+  assert.match(readme, /in memory/i);
+  assert.match(readme, /no rate-limit table/i);
+  assert.match(readme, /Upstash/);
 });
 
 test("password reset does not reveal whether the account exists", async () => {
@@ -499,6 +508,16 @@ test("spanish locale translates the remaining product strings", () => {
   assert.equal(traitLabel("fast", "es"), "Rápido");
   assert.equal(yachtClassLabel("Express cruiser", "es"), "Crucero express");
   assert.equal(captainCredential("USCG Master 100 Ton", "es"), "Patrón USCG, 100 toneladas");
+  assert.equal(
+    captainCredential("USCG OUPV Six-Pack", "es"),
+    "Patrón USCG OUPV, hasta 6 pasajeros",
+  );
+  assert.equal(yachtClassLabel("Bowrider", "es"), "Lancha bowrider");
+  assert.match(at("es").yachtsLead, /Rápido, Pequeño o De lujo/);
+  assert.equal(at("es").yachtsLead.includes("Fast, Small"), false);
+  assert.equal(es.joinCaptains.includes("Six-Pack"), false);
+  assert.match(es.joinCaptains, /hasta 6 pasajeros/);
+  assert.equal(es.captain, "Capitán");
   assert.match(captainCredential("MMC", "es"), /Licencia MMC/);
   assert.equal(es.forgotPassword, "¿Olvidaste tu contraseña?");
   assert.equal(es.forgotTitle, "Restablece tu contraseña");

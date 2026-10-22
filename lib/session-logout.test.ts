@@ -7,6 +7,7 @@ import { decideSession } from "./account-verification.ts";
 import { fleetAccess } from "./fleet-access.ts";
 import { bookingContact, emptyProfile, PROFILE_COOKIE, signProfileMap, loadBookingContact } from "./profile.ts";
 import { createSessionToken, hasSupabaseAuthCookie, SESSION_COOKIE } from "./session.ts";
+import { shouldClearDeviceSession, staleSupabaseAuthError } from "./stale-session.ts";
 
 const user = { id: "11111111-1111-4111-8111-111111111111", email: "ada@kaenz.com", name: "Ada" };
 
@@ -155,9 +156,14 @@ test("auth me ignores a Kaenz cookie when Supabase has no live session for a con
         },
       }),
     );
-    const closedBody = (await closed.json()) as { user: unknown; verified: boolean };
+    const closedBody = (await closed.json()) as { user: unknown; verified: boolean; stale?: boolean };
     assert.equal(closedBody.user, null);
     assert.equal(closedBody.verified, false);
+    assert.equal(closedBody.stale, true);
+    const cleared =
+      typeof closed.headers.getSetCookie === "function" ? closed.headers.getSetCookie().join("\n") : "";
+    assert.match(cleared, new RegExp(`${SESSION_COOKIE}=;`));
+    assert.match(cleared, /sb-example-auth-token=;/);
   } finally {
     for (const key of keys) {
       const value = previous.get(key);
@@ -165,6 +171,93 @@ test("auth me ignores a Kaenz cookie when Supabase has no live session for a con
       else process.env[key] = value;
     }
   }
+});
+
+test("a dead supabase session drops the device login instead of looping fingerprint", () => {
+  assert.equal(
+    staleSupabaseAuthError({
+      code: "session_not_found",
+      message: "Session from session_id claim in JWT does not exist",
+    }),
+    true,
+  );
+  assert.equal(
+    staleSupabaseAuthError({
+      code: "refresh_token_not_found",
+      message: "Invalid Refresh Token: Refresh Token Not Found",
+    }),
+    true,
+  );
+  assert.equal(staleSupabaseAuthError({ message: "Invalid Refresh Token" }), true);
+  assert.equal(staleSupabaseAuthError({ message: "fetch failed" }), false);
+  assert.equal(staleSupabaseAuthError(null), false);
+  assert.equal(
+    shouldClearDeviceSession({
+      reachable: false,
+      live: false,
+      sbCookiesPresent: true,
+      error: { code: "session_not_found" },
+    }),
+    false,
+  );
+  assert.equal(
+    shouldClearDeviceSession({
+      reachable: true,
+      live: true,
+      sbCookiesPresent: true,
+      error: { code: "refresh_token_not_found" },
+    }),
+    false,
+  );
+  assert.equal(
+    shouldClearDeviceSession({
+      reachable: true,
+      live: false,
+      sbCookiesPresent: true,
+      error: { code: "session_not_found" },
+    }),
+    true,
+  );
+  assert.equal(
+    shouldClearDeviceSession({
+      reachable: true,
+      live: false,
+      sbCookiesPresent: false,
+      confirmed: true,
+      error: null,
+    }),
+    true,
+  );
+  assert.equal(
+    shouldClearDeviceSession({
+      reachable: true,
+      live: false,
+      sbCookiesPresent: false,
+      confirmed: false,
+      error: { message: "Auth session missing" },
+    }),
+    false,
+  );
+
+  const login = readFileSync(new URL("../components/auth/BiometricLogin.tsx", import.meta.url), "utf8");
+  assert.match(login, /disableBiometric\(\)/);
+  assert.match(login, /onUsePassword\(\)/);
+  assert.match(login, /failed\.stale/);
+  assert.equal(login.includes("useAutoBiometricPrompt"), false);
+  const form = readFileSync(new URL("../components/AuthForm.tsx", import.meta.url), "utf8");
+  assert.match(form, /disableBiometric\(\)/);
+  assert.match(form, /data\?\.stale/);
+  assert.match(form, /name="password"/);
+  const gate = readFileSync(new URL("../middleware.ts", import.meta.url), "utf8");
+  assert.match(gate, /session\.stale/);
+  assert.match(gate, /clearSessionCookieHeaders/);
+  assert.match(gate, /stale=1/);
+  const unlock = readFileSync(
+    new URL("../app/api/auth/biometric-unlock/route.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(unlock, /decision\.stale/);
+  assert.match(unlock, /clearSessionCookieHeaders/);
 });
 
 test("fleet gate and booking contact follow the server session", async () => {

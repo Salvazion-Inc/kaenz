@@ -499,7 +499,7 @@ export const appCopy = {
     setDropoff: "Destino",
     waterOnly: "Solo agua",
     yachtsLead:
-      "Yates con capitán verificado — Fast, Small o Luxurious. Dueños y capitanes agregan un yate aquí. El precio se calcula en la solicitud.",
+      "Yates con capitán verificado — Rápido, Pequeño o De lujo. Dueños y capitanes agregan un yate aquí. El precio se calcula en la solicitud.",
     nearby: "Cerca de ti",
     verified: "Capitán verificado",
     guests: "huéspedes",

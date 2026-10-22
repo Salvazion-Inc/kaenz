@@ -1,11 +1,5 @@
-import { requireVerifiedUser } from "@/lib/account-verification";
-import {
-  cookieValue,
-  readSession,
-  readSignedValue,
-  SESSION_COOKIE,
-  signValue,
-} from "@/lib/session";
+import { readApiSession, requireVerifiedUser } from "@/lib/account-verification";
+import { cookieValue, readSignedValue, signValue } from "@/lib/session";
 import { getSupabase } from "@/lib/supabase";
 
 export const runtime = "nodejs";
@@ -64,9 +58,7 @@ function asTrip(value: unknown): StoredTrip | null {
 }
 
 export async function GET(req: Request) {
-  const user = await readSession(
-    cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
-  );
+  const user = await readApiSession(req);
   if (!user) return Response.json({ error: "auth" }, { status: 401 });
 
   const map = await readTripMap(cookieValue(req.headers.get("cookie"), TRIPS_COOKIE));
@@ -113,12 +105,9 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const user = await readSession(
-    cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
-  );
-  if (!user) return Response.json({ error: "auth" }, { status: 401 });
   const gate = await requireVerifiedUser(req);
   if ("response" in gate) return gate.response;
+  const user = gate.user;
   const trip = asTrip(await req.json().catch(() => null));
   if (!trip) return Response.json({ error: "trip" }, { status: 400 });
 

@@ -1,6 +1,6 @@
+import { readApiSession } from "@/lib/account-verification";
 import { emailConfirmRedirect, resendSignupVerification } from "@/lib/email-verification";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
-import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 
 export const runtime = "nodejs";
 
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
   }
 
   const body = (await req.json().catch(() => ({}))) as { email?: string };
-  const session = await readSession(cookieValue(req.headers.get("cookie"), SESSION_COOKIE));
+  const session = await readApiSession(req);
   const email = String(session?.email || body.email || "").trim().toLowerCase();
   if (!EMAIL.test(email)) {
     return Response.json(

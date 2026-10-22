@@ -6,7 +6,12 @@ import { useEffect, useMemo, useState } from "react";
 import { BiometricLogin } from "@/components/auth/BiometricLogin";
 import { VerifyEmailScreen } from "@/components/VerifyEmailScreen";
 import { useBiometricGate } from "@/components/auth/useBiometric";
-import { EMAIL_VERIFIED_SIGN_IN, verificationLinkExpiredFromLocation } from "@/lib/auth-link";
+import { disableBiometric } from "@/lib/auth/biometric";
+import {
+  EMAIL_VERIFIED_SIGN_IN,
+  loginRedirectPath,
+  verificationLinkExpiredFromLocation,
+} from "@/lib/auth-link";
 import { t } from "@/lib/copy";
 import { useLocale } from "@/lib/locale-context";
 import { onboardingCookie, parseSignupPrefill } from "@/lib/signup-prefill";
@@ -53,13 +58,51 @@ export function AuthForm({
     trackFunnel("signup_started", prefill.role || undefined);
   }, [mode, prefill]);
   const justVerified = mode === "login" && search.get("verified") === "1";
+  const staleLink = mode === "login" && search.get("stale") === "1";
   const [status, setStatus] = useState<"idle" | "sending" | "err">("idle");
   const [message, setMessage] = useState("");
-  const [biometricDismissed, setBiometricDismissed] = useState(false);
+  const [biometricDismissed, setBiometricDismissed] = useState(staleLink);
+  const [allowBiometric, setAllowBiometric] = useState(false);
   const [verifyEmail, setVerifyEmail] = useState("");
   const { ready: biometricReady, enabled: biometricEnabled } = useBiometricGate();
   const offerBiometric =
-    mode === "login" && biometricReady && biometricEnabled && !biometricDismissed;
+    mode === "login" &&
+    allowBiometric &&
+    !staleLink &&
+    biometricReady &&
+    biometricEnabled &&
+    !biometricDismissed;
+  const searchKey = search.toString();
+  useEffect(() => {
+    if (mode !== "login") return;
+    if (staleLink) {
+      disableBiometric();
+      setBiometricDismissed(true);
+      const params = new URLSearchParams(searchKey);
+      params.delete("stale");
+      const query = params.toString();
+      router.replace(query ? `/login?${query}` : "/login");
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        if (data?.stale) {
+          disableBiometric();
+          setBiometricDismissed(true);
+          return;
+        }
+        setAllowBiometric(true);
+      })
+      .catch(() => {
+        if (!cancelled) setAllowBiometric(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [mode, router, searchKey, staleLink]);
   const reason =
     googleReason ||
     (search.get("auth") === "google" ? search.get("reason") : null) ||
@@ -106,6 +149,7 @@ export function AuthForm({
         mode === "login" ? "/api/auth/login" : "/api/auth/signup",
         {
           method: "POST",
+          signal: AbortSignal.timeout(12_000),
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email,
@@ -140,11 +184,13 @@ export function AuthForm({
         mode === "signup" &&
         (data.confirmationRequired === true || data.verified !== true)
       ) {
+        setStatus("idle");
         router.replace("/check-email");
         router.refresh();
         return;
       }
-      router.replace(next.startsWith("/") ? next : "/app");
+      setStatus("idle");
+      router.replace(loginRedirectPath(next));
       router.refresh();
     } catch {
       setStatus("err");

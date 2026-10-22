@@ -24,11 +24,14 @@ export async function POST(req: Request) {
   const supabase = createRouteSupabase(req, pending);
   let reachable = false;
   if (supabase) {
+    let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data, error } = await Promise.race([
+        supabase.auth.signInWithPassword({ email, password }),
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(() => reject(new Error("timeout")), 12_000);
+        }),
+      ]);
       reachable = true;
       if (!error && data.user) {
         const user = {
@@ -55,6 +58,8 @@ export async function POST(req: Request) {
       }
     } catch {
       reachable = false;
+    } finally {
+      if (timer) clearTimeout(timer);
     }
   }
 

@@ -1,5 +1,4 @@
 import { requireVerifiedUser } from "@/lib/account-verification";
-import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 import { signListingUploads } from "@/lib/listing-store";
 import { FILE_TOO_BIG_MESSAGE, validateListingFileSet } from "@/lib/listing-files";
 import { getSupabaseAdmin } from "@/lib/supabase";
@@ -8,12 +7,9 @@ export const runtime = "nodejs";
 
 /** Hands the browser a short-lived Supabase upload URL per file. */
 export async function POST(req: Request) {
-  const user = await readSession(
-    cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
-  );
-  if (!user) return Response.json({ error: "auth" }, { status: 401 });
   const gate = await requireVerifiedUser(req);
   if ("response" in gate) return gate.response;
+  const user = gate.user;
   if (!getSupabaseAdmin()) return Response.json({ error: "supabase" }, { status: 503 });
 
   const body = (await req.json().catch(() => null)) as { files?: unknown } | null;

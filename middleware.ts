@@ -8,6 +8,7 @@ import {
   stripLocalePrefix,
 } from "@/lib/locale";
 import { resolveRequestSession } from "@/lib/account-verification";
+import { clearSessionCookieHeaders } from "@/lib/session";
 
 const APP_HOSTS = new Set(["app.kaenz.com", "www.app.kaenz.com"]);
 const SITE = "https://kaenz.com";
@@ -62,9 +63,17 @@ export async function middleware(request: NextRequest) {
     if (!session.user) {
       const login = request.nextUrl.clone();
       login.pathname = "/login";
-      login.search = `?next=${encodeURIComponent(pathname + search)}`;
+      const next = `${pathname}${search}`;
+      login.search = session.stale
+        ? `?next=${encodeURIComponent(next)}&stale=1`
+        : `?next=${encodeURIComponent(next)}`;
       const redirect = NextResponse.redirect(login);
       redirect.headers.set("X-Robots-Tag", "noindex, nofollow");
+      if (session.stale) {
+        for (const header of clearSessionCookieHeaders(request.headers.get("cookie"))) {
+          redirect.headers.append("Set-Cookie", header);
+        }
+      }
       return applySecurityHeaders(redirect);
     }
   }

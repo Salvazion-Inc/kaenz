@@ -69,7 +69,7 @@ export function VerifyEmailScreen({
     <section className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-5 py-16 text-white">
       <p className="text-sm font-semibold text-kaenz">{title}</p>
       <h1 className="mt-2 text-4xl font-extrabold">{title}</h1>
-      <p className="mt-4 text-white/75">{c.verifyBody}</p>
+      {invalid ? null : <p className="mt-4 text-white/75">{c.verifyBody}</p>}
       {email ? <p className="mt-3 text-sm text-white/55">{email}</p> : null}
       <button
         type="button"

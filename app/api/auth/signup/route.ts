@@ -40,15 +40,11 @@ export async function POST(req: Request) {
   if (honeypotFilled(body)) {
     const trap = rateLimit(`signup-burst:${ip}`, 1, BURST_MS);
     if (!trap.ok) return tooMany(trap.retryAfterSec);
-    const email = String((body as { email?: unknown }).email || "").trim().toLowerCase();
-    const res = NextResponse.json({
+    return NextResponse.json({
       ok: true,
       verified: false,
       confirmationRequired: true,
     });
-    const noted = await signCheckEmail(email);
-    if (noted) res.headers.append("Set-Cookie", noted);
-    return res;
   }
   const prefill = parseSignupPrefill({
     role: body.role,

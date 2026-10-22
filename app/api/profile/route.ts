@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { readApiSession } from "@/lib/account-verification";
 import {
   dbRole,
   emptyProfile,
@@ -19,8 +20,6 @@ import {
   cookieValue,
   createSessionToken,
   readAccounts,
-  readSession,
-  SESSION_COOKIE,
   sessionCookie,
   signAccounts,
 } from "@/lib/session";
@@ -29,7 +28,7 @@ import { getSupabase } from "@/lib/supabase";
 export const runtime = "nodejs";
 
 function sessionFrom(req: Request) {
-  return readSession(cookieValue(req.headers.get("cookie"), SESSION_COOKIE));
+  return readApiSession(req);
 }
 
 async function loadProfile(req: Request, userId: string, fallbackEmail: string) {
