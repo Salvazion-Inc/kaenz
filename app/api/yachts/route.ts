@@ -10,9 +10,7 @@ import {
 } from "@/lib/listing-store";
 import {
   assertListingPaths,
-  FILE_TOO_BIG_MESSAGE,
   isListingClientError,
-  listingFileTooBig,
   parseStoredListingBody,
 } from "@/lib/listing-files";
 import {
@@ -27,12 +25,7 @@ import { yachts as catalogYachts } from "@/lib/yachts";
 
 export const runtime = "nodejs";
 
-function fileTooBigResponse() {
-  return Response.json(
-    { error: "file_too_big", message: FILE_TOO_BIG_MESSAGE },
-    { status: 400 },
-  );
-}
+const MAX_BYTES = 8 * 1024 * 1024;
 
 function isImage(file: File) {
   return /image\/(jpeg|pjpeg|png|webp)/.test(file.type) || /\.(jpe?g|png|webp)$/i.test(file.name);
@@ -43,7 +36,7 @@ function isDoc(file: File) {
 }
 
 function tooBig(file: File | null) {
-  return Boolean(file && listingFileTooBig(file.size));
+  return Boolean(file && file.size > MAX_BYTES);
 }
 
 export async function GET() {
@@ -62,7 +55,6 @@ export async function GET() {
 function listingErrorResponse(err: unknown) {
   const code = err instanceof Error ? err.message : "save";
   if (code === "supabase") return Response.json({ error: "supabase" }, { status: 503 });
-  if (code === "file_too_big") return fileTooBigResponse();
   if (isListingClientError(code)) return Response.json({ error: code }, { status: 400 });
   return Response.json({ error: "save" }, { status: 500 });
 }
@@ -230,42 +222,29 @@ export async function POST(req: Request) {
   if (!captainLanguages.length) {
     return Response.json({ error: "languages" }, { status: 400 });
   }
-  const uploaded = [ownerId, captainId, captainMmc, captainPhoto, ...yachtPhotos];
-  if (uploaded.some((file) => file instanceof File && tooBig(file))) {
-    return fileTooBigResponse();
-  }
-  const missingDocs: string[] = [];
-  if (!(ownerId instanceof File) || ownerId.size <= 0) missingDocs.push("owner_id");
-  if (!(captainId instanceof File) || captainId.size <= 0) missingDocs.push("captain_id");
-  if (!(captainMmc instanceof File) || captainMmc.size <= 0) missingDocs.push("captain_mmc");
-  if (!(captainPhoto instanceof File) || captainPhoto.size <= 0) missingDocs.push("captain_photo");
-  if (!yachtPhotos.length) missingDocs.push("yacht_0");
-  if (missingDocs.length) {
-    return Response.json(
-      {
-        error: "documents",
-        missing: missingDocs,
-        message: `Add these documents before publishing: ${missingDocs.join(", ")}.`,
-      },
-      { status: 400 },
-    );
-  }
-  if (!(ownerId instanceof File) || !isImage(ownerId)) {
+  if (!(ownerId instanceof File) || !isImage(ownerId) || tooBig(ownerId)) {
     return Response.json({ error: "owner_id" }, { status: 400 });
   }
-  if (!(captainId instanceof File) || !isDoc(captainId)) {
+  if (!(captainId instanceof File) || !isDoc(captainId) || tooBig(captainId)) {
     return Response.json({ error: "captain_id" }, { status: 400 });
   }
   // captain_mmc is any skipper licence document (US MMC or a local licence such
   // as the Spanish PER/PPER, French permis côtier/hauturier, ICC, RYA…). Only the
   // file type and size are checked; no US-specific format is enforced.
-  if (!(captainMmc instanceof File) || !isDoc(captainMmc)) {
+  if (!(captainMmc instanceof File) || !isDoc(captainMmc) || tooBig(captainMmc)) {
     return Response.json({ error: "mmc" }, { status: 400 });
   }
-  if (!(captainPhoto instanceof File) || !isImage(captainPhoto)) {
+  if (
+    !(captainPhoto instanceof File) ||
+    !isImage(captainPhoto) ||
+    tooBig(captainPhoto)
+  ) {
     return Response.json({ error: "captain_photo" }, { status: 400 });
   }
-  if (yachtPhotos.some((file) => !isImage(file))) {
+  if (
+    yachtPhotos.length < 1 ||
+    yachtPhotos.some((file) => !isImage(file) || tooBig(file))
+  ) {
     return Response.json({ error: "photos" }, { status: 400 });
   }
 

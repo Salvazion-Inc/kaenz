@@ -8,19 +8,17 @@ import { Site } from "./Site";
 export function CheckEmailPage({
   email,
   expired = false,
-  invalid = false,
   locale: localeProp,
 }: {
   email: string;
   expired?: boolean;
-  invalid?: boolean;
   locale?: Locale;
 }) {
   const { locale: contextLocale } = useLocale();
   const locale = localeProp || contextLocale;
   return (
     <Site locale={locale}>
-      <VerifyEmailScreen email={email} variant="check" expired={expired} invalid={invalid} />
+      <VerifyEmailScreen email={email} variant="check" expired={expired} />
     </Site>
   );
 }

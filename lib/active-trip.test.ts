@@ -59,8 +59,7 @@ test("signup shows Check your email instead of an empty login", () => {
   const form = readFileSync(new URL("../components/AuthForm.tsx", import.meta.url), "utf8");
   const screen = readFileSync(new URL("../components/VerifyEmailScreen.tsx", import.meta.url), "utf8");
   const copy = readFileSync(new URL("./copy.ts", import.meta.url), "utf8");
-  assert.match(form, /router\.replace\("\/check-email"\)/);
-  assert.equal(form.includes("/check-email?email="), false);
+  assert.match(form, /\/check-email\?email=/);
   assert.equal(form.includes('router.replace("/app")'), false);
   assert.match(screen, /checkEmailTitle/);
   assert.match(screen, /\/api\/auth\/verify-email/);

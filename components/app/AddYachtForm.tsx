@@ -6,7 +6,6 @@ import { compressListingImage, uploadSignedListingFile } from "@/lib/listing-dir
 import {
   classifyListingResponse,
   directListingPayload,
-  LISTING_MAX_BYTES,
   validateListingFileSet,
 } from "@/lib/listing-files";
 import {
@@ -29,14 +28,6 @@ function inputFile(form: HTMLFormElement, name: string) {
   const el = form.elements.namedItem(name);
   if (!(el instanceof HTMLInputElement) || !el.files?.[0]) return null;
   return el.files[0];
-}
-
-function clearIfOversized(form: HTMLFormElement, name: string) {
-  const el = form.elements.namedItem(name);
-  if (!(el instanceof HTMLInputElement) || !el.files?.[0]) return false;
-  if (el.files[0].size <= LISTING_MAX_BYTES) return false;
-  el.value = "";
-  return true;
 }
 
 function inputValue(form: HTMLFormElement, name: string) {
@@ -105,7 +96,6 @@ export function AddYachtForm({
       languages: c.needLanguage,
       too_large: c.tooLarge,
       file_too_big: c.fileTooBig,
-      documents: c.missingDocs,
       upload: c.uploadFailed,
       http: c.badResponse,
       empty: c.badResponse,
@@ -131,32 +121,18 @@ export function AddYachtForm({
       setMessage(c.needLanguage);
       return;
     }
-    const oversized =
-      clearIfOversized(form, "owner_id") ||
-      clearIfOversized(form, "captain_id") ||
-      clearIfOversized(form, "captain_mmc") ||
-      clearIfOversized(form, "captain_photo") ||
-      photos.some((file) => file.size > LISTING_MAX_BYTES);
-    if (oversized) {
-      setPhotos((cur) => cur.filter((file) => file.size <= LISTING_MAX_BYTES));
+    if (photos.length < 1) {
       setStatus("err");
-      setMessage(c.fileTooBig);
+      setMessage(c.needPhotos);
       return;
     }
     const ownerId = inputFile(form, "owner_id");
     const captainId = inputFile(form, "captain_id");
     const captainMmc = inputFile(form, "captain_mmc");
     const captainPhoto = inputFile(form, "captain_photo");
-    const missing = [
-      ownerId ? "" : c.ownerId,
-      captainId ? "" : c.captainId,
-      captainMmc ? "" : c.mmc,
-      captainPhoto ? "" : c.captainPhoto,
-      photos.length ? "" : c.photos,
-    ].filter(Boolean);
-    if (!ownerId || !captainId || !captainMmc || !captainPhoto || !photos.length) {
+    if (!ownerId || !captainId || !captainMmc || !captainPhoto) {
       setStatus("err");
-      setMessage(`${c.missingDocs} ${missing.join(", ")}.`);
+      setMessage(c.error);
       return;
     }
     setStatus("sending");
@@ -318,18 +294,7 @@ export function AddYachtForm({
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.ownerId}
-          <input
-            className={field}
-            name="owner_id"
-            type="file"
-            accept="image/*"
-            onChange={(e) => {
-              if (clearIfOversized(e.currentTarget.form!, "owner_id")) {
-                setStatus("err");
-                setMessage(c.fileTooBig);
-              }
-            }}
-          />
+          <input className={field} name="owner_id" type="file" accept="image/*" required />
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.ownerWallet}
@@ -355,17 +320,9 @@ export function AddYachtForm({
             type="file"
             accept="image/*"
             multiple
-            onChange={(e) => {
-              const picked = Array.from(e.target.files || []).slice(0, 5);
-              if (picked.some((file) => file.size > LISTING_MAX_BYTES)) {
-                e.target.value = "";
-                setPhotos(picked.filter((file) => file.size <= LISTING_MAX_BYTES));
-                setStatus("err");
-                setMessage(c.fileTooBig);
-                return;
-              }
-              setPhotos(picked);
-            }}
+            onChange={(e) =>
+              setPhotos(Array.from(e.target.files || []).slice(0, 5))
+            }
           />
         </label>
         {photos.length ? (
@@ -453,48 +410,15 @@ export function AddYachtForm({
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.captainId}
-          <input
-            className={field}
-            name="captain_id"
-            type="file"
-            accept="image/*,.pdf"
-            onChange={(e) => {
-              if (clearIfOversized(e.currentTarget.form!, "captain_id")) {
-                setStatus("err");
-                setMessage(c.fileTooBig);
-              }
-            }}
-          />
+          <input className={field} name="captain_id" type="file" accept="image/*,.pdf" required />
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.mmc}
-          <input
-            className={field}
-            name="captain_mmc"
-            type="file"
-            accept="image/*,.pdf"
-            onChange={(e) => {
-              if (clearIfOversized(e.currentTarget.form!, "captain_mmc")) {
-                setStatus("err");
-                setMessage(c.fileTooBig);
-              }
-            }}
-          />
+          <input className={field} name="captain_mmc" type="file" accept="image/*,.pdf" required />
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.captainPhoto}
-          <input
-            className={field}
-            name="captain_photo"
-            type="file"
-            accept="image/*"
-            onChange={(e) => {
-              if (clearIfOversized(e.currentTarget.form!, "captain_photo")) {
-                setStatus("err");
-                setMessage(c.fileTooBig);
-              }
-            }}
-          />
+          <input className={field} name="captain_photo" type="file" accept="image/*" required />
         </label>
         <p className="mt-3 text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.languages}

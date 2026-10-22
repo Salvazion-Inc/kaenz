@@ -25,6 +25,7 @@ export function ForgotPasswordForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
+      const data = (await res.json().catch(() => ({}))) as { message?: string; error?: string };
       if (res.status === 429) {
         setStatus("err");
         setMessage(c.verifyResendError);
@@ -36,7 +37,7 @@ export function ForgotPasswordForm() {
         return;
       }
       setStatus("sent");
-      setMessage(c.forgotSent);
+      setMessage(typeof data.message === "string" ? data.message : c.forgotSent);
     } catch {
       setStatus("err");
       setMessage(c.verifyResendError);

@@ -1,9 +1,3 @@
-/**
- * Sliding-window limiter kept in memory on purpose.
- * There is no rate-limit table (adding one would be a migration, and none is applied).
- * Vercel KV and Upstash are not configured, so there is no shared store.
- * Limits are per instance and reset when that instance stops.
- */
 const hits = new Map<string, number[]>();
 
 export function clientIp(req: Request) {
@@ -16,7 +10,7 @@ export function clientIp(req: Request) {
   return ip.slice(0, 128);
 }
 
-/** Best-effort per instance. See the note above: this is not a shared store. */
+/** Sliding-window limiter. Best-effort per instance (Vercel/serverless). */
 export function rateLimit(key: string, limit: number, windowMs: number) {
   const now = Date.now();
   const recent = (hits.get(key) || []).filter((at) => now - at < windowMs);

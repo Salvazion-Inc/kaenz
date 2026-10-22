@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { LogoutButton } from "@/components/LogoutButton";
 import { t } from "@/lib/copy";
 import { useLocale } from "@/lib/locale-context";
@@ -9,40 +9,20 @@ export function VerifyEmailScreen({
   email,
   variant = "verify",
   expired = false,
-  invalid = false,
 }: {
   email?: string;
   variant?: "verify" | "check";
   expired?: boolean;
-  invalid?: boolean;
 }) {
   const { locale } = useLocale();
   const c = t(locale);
-  const title = invalid
-    ? c.linkInvalid
-    : expired
-      ? c.linkExpired
-      : variant === "check"
-        ? c.checkEmailTitle
-        : c.verifyTitle;
+  const title = expired
+    ? c.linkExpired
+    : variant === "check"
+      ? c.checkEmailTitle
+      : c.verifyTitle;
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "err">("idle");
   const [resendError, setResendError] = useState("");
-  const [hasSession, setHasSession] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((data) => {
-        if (!cancelled) setHasSession(Boolean(data?.user));
-      })
-      .catch(() => {
-        if (!cancelled) setHasSession(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   async function resend() {
     setStatus("sending");
@@ -89,12 +69,10 @@ export function VerifyEmailScreen({
           {resendError || c.verifyResendError}
         </p>
       ) : null}
-      {hasSession ? (
-        <LogoutButton
-          label={c.nav.logout}
-          className="mt-6 text-sm font-semibold text-white/70 underline-offset-4 hover:underline"
-        />
-      ) : null}
+      <LogoutButton
+        label={c.nav.logout}
+        className="mt-6 text-sm font-semibold text-white/70 underline-offset-4 hover:underline"
+      />
     </section>
   );
 }

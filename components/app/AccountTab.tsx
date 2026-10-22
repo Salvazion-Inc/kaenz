@@ -71,22 +71,6 @@ export function AccountTab({ locale }: { locale: Locale }) {
   const [removeDebit, setRemoveDebit] = useState(false);
   const [status, setStatus] = useState<"idle" | "saving" | "ok" | "err">("idle");
   const [errorKey, setErrorKey] = useState("");
-  const [hasSession, setHasSession] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((data) => {
-        if (!cancelled) setHasSession(Boolean(data?.user));
-      })
-      .catch(() => {
-        if (!cancelled) setHasSession(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     if (!profile) return;
@@ -543,21 +527,19 @@ export function AccountTab({ locale }: { locale: Locale }) {
         </button>
       </form>
 
-      {hasSession ? (
-        <form
-          action="/api/auth/logout"
-          method="POST"
-          className="mt-6"
-          onSubmit={() => disableBiometric()}
+      <form
+        action="/api/auth/logout"
+        method="POST"
+        className="mt-6"
+        onSubmit={() => disableBiometric()}
+      >
+        <button
+          type="submit"
+          className="w-full rounded-xl border border-white/20 py-3 text-sm font-semibold text-white/80"
         >
-          <button
-            type="submit"
-            className="w-full rounded-xl border border-white/20 py-3 text-sm font-semibold text-white/80"
-          >
-            {a.logout}
-          </button>
-        </form>
-      ) : null}
+          {a.logout}
+        </button>
+      </form>
     </div>
   );
 }

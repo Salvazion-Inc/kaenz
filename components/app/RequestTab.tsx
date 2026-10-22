@@ -170,7 +170,6 @@ export function RequestTab({ locale }: { locale: Locale }) {
           places={allPlaces}
           here={here}
           onSelect={(id) => setTrip({ originId: id })}
-          onText={(originText) => setTrip({ originText })}
         />
         <PlaceSuggest
           locale={locale}
@@ -180,7 +179,6 @@ export function RequestTab({ locale }: { locale: Locale }) {
           places={allPlaces}
           here={here}
           onSelect={(id) => setTrip({ destinationId: id })}
-          onText={(destinationText) => setTrip({ destinationText })}
         />
         {trip.whenMode === "schedule" ? (
           <div className="grid grid-cols-2 gap-3">

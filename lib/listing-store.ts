@@ -5,7 +5,6 @@ import {
   mimeMatchesExt,
   type PreparedListingFile,
 } from "./listing-files";
-import { draftDeleteDecision } from "./listing-draft";
 import {
   parseLangs,
   parseTraits,
@@ -44,7 +43,7 @@ function fromRow(row: DbRow): YachtListing {
     id: row.id,
     slug: row.slug,
     createdBy: row.created_by || "",
-    status: row.status === "draft" ? "draft" : "listed",
+    status: "listed",
     ownerName: row.owner_name,
     ownerWallet: row.owner_wallet,
     name: row.name,
@@ -299,65 +298,4 @@ export async function insertYachtListing(row: {
   });
   await writeCatalog(catalog);
   return publicListing(listing);
-}
-
-const DRAFT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-export async function listOwnYachtDrafts(userId: string): Promise<YachtListing[]> {
-  if (!userId) return [];
-  const admin = getSupabaseAdmin();
-  if (!admin) return [];
-  try {
-    const { data, error } = await admin
-      .from("yacht_listings")
-      .select(
-        "id, slug, created_by, status, owner_name, owner_wallet, name, hin, guests, traits, home_port, photo_urls, captain_name, captain_photo_url, captain_languages, captain_region, captain_wallet, created_at",
-      )
-      .eq("created_by", userId)
-      .eq("status", "draft")
-      .order("created_at", { ascending: false });
-    if (!error && data) return (data as DbRow[]).map(fromRow);
-    const catalog = await readCatalog();
-    return catalog.filter(
-      (row) => row.status === "draft" && row.createdBy === userId,
-    );
-  } catch {
-    return [];
-  }
-}
-
-export async function deleteOwnYachtDraft(userId: string, id: string) {
-  if (!DRAFT_ID.test(id) || !userId) return "missing" as const;
-  const admin = getSupabaseAdmin();
-  if (!admin) return "missing" as const;
-  try {
-    const { data, error } = await admin
-      .from("yacht_listings")
-      .select("id, created_by, status")
-      .eq("id", id)
-      .maybeSingle();
-    if (!error && data) {
-      const decision = draftDeleteDecision(
-        { createdBy: String(data.created_by || ""), status: String(data.status || "") },
-        userId,
-      );
-      if (decision !== "delete") return decision;
-      const removed = await admin
-        .from("yacht_listings")
-        .delete()
-        .eq("id", id)
-        .eq("created_by", userId)
-        .eq("status", "draft");
-      if (removed.error) return "missing" as const;
-      return "delete" as const;
-    }
-  } catch {
-    /* catalog fallback */
-  }
-  const catalog = await readCatalog();
-  const row = catalog.find((item) => item.id === id) || null;
-  const decision = draftDeleteDecision(row, userId);
-  if (decision !== "delete") return decision;
-  await writeCatalog(catalog.filter((item) => item.id !== id));
-  return "delete" as const;
 }

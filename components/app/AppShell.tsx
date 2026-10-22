@@ -43,6 +43,7 @@ export function AppShell({
 
   return (
     <div className="app-shell min-h-dvh bg-navy text-foam">
+      <BiometricEnrollPrompt locale={locale} />
       <HtmlLang locale={locale} />
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[4.75rem] flex-col items-center border-r border-white/10 bg-navy-2/95 py-4 backdrop-blur-xl md:flex">
         <Link href={pathFor(locale, "/app")} className="mb-6">
@@ -102,7 +103,6 @@ export function AppShell({
       </header>
 
       <main className="app-main mx-auto w-full max-w-6xl px-4 pb-28 pt-5 md:ml-[4.75rem] md:pb-10">
-        <BiometricEnrollPrompt locale={locale} />
         {children}
       </main>
 

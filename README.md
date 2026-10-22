@@ -52,9 +52,7 @@ Add to Home Screen on iOS/Android for the standalone mobile shell.
 | `SUPABASE_SERVICE_ROLE_KEY` | Optional server writes |
 | `STRIPE_SECRET_KEY` | Stripe Checkout (server) |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signature |
-| `AUTH_SECRET` | Signs Kaenz sessions. Required in production (the server throws if it is missing). Payout onboarding stays disabled without it. |
-
-Signup, join, resend, password reset, and funnel rate limits are in-memory and per instance. Vercel KV and Upstash are not configured, and no rate-limit table is added, so the limits are not shared across instances and reset when an instance stops.
+| `AUTH_SECRET` | Required for payouts: private key that signs Kaenz sessions (payout onboarding is disabled without it) |
 
 Without Supabase, booking and join requests still succeed locally (no persistence). `GET /api/yachts` and `GET /api/marinas` still return **seed-real** South Florida inventory so guests can book. Without `XAI_API_KEY`, concierge returns an error until the key is set. Without `STRIPE_SECRET_KEY`, trip checkout returns an error until Stripe is configured.
 

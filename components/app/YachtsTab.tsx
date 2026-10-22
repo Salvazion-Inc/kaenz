@@ -7,9 +7,7 @@ import { at } from "@/lib/app-copy";
 import { etaFromKm, haversineKm } from "@/lib/geo";
 import {
   CAPTAIN_LANG_FLAGS,
-  captainCredential,
   YACHT_TRAITS,
-  yachtClassLabel,
   type CaptainLang,
   type YachtTrait,
 } from "@/lib/listings";
@@ -36,15 +34,6 @@ export function YachtsTab({ locale }: { locale: Locale }) {
   const [intent, setIntent] = useState({ name: "", yacht: "", marina: "", role: "" as "" | "owner" | "captain" | "marina" });
   const [listings, setListings] = useState<Yacht[]>([]);
   const [notice, setNotice] = useState("");
-  const [drafts, setDrafts] = useState<
-    Array<{ id: string; name: string; homePort: string; ownerName: string; captainName: string }>
-  >([]);
-  const [resume, setResume] = useState<{
-    name: string;
-    homePort: string;
-    ownerName: string;
-    captainName: string;
-  } | null>(null);
   const [klass, setKlass] = useState<"all" | YachtTrait>("all");
 
   useEffect(() => {
@@ -56,27 +45,12 @@ export function YachtsTab({ locale }: { locale: Locale }) {
     }
   }, []);
 
-  function loadDrafts() {
-    fetch("/api/yachts/drafts")
-      .then((res) => (res.ok ? res.json() : { drafts: [] }))
-      .then((data) => setDrafts(Array.isArray(data.drafts) ? data.drafts : []))
-      .catch(() => setDrafts([]));
-  }
-
   useEffect(() => {
     fetch("/api/yachts")
       .then((res) => res.json())
       .then((data) => setListings(Array.isArray(data.yachts) ? data.yachts : []))
       .catch(() => setListings([]));
-    loadDrafts();
   }, []);
-
-  async function removeDraft(id: string) {
-    const res = await fetch(`/api/yachts/drafts?id=${encodeURIComponent(id)}`, {
-      method: "DELETE",
-    });
-    if (res.ok) setDrafts((cur) => cur.filter((row) => row.id !== id));
-  }
 
   const list = useMemo(() => {
     const seen = new Set<string>();
@@ -128,20 +102,15 @@ export function YachtsTab({ locale }: { locale: Locale }) {
           locale={locale}
           role={intent.role === "captain" ? "captain" : "owner"}
           initial={{
-            name: resume?.name || intent.yacht,
-            homePort: resume?.homePort || intent.marina,
-            ownerName: resume?.ownerName || (intent.role === "captain" ? "" : intent.name),
-            captainName: resume?.captainName || (intent.role === "captain" ? intent.name : ""),
+            name: intent.yacht,
+            homePort: intent.marina,
+            ownerName: intent.role === "captain" ? "" : intent.name,
+            captainName: intent.role === "captain" ? intent.name : "",
           }}
-          onCancel={() => {
-            setAdding(false);
-            setResume(null);
-          }}
+          onCancel={() => setAdding(false)}
           onDrafted={() => {
             setAdding(false);
-            setResume(null);
             setNotice(c.addYacht.draftSaved);
-            loadDrafts();
           }}
           onListed={(yacht) => {
             setListings((cur) => [yacht, ...cur.filter((item) => item.id !== yacht.id)]);
@@ -193,41 +162,6 @@ export function YachtsTab({ locale }: { locale: Locale }) {
         ))}
       </div>
 
-      {drafts.length ? (
-        <section className="mt-5">
-          <h2 className="text-sm font-bold">{c.addYacht.yourDrafts}</h2>
-          <ul className="mt-2 space-y-2">
-            {drafts.map((draft) => (
-              <li
-                key={draft.id}
-                className="flex items-center justify-between gap-3 rounded-xl border border-white/10 px-3 py-2"
-              >
-                <span className="text-sm font-semibold">{draft.name}</span>
-                <span className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setResume(draft);
-                      setAdding(true);
-                    }}
-                    className="rounded-full bg-kaenz px-3 py-1 text-[11px] font-bold text-white"
-                  >
-                    {c.addYacht.resumeDraft}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void removeDraft(draft.id)}
-                    className="rounded-full border border-white/25 px-3 py-1 text-[11px] font-bold text-white/80"
-                  >
-                    {c.addYacht.deleteDraft}
-                  </button>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
       <ul className="mt-5 space-y-4">
         {list.map(({ y, eta }) => (
           <li
@@ -265,7 +199,7 @@ export function YachtsTab({ locale }: { locale: Locale }) {
                 <div>
                   <h2 className="text-lg font-bold">{y.name}</h2>
                   <p className="text-xs text-white/60">
-                    {yachtClassLabel(y.class, locale)}
+                    {y.class}
                     {y.lengthFt ? ` · ${y.lengthFt} ft` : ""}
                   </p>
                   <p className="mt-1 text-sm font-semibold text-white/85">
@@ -305,9 +239,9 @@ export function YachtsTab({ locale }: { locale: Locale }) {
                 <div className="text-xs">
                   <p className="font-semibold">{y.captain.name}</p>
                   <p className="text-white/60">
-                    {captainCredential(y.captain.license, locale)}
+                    {y.captain.license}
                     {y.captain.rating
-                      ? ` · ${y.captain.rating} ★ · ${c.captainTrips.replace("{n}", String(y.captain.trips))}`
+                      ? ` · ${y.captain.rating} ★ · ${y.captain.trips} trips`
                       : y.captainRegion
                         ? ` · ${y.captainRegion}`
                         : ""}

@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import {
   emailOtpType,
   verificationLinkExpired,
-  verifiedSignInAllowed,
 } from "@/lib/auth-link";
 import { requestOrigin } from "@/lib/email-verification";
 import { logFunnel } from "@/lib/funnel";
@@ -43,9 +42,8 @@ function hashSniffResponse() {
  * PKCE `code` uses exchangeCodeForSession (the verifier cookie is missing when
  * the link is opened in another browser). `token_hash` + `type` uses verifyOtp,
  * which does not need that cookie. Either path sets the Supabase cookies and
- * the Kaenz session, then opens /app. "Email verified — please sign in" is
- * only used when that confirmation returned a confirmed user and no session.
- * An invalid, used, or failed recovery link opens the resend screen instead.
+ * the Kaenz session, then opens /app. If the link confirmed the email but no
+ * session can be stored, the browser goes to /login?verified=1.
  */
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -65,12 +63,8 @@ export async function GET(req: Request) {
   let authUser: {
     id?: string;
     email?: string | null;
-    email_confirmed_at?: string | null;
-    confirmed_at?: string | null;
-    email_confirmed?: boolean | null;
-    user_metadata?: { full_name?: string; kaenz_role?: string; email_verified?: boolean } | null;
+    user_metadata?: { full_name?: string; kaenz_role?: string } | null;
   } | null = null;
-  let authSession: unknown = null;
 
   if (supabase && tokenHash && otpType) {
     try {
@@ -78,41 +72,23 @@ export async function GET(req: Request) {
         token_hash: tokenHash,
         type: otpType,
       });
-      if (!error && data.user?.id) {
-        authUser = data.user;
-        authSession = data.session;
-      }
+      if (!error && data.user?.id) authUser = data.user;
     } catch {
       authUser = null;
-      authSession = null;
     }
   }
   if (supabase && code && !authUser) {
     try {
       const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-      if (!error && data.user?.id) {
-        authUser = data.user;
-        authSession = data.session;
-      }
+      if (!error && data.user?.id) authUser = data.user;
     } catch {
       authUser = null;
-      authSession = null;
     }
   }
 
   const email = authUser?.email?.trim().toLowerCase() || "";
-  const recovery = otpType === "recovery" || next === "/reset-password";
-  if (
-    verifiedSignInAllowed({
-      user: authUser,
-      session: authSession,
-      recovery,
-    })
-  ) {
+  if (!authUser?.id || !email) {
     return redirectTo(origin, "/login?verified=1");
-  }
-  if (!authUser?.id || !email || !authSession) {
-    return redirectTo(origin, "/check-email?invalid=1");
   }
 
   const name = String(authUser.user_metadata?.full_name || "").trim() || email;
@@ -128,6 +104,7 @@ export async function GET(req: Request) {
     }
   }
   const role = metaRole || cookieRole;
+  const recovery = otpType === "recovery" || next === "/reset-password";
   let nextPath = "/app";
   if (recovery) nextPath = "/reset-password";
   else if (role === "owner" || role === "captain") nextPath = "/app/yachts";
