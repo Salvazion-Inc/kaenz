@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   BiometricCancelledError,
+  disableBiometric,
   persistBiometricVault,
   unlockWithBiometric,
 } from "@/lib/auth/biometric";
@@ -41,7 +42,16 @@ export function BiometricLogin({
         body: JSON.stringify({ token: vault.token }),
       });
       if (!res.ok) {
-        setError(c.biometricExpired);
+        if (res.status === 400 || res.status === 401 || res.status === 403) {
+          // Stored token rejected server-side: the vault can never work again.
+          // Drop it and send the user to email/password instead of looping.
+          disableBiometric();
+          setError(c.biometricExpired);
+          onUsePassword();
+          return;
+        }
+        // Transient/server error: keep the vault so a retry can succeed.
+        setError(c.biometricFailed);
         return;
       }
       const data = (await res.json()) as {
