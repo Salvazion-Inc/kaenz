@@ -16,8 +16,29 @@ export type AccountRecord = SessionUser & {
 
 type SessionPayload = SessionUser & { exp: number };
 
+let devSecret = "";
+
+/**
+ * Production must set AUTH_SECRET. Development and tests use a process-local
+ * random value so a public string is never the signing key.
+ */
+export function resolveAuthSecret(
+  env: { AUTH_SECRET?: string; NODE_ENV?: string },
+  devSecretValue: string,
+) {
+  const configured = env.AUTH_SECRET?.trim() || "";
+  if (configured) return configured;
+  if (env.NODE_ENV === "production") {
+    throw new Error("AUTH_SECRET is required in production.");
+  }
+  return devSecretValue;
+}
+
 function secret() {
-  return process.env.AUTH_SECRET || "kaenz-by-salvazion-inc-session-key";
+  if (!devSecret) {
+    devSecret = bytesToB64Url(crypto.getRandomValues(new Uint8Array(32)));
+  }
+  return resolveAuthSecret(process.env, devSecret);
 }
 
 function bytesToB64Url(bytes: Uint8Array) {

@@ -92,7 +92,8 @@ test("logged-out fleet asks to sign in", () => {
   assert.match(detail, /signInToBook/);
   assert.match(detail, /\/login\?next=/);
   assert.match(form, /confirmationRequired === true/);
-  assert.match(form, /\/check-email\?email=/);
+  assert.match(form, /router\.replace\("\/check-email"\)/);
+  assert.equal(form.includes("/check-email?email="), false);
 });
 
 test("partner signup links only keep safe prefill", () => {

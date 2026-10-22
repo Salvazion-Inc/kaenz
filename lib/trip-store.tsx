@@ -50,6 +50,8 @@ export type TripDraft = {
   whenMode: WhenMode;
   originId: string;
   destinationId: string;
+  originText: string;
+  destinationText: string;
   yachtId: string;
   date: string;
   time: string;
@@ -91,6 +93,8 @@ const empty: TripDraft = {
   whenMode: "now",
   originId: "",
   destinationId: "",
+  originText: "",
+  destinationText: "",
   yachtId: "",
   date: "",
   time: "",
@@ -237,8 +241,8 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
       reset,
       yacht,
       fare,
-      originName: originPlace?.name ?? trip.originId,
-      destinationName: destinationPlace?.name ?? trip.destinationId,
+      originName: routeEndpointName(originPlace?.name, trip.originText),
+      destinationName: routeEndpointName(destinationPlace?.name, trip.destinationText),
       originPlace,
       destinationPlace,
       ready: hydrated,
@@ -249,6 +253,13 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
   }, [trip, hydrated, listings, partners, setTrip, reset, addPartnerPlace]);
 
   return <TripCtx.Provider value={value}>{children}</TripCtx.Provider>;
+}
+
+/** Place name when one is selected, otherwise the text the person typed. */
+export function routeEndpointName(placeName: string | undefined, typed: string | undefined) {
+  const fromPlace = String(placeName || "").trim();
+  if (fromPlace) return fromPlace;
+  return String(typed || "").trim();
 }
 
 export function useTrip() {
