@@ -8,13 +8,13 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object" || Array.isArray(body)) {
-    return Response.json({ error: "fields" }, { status: 400 });
+    return gate.seal(Response.json({ error: "fields" }, { status: 400 }));
   }
   const input = body as Record<string, unknown>;
   const full_name = String(input.full_name || "").trim();
   const email = String(input.email || "").trim();
   if (!full_name || !email) {
-    return Response.json({ error: "fields" }, { status: 400 });
+    return gate.seal(Response.json({ error: "fields" }, { status: 400 }));
   }
 
   const user = gate.user;
@@ -46,11 +46,11 @@ export async function POST(req: Request) {
       .select("id")
       .single();
     if (error) {
-      return Response.json({ error: "save" }, { status: 500 });
+      return gate.seal(Response.json({ error: "save" }, { status: 500 }));
     }
-    return Response.json({ id: data.id, stored: "supabase" });
+    return gate.seal(Response.json({ id: data.id, stored: "supabase" }));
   }
 
   const id = crypto.randomUUID();
-  return Response.json({ id, stored: "local", booking: row });
+  return gate.seal(Response.json({ id, stored: "local", booking: row }));
 }

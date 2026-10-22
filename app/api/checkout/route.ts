@@ -16,19 +16,21 @@ export async function POST(req: Request) {
     guest: false,
   });
   if ("error" in result) {
-    return Response.json(
-      { error: publicErrorCode(result.error) },
-      { status: result.status },
+    return gate.seal(
+      Response.json(
+        { error: publicErrorCode(result.error) },
+        { status: result.status },
+      ),
     );
   }
-  return Response.json({
+  return gate.seal(Response.json({
     id: result.id,
     url: result.url,
     sessionId: result.sessionId,
     yachtId: result.yachtId,
     kind: result.kind,
     hours: result.hours,
-  });
+  }));
 }
 
 export async function GET(req: Request) {

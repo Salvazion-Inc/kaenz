@@ -5,7 +5,6 @@ import {
   cookieValue,
   createSessionToken,
   readAccounts,
-  sessionCookie,
   signAccounts,
   type AccountRecord,
 } from "@/lib/session";
@@ -27,6 +26,7 @@ import { ensureSupabaseUser } from "@/lib/supabase";
 import {
   applyCookies,
   createRouteSupabase,
+  setKaenzSessionCookie,
 } from "@/lib/supabase-route";
 
 export const runtime = "nodejs";
@@ -76,7 +76,7 @@ async function finishLogin(
     name: account.name,
   });
   const vault = await signAccounts(users);
-  res.headers.append("Set-Cookie", sessionCookie(session));
+  setKaenzSessionCookie(res, session);
   res.headers.append("Set-Cookie", accountsCookie(vault));
   res.headers.append("Set-Cookie", clearOauthStateCookie());
   return res;

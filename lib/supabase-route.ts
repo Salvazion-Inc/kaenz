@@ -1,5 +1,8 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse } from "next/server";
+import { cookieIsSecure, SESSION_COOKIE } from "./session";
+
+const SESSION_MAX_AGE = 60 * 60 * 24 * 30;
 
 export type PendingCookie = {
   name: string;
@@ -47,5 +50,21 @@ export function applyCookies(res: NextResponse, pending: PendingCookie[]) {
   for (const { name, value, options } of pending) {
     res.cookies.set(name, value, options);
   }
+  return res;
+}
+
+/**
+ * Write kaenz_session through the response cookie jar after Supabase cookies.
+ * NextResponse.cookies.set replaces every Set-Cookie header from its jar, so a
+ * header appended before that call is dropped and later routes only see sb-*.
+ */
+export function setKaenzSessionCookie(res: NextResponse, token: string) {
+  res.cookies.set(SESSION_COOKIE, token, {
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: SESSION_MAX_AGE,
+    secure: cookieIsSecure(),
+  });
   return res;
 }

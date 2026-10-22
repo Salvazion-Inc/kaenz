@@ -1,7 +1,6 @@
 import { requireVerifiedUser } from "@/lib/account-verification";
 import { logFunnel } from "@/lib/funnel";
 import { buildYachtDraft } from "@/lib/listing-draft";
-import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 import { listBookableYachts } from "@/lib/inventory";
 import {
   assertUploadedListingFile,
@@ -173,25 +172,20 @@ async function postStoredListing(body: unknown, userId: string) {
 }
 
 export async function POST(req: Request) {
-  const user = await readSession(
-    cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
-  );
-  if (!user) {
-    return Response.json({ error: "auth" }, { status: 401 });
-  }
   const gate = await requireVerifiedUser(req);
   if ("response" in gate) return gate.response;
+  const user = gate.user;
   if (!getSupabaseAdmin()) {
-    return Response.json({ error: "supabase" }, { status: 503 });
+    return gate.seal(Response.json({ error: "supabase" }, { status: 503 }));
   }
 
   const contentType = req.headers.get("content-type") || "";
   if (contentType.includes("application/json")) {
     const body = await req.json().catch(() => null);
     if (body && typeof body === "object" && (body as { draft?: unknown }).draft === true) {
-      return postYachtDraft(body, user);
+      return gate.seal(await postYachtDraft(body, user));
     }
-    return postStoredListing(body, user.id);
+    return gate.seal(await postStoredListing(body, user.id));
   }
 
   const form = await req.formData();
@@ -220,19 +214,19 @@ export async function POST(req: Request) {
     .slice(0, 5);
 
   if (!ownerName || !name || !captainName || !homePort || !captainRegion) {
-    return Response.json({ error: "fields" }, { status: 400 });
+    return gate.seal(Response.json({ error: "fields" }, { status: 400 }));
   }
-  if (!isHin(hin)) return Response.json({ error: "hin" }, { status: 400 });
+  if (!isHin(hin)) return gate.seal(Response.json({ error: "hin" }, { status: 400 }));
   if (!Number.isFinite(guests) || guests < 1 || guests > 50) {
-    return Response.json({ error: "guests" }, { status: 400 });
+    return gate.seal(Response.json({ error: "guests" }, { status: 400 }));
   }
-  if (!traits.length) return Response.json({ error: "traits" }, { status: 400 });
+  if (!traits.length) return gate.seal(Response.json({ error: "traits" }, { status: 400 }));
   if (!captainLanguages.length) {
-    return Response.json({ error: "languages" }, { status: 400 });
+    return gate.seal(Response.json({ error: "languages" }, { status: 400 }));
   }
   const uploaded = [ownerId, captainId, captainMmc, captainPhoto, ...yachtPhotos];
   if (uploaded.some((file) => file instanceof File && tooBig(file))) {
-    return fileTooBigResponse();
+    return gate.seal(fileTooBigResponse());
   }
   const missingDocs: string[] = [];
   if (!(ownerId instanceof File) || ownerId.size <= 0) missingDocs.push("owner_id");
@@ -241,32 +235,34 @@ export async function POST(req: Request) {
   if (!(captainPhoto instanceof File) || captainPhoto.size <= 0) missingDocs.push("captain_photo");
   if (!yachtPhotos.length) missingDocs.push("yacht_0");
   if (missingDocs.length) {
-    return Response.json(
-      {
-        error: "documents",
-        missing: missingDocs,
-        message: `Add these documents before publishing: ${missingDocs.join(", ")}.`,
-      },
-      { status: 400 },
+    return gate.seal(
+      Response.json(
+        {
+          error: "documents",
+          missing: missingDocs,
+          message: `Add these documents before publishing: ${missingDocs.join(", ")}.`,
+        },
+        { status: 400 },
+      ),
     );
   }
   if (!(ownerId instanceof File) || !isImage(ownerId)) {
-    return Response.json({ error: "owner_id" }, { status: 400 });
+    return gate.seal(Response.json({ error: "owner_id" }, { status: 400 }));
   }
   if (!(captainId instanceof File) || !isDoc(captainId)) {
-    return Response.json({ error: "captain_id" }, { status: 400 });
+    return gate.seal(Response.json({ error: "captain_id" }, { status: 400 }));
   }
   // captain_mmc is any skipper licence document (US MMC or a local licence such
   // as the Spanish PER/PPER, French permis côtier/hauturier, ICC, RYA…). Only the
   // file type and size are checked; no US-specific format is enforced.
   if (!(captainMmc instanceof File) || !isDoc(captainMmc)) {
-    return Response.json({ error: "mmc" }, { status: 400 });
+    return gate.seal(Response.json({ error: "mmc" }, { status: 400 }));
   }
   if (!(captainPhoto instanceof File) || !isImage(captainPhoto)) {
-    return Response.json({ error: "captain_photo" }, { status: 400 });
+    return gate.seal(Response.json({ error: "captain_photo" }, { status: 400 }));
   }
   if (yachtPhotos.some((file) => !isImage(file))) {
-    return Response.json({ error: "photos" }, { status: 400 });
+    return gate.seal(Response.json({ error: "photos" }, { status: 400 }));
   }
 
   const id = crypto.randomUUID();
@@ -313,8 +309,8 @@ export async function POST(req: Request) {
       captainWallet,
     });
     logFunnel("listing_submitted", "owner");
-    return Response.json({ yacht: listingToYacht(listing) });
+    return gate.seal(Response.json({ yacht: listingToYacht(listing) }));
   } catch {
-    return Response.json({ error: "save" }, { status: 500 });
+    return gate.seal(Response.json({ error: "save" }, { status: 500 }));
   }
 }

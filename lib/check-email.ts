@@ -1,4 +1,4 @@
-import { readSignedValue, signValue } from "./session";
+import { cookieIsSecure, readSignedValue, signValue } from "./session";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_AGE = 30 * 60;
@@ -27,7 +27,8 @@ export async function signCheckEmail(email: string) {
       exp: Math.floor(Date.now() / 1000) + MAX_AGE,
     }),
   );
-  return `${CHECK_EMAIL_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${MAX_AGE}`;
+  const secure = cookieIsSecure() ? "; Secure" : "";
+  return `${CHECK_EMAIL_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${MAX_AGE}${secure}`;
 }
 
 export async function readCheckEmail(token: string | null | undefined) {

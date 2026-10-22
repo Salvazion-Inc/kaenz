@@ -1,18 +1,26 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { NextResponse } from "next/server";
 import { POST as postBooking } from "../app/api/bookings/route.ts";
 import { POST as postCheckout } from "../app/api/checkout/route.ts";
 import { POST as postGuest } from "../app/api/checkout/guest/route.ts";
+import { POST as postLogin } from "../app/api/auth/login/route.ts";
 import { POST as postSignup } from "../app/api/auth/signup/route.ts";
+import { GET as getProfile } from "../app/api/profile/route.ts";
 import { POST as postYacht } from "../app/api/yachts/route.ts";
+import { isDeadSessionError } from "./auth/biometric.ts";
 import { emailConfirmRedirect } from "./email-verification.ts";
+import { loginRedirectPath } from "./login-redirect.ts";
+import { hashPassword } from "./passwords.ts";
 import {
   accessDecision,
   confirmationSignal,
   previewUnverifiedOverride,
+  sessionRepair,
 } from "./account-verification.ts";
-import { createSessionToken, SESSION_COOKIE } from "./session.ts";
+import { applyCookies, setKaenzSessionCookie } from "./supabase-route.ts";
+import { cookieIsSecure, createSessionToken, inspectSession, SESSION_COOKIE, sessionCookie, signAccounts, signValue } from "./session.ts";
 
 const user = { id: "user-1", email: "ada@kaenz.com", name: "Ada" };
 
@@ -184,4 +192,219 @@ test("guest checkout is gone for every session state", async () => {
   assert.equal(verified.status, 410);
   const body = (await verified.json()) as { error?: string };
   assert.equal(body.error, "gone");
+});
+
+const SUPABASE_KEYS = [
+  "SUPABASE_SERVICE_ROLE_KEY",
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+  "NEXT_PUBLIC_SUPABASE_URL",
+] as const;
+
+function withoutSupabase() {
+  const previous = new Map(SUPABASE_KEYS.map((key) => [key, process.env[key]]));
+  for (const key of SUPABASE_KEYS) delete process.env[key];
+  return () => {
+    for (const key of SUPABASE_KEYS) {
+      const value = previous.get(key);
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  };
+}
+
+test("session failures are named without the cookie value", async () => {
+  assert.equal((await inspectSession(null)).reason, "no_cookie");
+  assert.equal((await inspectSession("not-a-token")).reason, "bad_sig");
+  const expired = await signValue(
+    JSON.stringify({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      exp: Math.floor(Date.now() / 1000) - 5,
+    }),
+  );
+  assert.equal((await inspectSession(expired)).reason, "expired");
+  const valid = await inspectSession(await createSessionToken(user));
+  assert.equal(valid.reason, null);
+  assert.equal(valid.user?.email, user.email);
+
+  assert.deepEqual(sessionRepair({ user: null, verified: false, live: false, cookieReason: "no_cookie" }), {
+    reissue: false,
+    rejectReason: "no_cookie",
+  });
+  assert.deepEqual(sessionRepair({ user: null, verified: false, live: false, cookieReason: "bad_sig" }), {
+    reissue: false,
+    rejectReason: "bad_sig",
+  });
+  assert.deepEqual(sessionRepair({ user: null, verified: false, live: false, cookieReason: "expired" }), {
+    reissue: false,
+    rejectReason: "expired",
+  });
+  assert.deepEqual(sessionRepair({ user: null, verified: false, live: true, cookieReason: null }), {
+    reissue: false,
+    rejectReason: "no_supabase",
+  });
+  assert.deepEqual(sessionRepair({ user, verified: true, live: true, cookieReason: "no_cookie" }), {
+    reissue: true,
+    rejectReason: null,
+  });
+  assert.equal(sessionRepair({ user, verified: true, live: true, cookieReason: null }).reissue, false);
+  assert.equal(sessionRepair({ user, verified: false, live: true, cookieReason: "bad_sig" }).reissue, false);
+
+  const helper = readFileSync(new URL("./account-verification.ts", import.meta.url), "utf8");
+  assert.match(helper, /logAuthReject\(session\.rejectReason \|\| "no_supabase"\)/);
+  assert.equal(helper.includes("console.info(JSON.stringify({ auth: \"401\", reason }))"), true);
+  assert.equal(/console\.(info|log|warn|error)\([^)]*cookie/i.test(helper), false);
+});
+
+test("supabase Set-Cookie replacement keeps kaenz_session when it is written last", async () => {
+  const token = await createSessionToken(user);
+  const dropped = NextResponse.json({ ok: true });
+  dropped.headers.append("Set-Cookie", `${SESSION_COOKIE}=${token}; Path=/; HttpOnly`);
+  dropped.cookies.set("sb-example-auth-token", "jwt", { path: "/" });
+  assert.equal(
+    dropped.headers.getSetCookie().some((header) => header.startsWith(`${SESSION_COOKIE}=`)),
+    false,
+  );
+
+  const kept = NextResponse.json({ ok: true });
+  applyCookies(kept, [{ name: "sb-example-auth-token", value: "jwt", options: { path: "/" } }]);
+  setKaenzSessionCookie(kept, token);
+  const headers = kept.headers.getSetCookie();
+  assert.equal(headers.some((header) => header.startsWith("sb-example-auth-token=")), true);
+  const sessionHeader = headers.find((header) => header.startsWith(`${SESSION_COOKIE}=`));
+  assert.ok(sessionHeader);
+  const value = decodeURIComponent(sessionHeader.slice(SESSION_COOKIE.length + 1).split(";")[0]);
+  assert.equal((await inspectSession(value)).user?.email, user.email);
+  assert.equal(value.includes(token) || value === token, true);
+  assert.equal(headers.join("\n").includes(token) || headers.join("\n").includes(encodeURIComponent(token)), true);
+});
+
+test("password login sets kaenz_session, profile is 200, and draft save is past auth", async () => {
+  const restore = withoutSupabase();
+  try {
+    const accounts = await signAccounts([
+      { id: user.id, email: user.email, name: user.name, hash: hashPassword("password1") },
+    ]);
+    const login = await postLogin(
+      new Request("https://kaenz.com/api/auth/login", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          cookie: `kaenz_accounts=${encodeURIComponent(accounts)}`,
+          "x-forwarded-for": "198.51.100.61",
+        },
+        body: JSON.stringify({ email: user.email, password: "password1" }),
+      }),
+    );
+    assert.equal(login.status, 200);
+    const sessionHeader = login.headers
+      .getSetCookie()
+      .find((header) => header.startsWith(`${SESSION_COOKIE}=`));
+    assert.ok(sessionHeader);
+    const token = decodeURIComponent(sessionHeader.slice(SESSION_COOKIE.length + 1).split(";")[0]);
+    assert.equal((await inspectSession(token)).user?.email, user.email);
+    const cookie = `${SESSION_COOKIE}=${encodeURIComponent(token)}`;
+
+    const profile = await getProfile(
+      new Request("https://kaenz.com/api/profile", { headers: { cookie } }),
+    );
+    assert.equal(profile.status, 200);
+    const profileBody = (await profile.json()) as { profile?: { email?: string } };
+    assert.equal(profileBody.profile?.email, user.email);
+
+    const draft = await postYacht(
+      new Request("https://kaenz.com/api/yachts", {
+        method: "POST",
+        headers: { cookie, "content-type": "application/json" },
+        body: JSON.stringify({
+          draft: true,
+          name: "Sea Fairy",
+          home_port: "North dock",
+          owner_name: "Ada",
+        }),
+      }),
+    );
+    assert.notEqual(draft.status, 401);
+    const draftBody = (await draft.json()) as { error?: string };
+    assert.equal(draft.status, 503);
+    assert.equal(draftBody.error, "supabase");
+
+    const missing = await getProfile(new Request("https://kaenz.com/api/profile"));
+    assert.equal(missing.status, 401);
+    assert.equal(((await missing.json()) as { error?: string }).error, "auth");
+  } finally {
+    restore();
+  }
+});
+
+test("login redirect uses next immediately and fingerprint keeps the vault on 5xx", () => {
+  assert.equal(loginRedirectPath("/app/yachts"), "/app/yachts");
+  assert.equal(loginRedirectPath("/login?next=/app"), "/login?next=/app");
+  assert.equal(loginRedirectPath("//evil.example"), "/app");
+  assert.equal(loginRedirectPath("https://evil.example"), "/app");
+  assert.equal(loginRedirectPath(null), "/app");
+
+  const form = readFileSync(new URL("../components/AuthForm.tsx", import.meta.url), "utf8");
+  assert.match(form, /window\.location\.replace\(next\)/);
+  assert.match(form, /AbortSignal\.timeout\(12_000\)/);
+  assert.equal(form.includes('router.replace("/app")'), false);
+  const login = readFileSync(new URL("../app/api/auth/login/route.ts", import.meta.url), "utf8");
+  const applyAt = login.indexOf("applyCookies(res, pending)");
+  const setAt = login.indexOf("setKaenzSessionCookie(res, session)");
+  assert.ok(applyAt > 0 && setAt > applyAt);
+
+  assert.equal(isDeadSessionError({ status: 401 }), true);
+  assert.equal(isDeadSessionError({ status: 403 }), true);
+  assert.equal(isDeadSessionError({ status: 400 }), true);
+  assert.equal(isDeadSessionError({ status: 500 }), false);
+  assert.equal(isDeadSessionError({ status: 503, message: "invalid session" }), false);
+  assert.equal(isDeadSessionError({ name: "TypeError", message: "Failed to fetch" }), false);
+  assert.equal(isDeadSessionError({ name: "AuthRetryableFetchError", status: 401 }), false);
+  assert.equal(isDeadSessionError({ name: "AuthApiError", message: "refresh_token_not_found" }), true);
+  const biometric = readFileSync(
+    new URL("../components/auth/BiometricLogin.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(biometric, /isDeadSessionError/);
+  assert.match(biometric, /disableBiometric\(\)/);
+  assert.match(biometric, /onUsePassword\(\)/);
+  assert.equal(biometric.includes("useAutoBiometricPrompt"), false);
+
+  assert.equal(cookieIsSecure({ NODE_ENV: "production" }), true);
+  assert.equal(cookieIsSecure({ NODE_ENV: "test" }), false);
+  assert.equal(sessionCookie("token").includes("; Secure"), cookieIsSecure());
+  assert.equal(sessionCookie("token").startsWith(`${SESSION_COOKIE}=token;`), true);
+  const sessionSrc = readFileSync(new URL("./session.ts", import.meta.url), "utf8");
+  assert.equal(sessionSrc.includes("kaenz-by-salvazion-inc-session-key"), false);
+  assert.match(sessionSrc, /resolveAuthSecret/);
+  const jar = readFileSync(new URL("./supabase-route.ts", import.meta.url), "utf8");
+  assert.match(jar, /secure: cookieIsSecure\(\)/);
+  const drafts = readFileSync(new URL("../app/api/yachts/drafts/route.ts", import.meta.url), "utf8");
+  assert.match(drafts, /export async function DELETE/);
+  assert.match(drafts, /requireVerifiedUser/);
+  const signup = readFileSync(new URL("../app/api/auth/signup/route.ts", import.meta.url), "utf8");
+  assert.match(signup, /signup-burst:/);
+  assert.match(signup, /signup-email:/);
+  assert.match(signup, /company_website/);
+  const signupApply = signup.indexOf("applyCookies(res, pending)");
+  const signupSet = signup.indexOf("setKaenzSessionCookie(res, session)");
+  assert.ok(signupApply > 0 && signupSet > signupApply);
+
+  const guarded = [
+    "../app/api/profile/route.ts",
+    "../app/api/trips/route.ts",
+    "../app/api/yachts/route.ts",
+    "../app/api/yachts/uploads/route.ts",
+    "../app/api/marinas/route.ts",
+    "../app/api/payouts/route.ts",
+    "../app/api/holder-key/route.ts",
+    "../app/api/bookings/route.ts",
+    "../app/api/checkout/route.ts",
+  ];
+  for (const file of guarded) {
+    const src = readFileSync(new URL(file, import.meta.url), "utf8");
+    assert.equal(src.includes("readSession("), false, file);
+    assert.match(src, /requireSessionUser|requireVerifiedUser/);
+  }
 });

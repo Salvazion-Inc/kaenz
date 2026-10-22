@@ -1,4 +1,4 @@
-import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
+import { requireSessionUser } from "@/lib/account-verification";
 import { parseCountry, refreshPartner, startOnboarding } from "@/lib/payouts";
 import { appOrigin, getStripe, stripeConfigured } from "@/lib/stripe";
 import { getSupabaseAdmin } from "@/lib/supabase";
@@ -17,32 +17,32 @@ function guard() {
   return "";
 }
 
-async function sessionUser(req: Request) {
-  return readSession(cookieValue(req.headers.get("cookie"), SESSION_COOKIE));
-}
-
 /** Current payout status; releases retained shares once the account is active. */
 export async function GET(req: Request) {
-  const user = await sessionUser(req);
-  if (!user) return Response.json({ error: "auth" }, { status: 401 });
+  const gate = await requireSessionUser(req);
+  if ("response" in gate) return gate.response;
+  const user = gate.user;
   const blocked = guard();
   if (blocked) {
-    return Response.json({ status: "unavailable", reason: blocked, pendingCents: 0 });
+    return gate.seal(
+      Response.json({ status: "unavailable", reason: blocked, pendingCents: 0 }),
+    );
   }
   try {
     const result = await refreshPartner(getStripe(), user.id);
-    return Response.json(result, { headers: { "Cache-Control": "no-store" } });
+    return gate.seal(Response.json(result, { headers: { "Cache-Control": "no-store" } }));
   } catch {
-    return Response.json({ error: "payouts" }, { status: 502 });
+    return gate.seal(Response.json({ error: "payouts" }, { status: 502 }));
   }
 }
 
 /** Starts (or resumes) Stripe onboarding and returns the hosted URL. */
 export async function POST(req: Request) {
-  const user = await sessionUser(req);
-  if (!user) return Response.json({ error: "auth" }, { status: 401 });
+  const gate = await requireSessionUser(req);
+  if ("response" in gate) return gate.response;
+  const user = gate.user;
   const blocked = guard();
-  if (blocked) return Response.json({ error: blocked }, { status: 503 });
+  if (blocked) return gate.seal(Response.json({ error: blocked }, { status: 503 }));
   const body = (await req.json().catch(() => ({}))) as { country?: string };
   const origin = appOrigin(req);
   try {
@@ -53,8 +53,8 @@ export async function POST(req: Request) {
       returnUrl: `${origin}/app/account?payouts=return`,
       refreshUrl: `${origin}/app/account?payouts=refresh`,
     });
-    return Response.json(result, { headers: { "Cache-Control": "no-store" } });
+    return gate.seal(Response.json(result, { headers: { "Cache-Control": "no-store" } }));
   } catch {
-    return Response.json({ error: "payouts" }, { status: 502 });
+    return gate.seal(Response.json({ error: "payouts" }, { status: 502 }));
   }
 }

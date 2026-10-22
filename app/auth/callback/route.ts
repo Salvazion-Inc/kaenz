@@ -6,9 +6,14 @@ import {
 } from "@/lib/auth-link";
 import { requestOrigin } from "@/lib/email-verification";
 import { logFunnel } from "@/lib/funnel";
-import { cookieValue, createSessionToken, sessionCookie } from "@/lib/session";
+import { cookieValue, createSessionToken } from "@/lib/session";
 import { ONBOARDING_COOKIE, parseSignupPrefill } from "@/lib/signup-prefill";
-import { applyCookies, createRouteSupabase, type PendingCookie } from "@/lib/supabase-route";
+import {
+  applyCookies,
+  createRouteSupabase,
+  setKaenzSessionCookie,
+  type PendingCookie,
+} from "@/lib/supabase-route";
 
 export const runtime = "nodejs";
 
@@ -135,6 +140,6 @@ export async function GET(req: Request) {
 
   const res = redirectTo(origin, nextPath);
   applyCookies(res, pending);
-  res.headers.append("Set-Cookie", sessionCookie(session));
+  setKaenzSessionCookie(res, session);
   return res;
 }
