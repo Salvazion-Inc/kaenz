@@ -13,24 +13,19 @@ import {
   sanitizeProfile,
   signProfileMap,
 } from "@/lib/profile";
+import { requireSessionUser } from "@/lib/account-verification";
 import {
   ACCOUNTS_COOKIE,
   accountsCookie,
   cookieValue,
   createSessionToken,
   readAccounts,
-  readSession,
-  SESSION_COOKIE,
   sessionCookie,
   signAccounts,
 } from "@/lib/session";
 import { getSupabase } from "@/lib/supabase";
 
 export const runtime = "nodejs";
-
-function sessionFrom(req: Request) {
-  return readSession(cookieValue(req.headers.get("cookie"), SESSION_COOKIE));
-}
 
 async function loadProfile(req: Request, userId: string, fallbackEmail: string) {
   const map = await readProfileMap(
@@ -95,20 +90,20 @@ async function loadProfile(req: Request, userId: string, fallbackEmail: string) 
 }
 
 export async function GET(req: Request) {
-  const user = await sessionFrom(req);
-  if (!user) {
-    return NextResponse.json({ error: "auth" }, { status: 401 });
-  }
+  const gate = await requireSessionUser(req);
+  if ("response" in gate) return gate.response;
+  const user = gate.user;
   const stored = await loadProfile(req, user.id, user.email);
   const profile = sanitizeProfile(stored, emptyProfile(user));
-  return NextResponse.json({ profile: publicProfile(profile) });
+  return gate.seal(NextResponse.json({ profile: publicProfile(profile) }));
 }
 
 export async function PUT(req: Request) {
-  const user = await sessionFrom(req);
-  if (!user) {
-    return NextResponse.json({ error: "auth" }, { status: 401 });
-  }
+  const gate = await requireSessionUser(req);
+  if ("response" in gate) return gate.response;
+  const user = gate.user;
+  const send = (body: unknown, status = 200) =>
+    gate.seal(NextResponse.json(body, { status }));
 
   const body = await req.json().catch(() => ({}));
   const current = sanitizeProfile(
@@ -120,19 +115,19 @@ export async function PUT(req: Request) {
   const email = String(body.email || "").trim().toLowerCase();
   const phone = String(body.phone || "").trim();
   if (!fullName || fullName.length < 2) {
-    return NextResponse.json({ error: "name" }, { status: 400 });
+    return send({ error: "name" }, 400);
   }
   if (!email || !email.includes("@")) {
-    return NextResponse.json({ error: "email" }, { status: 400 });
+    return send({ error: "email" }, 400);
   }
   if (phone && digitsLen(phone) < 7) {
-    return NextResponse.json({ error: "phone" }, { status: 400 });
+    return send({ error: "phone" }, 400);
   }
 
   const role = parseRole(body.role || current.role);
   const instagram = parseInstagram(String(body.instagram ?? current.instagram));
   if (instagram === "invalid") {
-    return NextResponse.json({ error: "instagram" }, { status: 400 });
+    return send({ error: "instagram" }, 400);
   }
   const city = String(body.city || "").trim().slice(0, 80);
   const cityLat = numOrNull(body.cityLat);
@@ -140,11 +135,11 @@ export async function PUT(req: Request) {
 
   const creditCard = parseCardInput(body.creditCard, current.creditCard);
   if (creditCard === "invalid") {
-    return NextResponse.json({ error: "credit" }, { status: 400 });
+    return send({ error: "credit" }, 400);
   }
   const debitCard = parseCardInput(body.debitCard, current.debitCard);
   if (debitCard === "invalid") {
-    return NextResponse.json({ error: "debit" }, { status: 400 });
+    return send({ error: "debit" }, 400);
   }
   // The Solana wallet is optional and never read by payouts (Stripe Connect).
   // An empty or malformed value must never block saving the account, so an
@@ -218,7 +213,7 @@ export async function PUT(req: Request) {
     name: fullName,
   });
   const vault = await signProfileMap(map);
-  const res = NextResponse.json({ profile: publicProfile(profile) });
+  const res = send({ profile: publicProfile(profile) });
   res.headers.append("Set-Cookie", sessionCookie(session));
   res.headers.append("Set-Cookie", profileCookie(vault));
   if (account) {

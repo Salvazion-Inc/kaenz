@@ -1,11 +1,5 @@
-import { requireVerifiedUser } from "@/lib/account-verification";
-import {
-  cookieValue,
-  readSession,
-  readSignedValue,
-  SESSION_COOKIE,
-  signValue,
-} from "@/lib/session";
+import { requireSessionUser, requireVerifiedUser } from "@/lib/account-verification";
+import { cookieValue, readSignedValue, signValue } from "@/lib/session";
 import { getSupabase } from "@/lib/supabase";
 
 export const runtime = "nodejs";
@@ -64,10 +58,9 @@ function asTrip(value: unknown): StoredTrip | null {
 }
 
 export async function GET(req: Request) {
-  const user = await readSession(
-    cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
-  );
-  if (!user) return Response.json({ error: "auth" }, { status: 401 });
+  const gate = await requireSessionUser(req);
+  if ("response" in gate) return gate.response;
+  const user = gate.user;
 
   const map = await readTripMap(cookieValue(req.headers.get("cookie"), TRIPS_COOKIE));
   const local = map[user.id] || [];
@@ -107,26 +100,25 @@ export async function GET(req: Request) {
     }
   }
 
-  return Response.json({
-    trips: [...byId.values()].map((t) => ({ ...t, photos: [] })),
-  });
+  return gate.seal(
+    Response.json({
+      trips: [...byId.values()].map((t) => ({ ...t, photos: [] })),
+    }),
+  );
 }
 
 export async function POST(req: Request) {
-  const user = await readSession(
-    cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
-  );
-  if (!user) return Response.json({ error: "auth" }, { status: 401 });
   const gate = await requireVerifiedUser(req);
   if ("response" in gate) return gate.response;
+  const user = gate.user;
   const trip = asTrip(await req.json().catch(() => null));
-  if (!trip) return Response.json({ error: "trip" }, { status: 400 });
+  if (!trip) return gate.seal(Response.json({ error: "trip" }, { status: 400 }));
 
   const map = await readTripMap(cookieValue(req.headers.get("cookie"), TRIPS_COOKIE));
   const list = map[user.id] || [];
   map[user.id] = [trip, ...list.filter((item) => item.id !== trip.id)].slice(0, 50);
   const token = await signValue(JSON.stringify({ trips: map }));
-  const res = Response.json({ trip: { ...trip, photos: [] } });
+  const res = gate.seal(Response.json({ trip: { ...trip, photos: [] } }));
   res.headers.append("Set-Cookie", tripsCookie(token));
   return res;
 }

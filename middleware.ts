@@ -57,6 +57,7 @@ export async function middleware(request: NextRequest) {
     return applySecurityHeaders(res);
   }
 
+  let repairedSession: string | null = null;
   if (pathname.startsWith("/app")) {
     const session = await resolveRequestSession(request.headers.get("cookie"), request);
     if (!session.user) {
@@ -67,10 +68,12 @@ export async function middleware(request: NextRequest) {
       redirect.headers.set("X-Robots-Tag", "noindex, nofollow");
       return applySecurityHeaders(redirect);
     }
+    repairedSession = session.setCookie;
   }
 
   const locale = request.cookies.get(LOCALE_COOKIE)?.value;
   const res = NextResponse.next();
+  if (repairedSession) res.headers.append("Set-Cookie", repairedSession);
   if (locale) res.headers.set("x-kaenz-locale", locale);
   if (
     pathname.startsWith("/app") ||

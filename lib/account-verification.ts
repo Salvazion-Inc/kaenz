@@ -1,9 +1,11 @@
-import type { SessionUser } from "./session";
+import type { KaenzCookieReason, SessionUser } from "./session";
 import {
   cookieValue,
+  createSessionToken,
   hasSupabaseAuthCookie,
-  readSession,
+  inspectSession,
   SESSION_COOKIE,
+  sessionCookie,
 } from "./session";
 import { getSupabase, getSupabaseAdmin } from "./supabase";
 import { createRouteSupabase } from "./supabase-route";
@@ -161,11 +163,44 @@ export type LiveAuthUser = AuthConfirmRow & {
   user_metadata?: { full_name?: string; email_verified?: boolean } | null;
 };
 
+export type AuthRejectReason = KaenzCookieReason | "no_supabase";
+
 export type SessionDecision = {
   user: SessionUser | null;
   verified: boolean;
   signal: ConfirmationSignal;
 };
+
+export type ResolvedSession = SessionDecision & {
+  /** Set-Cookie for a repaired kaenz_session. Null when the current cookie is valid. */
+  setCookie: string | null;
+  /** The token inside setCookie, so callers can return it without reading the header. */
+  issuedToken: string | null;
+  /** Set only when the request is anonymous. */
+  rejectReason: AuthRejectReason | null;
+};
+
+/** One reason string. Callers must not pass cookie or token values. */
+export function logAuthReject(reason: AuthRejectReason) {
+  console.info(JSON.stringify({ auth: "401", reason }));
+}
+
+export function sessionRepair(input: {
+  user: SessionUser | null;
+  verified: boolean;
+  live: boolean;
+  cookieReason: KaenzCookieReason | null;
+}): { reissue: boolean; rejectReason: AuthRejectReason | null } {
+  if (!input.user) {
+    return { reissue: false, rejectReason: input.cookieReason ?? "no_supabase" };
+  }
+  return {
+    reissue: input.verified && input.live && input.cookieReason !== null,
+    rejectReason: null,
+  };
+}
+
+const LIVE_AUTH_MS = 6_000;
 
 /**
  * A Kaenz cookie is not a session by itself when Supabase can be reached.
@@ -220,8 +255,15 @@ async function readLiveSupabaseUser(req: Request): Promise<LiveAuthResult> {
   const pending: { name: string; value: string }[] = [];
   const supabase = createRouteSupabase(req, pending);
   if (!supabase) return { configured: false, reachable: false, user: null };
+  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    const { data, error } = await supabase.auth.getUser();
+    const raced = await Promise.race([
+      supabase.auth.getUser(),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error("timeout")), LIVE_AUTH_MS);
+      }),
+    ]);
+    const { data, error } = raced;
     if (data?.user?.id) {
       return { configured: true, reachable: true, user: data.user };
     }
@@ -236,6 +278,8 @@ async function readLiveSupabaseUser(req: Request): Promise<LiveAuthResult> {
     return { configured: true, reachable: true, user: null };
   } catch {
     return { configured: true, reachable: false, user: null };
+  } finally {
+    if (timer) clearTimeout(timer);
   }
 }
 
@@ -250,12 +294,13 @@ function sessionUserFromAuth(row: LiveAuthUser, cookieUser: SessionUser | null):
   };
 }
 
-/** Cookie plus a Supabase Auth check. Used by /app and /api/auth/me. */
+/** Cookie plus a Supabase Auth check. Used by /app, /api/auth/me, and protected APIs. */
 export async function resolveRequestSession(
   cookieHeader: string | null | undefined,
   req?: Request,
-): Promise<SessionDecision> {
-  const cookieUser = await readSession(cookieValue(cookieHeader, SESSION_COOKIE));
+): Promise<ResolvedSession> {
+  const inspected = await inspectSession(cookieValue(cookieHeader, SESSION_COOKIE));
+  const cookieUser = inspected.user;
   const headers = new Headers(req?.headers);
   if (cookieHeader) headers.set("cookie", cookieHeader);
   const probe = new Request(req?.url || "https://kaenz.com/", { headers });
@@ -272,7 +317,7 @@ export async function resolveRequestSession(
     if (signal === "confirmed") void syncConfirmedProfile(adminRow || live.user);
   } else if (cookieUser) signal = await accountSignal(cookieUser, req);
 
-  return decideSession({
+  const decision = decideSession({
     cookieUser,
     liveUser,
     configured: live.configured,
@@ -280,16 +325,55 @@ export async function resolveRequestSession(
     sbCookiesPresent,
     signal,
   });
+  const repair = sessionRepair({
+    user: decision.user,
+    verified: decision.verified,
+    live: Boolean(live.user),
+    cookieReason: inspected.reason,
+  });
+  let issuedToken: string | null = null;
+  let setCookie: string | null = null;
+  if (repair.reissue && decision.user) {
+    issuedToken = await createSessionToken(decision.user);
+    setCookie = sessionCookie(issuedToken);
+  }
+  return { ...decision, setCookie, issuedToken, rejectReason: repair.rejectReason };
 }
 
-export async function requireVerifiedUser(
+export function sealSession(res: Response, setCookie: string | null) {
+  if (setCookie) res.headers.append("Set-Cookie", setCookie);
+  return res;
+}
+
+export type SessionGrant = {
+  user: SessionUser;
+  issuedToken: string | null;
+  seal: (res: Response) => Response;
+};
+
+async function grantOrReject(
   req: Request,
-): Promise<{ user: SessionUser } | { response: Response }> {
-  const { user, signal } = await resolveRequestSession(req.headers.get("cookie"), req);
-  const decision = accessDecision(user, signal);
+  verifiedOnly: boolean,
+): Promise<SessionGrant | { response: Response }> {
+  const session = await resolveRequestSession(req.headers.get("cookie"), req);
+  const decision = accessDecision(session.user, session.signal);
   if (decision === "anonymous") {
+    logAuthReject(session.rejectReason || "no_supabase");
     return { response: Response.json({ error: "auth" }, { status: 401 }) };
   }
-  if (decision === "unverified") return { response: unverifiedResponse() };
-  return { user: user as SessionUser };
+  if (verifiedOnly && decision === "unverified") return { response: unverifiedResponse() };
+  return {
+    user: session.user as SessionUser,
+    issuedToken: session.issuedToken,
+    seal: (res) => sealSession(res, session.setCookie),
+  };
+}
+
+/** Any resolved user, including an unverified account that may still open Account. */
+export function requireSessionUser(req: Request) {
+  return grantOrReject(req, false);
+}
+
+export function requireVerifiedUser(req: Request) {
+  return grantOrReject(req, true);
 }

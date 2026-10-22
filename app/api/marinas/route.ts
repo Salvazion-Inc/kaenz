@@ -1,7 +1,6 @@
 import { requireVerifiedUser } from "@/lib/account-verification";
 import { logFunnel } from "@/lib/funnel";
 import { buildMarinaDraft } from "@/lib/listing-draft";
-import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 import { listBookablePlaces } from "@/lib/inventory";
 import { optionalWallet } from "@/lib/listings";
 import {
@@ -27,22 +26,17 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const user = await readSession(
-    cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
-  );
-  if (!user) {
-    return Response.json({ error: "auth" }, { status: 401 });
-  }
   const gate = await requireVerifiedUser(req);
   if ("response" in gate) return gate.response;
+  const user = gate.user;
   if (!getSupabaseAdmin()) {
-    return Response.json({ error: "supabase" }, { status: 503 });
+    return gate.seal(Response.json({ error: "supabase" }, { status: 503 }));
   }
 
   const body = await req.json().catch(() => ({}));
   if (body.draft === true) {
     const draft = buildMarinaDraft({ name: body.name });
-    if (!draft.ok) return Response.json({ error: draft.error }, { status: 400 });
+    if (!draft.ok) return gate.seal(Response.json({ error: draft.error }, { status: 400 }));
     try {
       const listing = await insertMarinaListing({
         createdBy: user.id,
@@ -59,13 +53,15 @@ export async function POST(req: Request) {
         status: "draft",
       });
       logFunnel("listing_submitted", "marina");
-      return Response.json({
-        place: { id: listing.id, name: listing.name },
-        documents: "pending",
-        status: "draft",
-      });
+      return gate.seal(
+        Response.json({
+          place: { id: listing.id, name: listing.name },
+          documents: "pending",
+          status: "draft",
+        }),
+      );
     } catch {
-      return Response.json({ error: "save" }, { status: 500 });
+      return gate.seal(Response.json({ error: "save" }, { status: 500 }));
     }
   }
   const kind = body.kind === "port" ? "port" : "marina";
@@ -81,13 +77,13 @@ export async function POST(req: Request) {
   const wallet = optionalWallet(body.wallet);
 
   if (!name || !address || !region || !dockmaster || !phone) {
-    return Response.json({ error: "fields" }, { status: 400 });
+    return gate.seal(Response.json({ error: "fields" }, { status: 400 }));
   }
   if (!isCoord(lat, lng)) {
-    return Response.json({ error: "coords" }, { status: 400 });
+    return gate.seal(Response.json({ error: "coords" }, { status: 400 }));
   }
   if (!isWebsite(website)) {
-    return Response.json({ error: "website" }, { status: 400 });
+    return gate.seal(Response.json({ error: "website" }, { status: 400 }));
   }
 
   try {
@@ -105,8 +101,8 @@ export async function POST(req: Request) {
       wallet,
     });
     logFunnel("listing_submitted", "marina");
-    return Response.json({ place: listingToPlace(listing) });
+    return gate.seal(Response.json({ place: listingToPlace(listing) }));
   } catch {
-    return Response.json({ error: "save" }, { status: 500 });
+    return gate.seal(Response.json({ error: "save" }, { status: 500 }));
   }
 }

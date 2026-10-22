@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import { emailConfirmRedirect, registerUnconfirmedUser } from "@/lib/email-verification";
 import { logFunnel } from "@/lib/funnel";
 import { onboardingCookie, parseSignupPrefill } from "@/lib/signup-prefill";
-import { applyCookies, createRouteSupabase, type PendingCookie } from "@/lib/supabase-route";
+import {
+  applyCookies,
+  createRouteSupabase,
+  setKaenzSessionCookie,
+  type PendingCookie,
+} from "@/lib/supabase-route";
 import { hashPassword } from "@/lib/passwords";
 import {
   ACCOUNTS_COOKIE,
@@ -11,7 +16,6 @@ import {
   createSessionToken,
   readAccounts,
   clearStaleSupabaseSessionHeaders,
-  sessionCookie,
   signAccounts,
   type AccountRecord,
 } from "@/lib/session";
@@ -78,13 +82,13 @@ export async function POST(req: Request) {
     verified: registered.confirmed,
     confirmationRequired: !registered.confirmed,
   });
+  applyCookies(res, pending);
+  setKaenzSessionCookie(res, session);
   const intent = onboardingCookie(prefill);
   if (intent) res.headers.append("Set-Cookie", intent);
   for (const header of clearStaleSupabaseSessionHeaders(req.headers.get("cookie"))) {
     res.headers.append("Set-Cookie", header);
   }
-  res.headers.append("Set-Cookie", sessionCookie(session));
   res.headers.append("Set-Cookie", accountsCookie(vault));
-  applyCookies(res, pending);
   return res;
 }

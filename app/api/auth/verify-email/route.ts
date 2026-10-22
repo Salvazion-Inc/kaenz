@@ -1,6 +1,6 @@
+import { resolveRequestSession, sealSession } from "@/lib/account-verification";
 import { emailConfirmRedirect, resendSignupVerification } from "@/lib/email-verification";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
-import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 
 export const runtime = "nodejs";
 
@@ -16,21 +16,24 @@ export async function POST(req: Request) {
   }
 
   const body = (await req.json().catch(() => ({}))) as { email?: string };
-  const session = await readSession(cookieValue(req.headers.get("cookie"), SESSION_COOKIE));
-  const email = String(session?.email || body.email || "").trim().toLowerCase();
+  const session = await resolveRequestSession(req.headers.get("cookie"), req);
+  const email = String(session.user?.email || body.email || "").trim().toLowerCase();
+  const send = (res: Response) => sealSession(res, session.setCookie);
   if (!EMAIL.test(email)) {
-    return Response.json(
-      {
-        error: "email",
-        message: "Add the email address to resend the confirmation.",
-      },
-      { status: 400 },
+    return send(
+      Response.json(
+        {
+          error: "email",
+          message: "Add the email address to resend the confirmation.",
+        },
+        { status: 400 },
+      ),
     );
   }
 
   const result = await resendSignupVerification(email, emailConfirmRedirect(req));
   if (result === "unconfigured") {
-    return Response.json({ error: "unconfigured" }, { status: 503 });
+    return send(Response.json({ error: "unconfigured" }, { status: 503 }));
   }
-  return Response.json({ ok: true });
+  return send(Response.json({ ok: true }));
 }

@@ -8,6 +8,7 @@ import { VerifyEmailScreen } from "@/components/VerifyEmailScreen";
 import { useBiometricGate } from "@/components/auth/useBiometric";
 import { EMAIL_VERIFIED_SIGN_IN, verificationLinkExpiredFromLocation } from "@/lib/auth-link";
 import { t } from "@/lib/copy";
+import { loginRedirectPath } from "@/lib/login-redirect";
 import { useLocale } from "@/lib/locale-context";
 import { onboardingCookie, parseSignupPrefill } from "@/lib/signup-prefill";
 import { trackFunnel } from "@/lib/track-funnel";
@@ -24,7 +25,7 @@ export function AuthForm({
   const c = t(locale);
   const router = useRouter();
   const search = useSearchParams();
-  const next = search.get("next") || "/app";
+  const next = loginRedirectPath(search.get("next"));
   const roleQuery = search.get("role");
   const emailQuery = search.get("email");
   const nameQuery = search.get("name");
@@ -116,6 +117,7 @@ export function AuthForm({
             yacht: prefill.yacht,
             marina: prefill.marina,
           }),
+          signal: mode === "login" ? AbortSignal.timeout(12_000) : undefined,
         },
       );
       const data = (await res.json().catch(() => ({}))) as {
@@ -145,8 +147,11 @@ export function AuthForm({
         router.refresh();
         return;
       }
-      router.replace(next.startsWith("/") ? next : "/app");
-      router.refresh();
+      if (mode === "login") {
+        window.location.replace(next);
+        return;
+      }
+      window.location.replace(loginRedirectPath(next));
     } catch {
       setStatus("err");
       setMessage(mode === "login" ? c.loginError : c.signupError);

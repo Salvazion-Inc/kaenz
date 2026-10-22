@@ -83,20 +83,33 @@ export async function createSessionToken(user: SessionUser) {
   return signValue(JSON.stringify(payload));
 }
 
+export type KaenzCookieReason = "no_cookie" | "bad_sig" | "expired";
+
+/** Why a kaenz_session value cannot be trusted. Never includes the token. */
+export async function inspectSession(
+  token: string | undefined | null,
+): Promise<{ user: SessionUser; reason: null } | { user: null; reason: KaenzCookieReason }> {
+  if (!token) return { user: null, reason: "no_cookie" };
+  const raw = await readSignedValue(token);
+  if (!raw) return { user: null, reason: "bad_sig" };
+  try {
+    const data = JSON.parse(raw) as SessionPayload;
+    if (!data?.email || !data?.id) return { user: null, reason: "bad_sig" };
+    if (data.exp < Math.floor(Date.now() / 1000)) return { user: null, reason: "expired" };
+    return {
+      user: { id: data.id, email: data.email, name: data.name || data.email },
+      reason: null,
+    };
+  } catch {
+    return { user: null, reason: "bad_sig" };
+  }
+}
+
 export async function readSession(
   token: string | undefined | null,
 ): Promise<SessionUser | null> {
-  const raw = await readSignedValue(token);
-  if (!raw) return null;
-  try {
-    const data = JSON.parse(raw) as SessionPayload;
-    if (!data?.email || !data?.id || data.exp < Math.floor(Date.now() / 1000)) {
-      return null;
-    }
-    return { id: data.id, email: data.email, name: data.name || data.email };
-  } catch {
-    return null;
-  }
+  const inspected = await inspectSession(token);
+  return inspected.user;
 }
 
 export async function readAccounts(

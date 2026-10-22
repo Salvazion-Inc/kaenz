@@ -291,6 +291,36 @@ export async function unlockWithBiometric(): Promise<BiometricVault> {
   return vault;
 }
 
+/**
+ * Auth rejected the stored session (400/401/403 or a dead refresh token).
+ * Network failures and 5xx keep the vault. Ported from salvazion ce67c32.
+ */
+export function isDeadSessionError(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  const e = err as { name?: string; status?: number; code?: string; message?: string };
+  if (e.name === "AuthRetryableFetchError") return false;
+  if (typeof e.status === "number" && e.status >= 500) return false;
+  if (e.status === 400 || e.status === 401 || e.status === 403) return true;
+  if (e.name === "AbortError" || e.name === "TypeError") return false;
+  const blob = `${e.code ?? ""} ${e.message ?? ""}`.toLowerCase();
+  if (
+    blob.includes("failed to fetch") ||
+    blob.includes("network") ||
+    blob.includes("timeout") ||
+    blob.includes("fetch failed")
+  ) {
+    return false;
+  }
+  if (e.name === "AuthApiError" || e.name === "AuthSessionMissingError") return true;
+  return (
+    blob.includes("refresh_token") ||
+    blob.includes("refresh token") ||
+    blob.includes("invalid") ||
+    blob.includes("session_not_found") ||
+    blob.includes("jwt expired")
+  );
+}
+
 export function disableBiometric() {
   if (!canUseDom()) return;
   localStorage.removeItem(BIOMETRIC_STATE_KEY);

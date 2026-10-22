@@ -1,12 +1,14 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   BiometricCancelledError,
+  disableBiometric,
+  isDeadSessionError,
   persistBiometricVault,
   unlockWithBiometric,
 } from "@/lib/auth/biometric";
+import { loginRedirectPath } from "@/lib/login-redirect";
 import { t } from "@/lib/copy";
 import type { Locale } from "@/lib/locale";
 import { BiometricUnlockScreen } from "./BiometricUnlockScreen";
@@ -22,7 +24,6 @@ export function BiometricLogin({
   onUsePassword: () => void;
 }) {
   const c = t(locale);
-  const router = useRouter();
   const { email } = useBiometricGate();
   const [loading, setLoading] = useState(false);
   const [attempted, setAttempted] = useState(false);
@@ -42,7 +43,13 @@ export function BiometricLogin({
         body: JSON.stringify({ token: vault.token }),
       });
       if (!res.ok) {
-        setError(c.biometricExpired);
+        if (isDeadSessionError({ status: res.status })) {
+          disableBiometric();
+          setError(c.biometricExpired);
+          onUsePassword();
+          return;
+        }
+        setError(c.biometricFailed);
         return;
       }
       const data = (await res.json()) as {
@@ -50,12 +57,16 @@ export function BiometricLogin({
         user?: { email?: string };
       };
       persistBiometricVault(data.token || vault.token, data.user?.email || vault.email);
-      router.replace(next.startsWith("/") ? next : "/app");
-      router.refresh();
+      window.location.replace(loginRedirectPath(next));
     } catch (err) {
-      if (!(err instanceof BiometricCancelledError)) {
-        setError(c.biometricFailed);
+      if (err instanceof BiometricCancelledError) return;
+      if (isDeadSessionError(err)) {
+        disableBiometric();
+        setError(c.biometricExpired);
+        onUsePassword();
+        return;
       }
+      setError(c.biometricFailed);
     } finally {
       loadingRef.current = false;
       setLoading(false);

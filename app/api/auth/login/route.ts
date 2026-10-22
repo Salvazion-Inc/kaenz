@@ -6,11 +6,31 @@ import {
   cookieValue,
   createSessionToken,
   readAccounts,
-  sessionCookie,
 } from "@/lib/session";
-import { applyCookies, createRouteSupabase, type PendingCookie } from "@/lib/supabase-route";
+import {
+  applyCookies,
+  createRouteSupabase,
+  setKaenzSessionCookie,
+  type PendingCookie,
+} from "@/lib/supabase-route";
 
 export const runtime = "nodejs";
+
+const SIGN_IN_MS = 10_000;
+
+async function withTimeout<T>(work: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      work,
+      new Promise<T>((_, reject) => {
+        timer = setTimeout(() => reject(new Error("timeout")), ms);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
@@ -25,10 +45,13 @@ export async function POST(req: Request) {
   let reachable = false;
   if (supabase) {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data, error } = await withTimeout(
+        supabase.auth.signInWithPassword({
+          email,
+          password,
+        }),
+        SIGN_IN_MS,
+      );
       reachable = true;
       if (!error && data.user) {
         const user = {
@@ -41,8 +64,8 @@ export async function POST(req: Request) {
         const verified = confirmationSignal(data.user) !== "unconfirmed";
         const session = await createSessionToken(user);
         const res = NextResponse.json({ user, verified });
-        res.headers.append("Set-Cookie", sessionCookie(session));
         applyCookies(res, pending);
+        setKaenzSessionCookie(res, session);
         return res;
       }
       const code = String((error as { code?: string } | null)?.code || "");
@@ -53,7 +76,10 @@ export async function POST(req: Request) {
           { status: 403 },
         );
       }
-    } catch {
+    } catch (err) {
+      if (err instanceof Error && err.message === "timeout") {
+        return NextResponse.json({ error: "timeout" }, { status: 504 });
+      }
       reachable = false;
     }
   }
@@ -67,7 +93,7 @@ export async function POST(req: Request) {
     const res = NextResponse.json({
       user: { id: local.id, email: local.email, name: local.name },
     });
-    res.headers.append("Set-Cookie", sessionCookie(session));
+    setKaenzSessionCookie(res, session);
     return res;
   }
 
