@@ -93,7 +93,9 @@ export async function listMarinaListings(): Promise<MarinaListing[]> {
       .order("created_at", { ascending: false });
     if (error) {
       if (error.code === "PGRST205") return [];
-      return (await readCatalog()).map(publicListing);
+      return (await readCatalog())
+        .filter((row) => row.status !== "draft")
+        .map(publicListing);
     }
     if (data) return (data as DbRow[]).map(fromRow).map(publicListing);
   } catch {
@@ -114,6 +116,7 @@ export async function insertMarinaListing(row: {
   phone: string;
   website: string;
   wallet: string;
+  status?: "listed" | "draft";
 }): Promise<MarinaListing> {
   const admin = getSupabaseAdmin();
   if (!admin) throw new Error("supabase");
@@ -138,13 +141,14 @@ export async function insertMarinaListing(row: {
     website: row.website,
     wallet: row.wallet,
     createdAt: new Date().toISOString(),
+    status: row.status === "draft" ? "draft" : "listed",
   };
 
   const { error } = await admin.from("marina_listings").insert({
     id,
     slug: listing.slug,
     created_by: row.createdBy,
-    status: "listed",
+    status: listing.status,
     kind: listing.kind,
     name: listing.name,
     lat: listing.lat,

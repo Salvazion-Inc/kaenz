@@ -98,7 +98,16 @@ export function YachtDetail({
           ) : null}
           {bookable ? (
             <>
-              <h2 className="text-2xl font-bold">{c.bookStripe}</h2>
+              {access === "anon" ? (
+                <Link
+                  href={`/login?next=${encodeURIComponent(`/fleet/${yacht.id}`)}`}
+                  className="text-2xl font-bold text-kaenz"
+                >
+                  {c.signInToBook}
+                </Link>
+              ) : (
+                <h2 className="text-2xl font-bold">{c.bookStripe}</h2>
+              )}
               <BookGate
                 locale={locale}
                 yacht={yacht}

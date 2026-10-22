@@ -18,7 +18,7 @@ export type YachtListing = {
   id: string;
   slug: string;
   createdBy: string;
-  status: "listed";
+  status: "listed" | "draft";
   ownerName: string;
   ownerWallet: string;
   name: string;

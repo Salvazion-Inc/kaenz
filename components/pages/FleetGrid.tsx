@@ -19,7 +19,13 @@ const ALL: Record<Locale, string> = {
 
 type Scope = "bookable" | "catalog" | "all";
 
-export function FleetGrid({ locale }: { locale: Locale }) {
+export function FleetGrid({
+  locale,
+  signedIn = false,
+}: {
+  locale: Locale;
+  signedIn?: boolean;
+}) {
   const c = t(locale);
   const [klass, setKlass] = useState<"all" | YachtTrait>("all");
   const [scope, setScope] = useState<Scope>("bookable");
@@ -169,14 +175,18 @@ export function FleetGrid({ locale }: { locale: Locale }) {
                   </div>
                   <div className="mt-6">
                     <Link
-                      href={pathFor(locale, `/fleet/${y.id}`)}
+                      href={
+                        bookableCard && !signedIn
+                          ? `/login?next=${encodeURIComponent(`/fleet/${y.id}`)}`
+                          : pathFor(locale, `/fleet/${y.id}`)
+                      }
                       className={
                         bookableCard
                           ? "btn-kaenz btn-book !px-5 !py-2 text-sm"
                           : "btn-ghost !px-5 !py-2 text-sm"
                       }
                     >
-                      {bookableCard ? c.bookStripe : c.bookNow}
+                      {bookableCard ? (signedIn ? c.bookStripe : c.signInToBook) : c.bookNow}
                     </Link>
                   </div>
                 </div>

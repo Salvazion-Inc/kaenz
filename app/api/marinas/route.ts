@@ -1,4 +1,6 @@
 import { requireVerifiedUser } from "@/lib/account-verification";
+import { logFunnel } from "@/lib/funnel";
+import { buildMarinaDraft } from "@/lib/listing-draft";
 import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 import { listBookablePlaces } from "@/lib/inventory";
 import { optionalWallet } from "@/lib/listings";
@@ -38,6 +40,34 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json().catch(() => ({}));
+  if (body.draft === true) {
+    const draft = buildMarinaDraft({ name: body.name });
+    if (!draft.ok) return Response.json({ error: draft.error }, { status: 400 });
+    try {
+      const listing = await insertMarinaListing({
+        createdBy: user.id,
+        kind: "marina",
+        name: draft.name,
+        lat: 0,
+        lng: 0,
+        address: "",
+        region: "",
+        dockmaster: "",
+        phone: "",
+        website: "",
+        wallet: "",
+        status: "draft",
+      });
+      logFunnel("listing_submitted", "marina");
+      return Response.json({
+        place: { id: listing.id, name: listing.name },
+        documents: "pending",
+        status: "draft",
+      });
+    } catch {
+      return Response.json({ error: "save" }, { status: 500 });
+    }
+  }
   const kind = body.kind === "port" ? "port" : "marina";
   const name = String(body.name || "").trim();
   const lat = Number(body.lat);
@@ -74,6 +104,7 @@ export async function POST(req: Request) {
       website,
       wallet,
     });
+    logFunnel("listing_submitted", "marina");
     return Response.json({ place: listingToPlace(listing) });
   } catch {
     return Response.json({ error: "save" }, { status: 500 });

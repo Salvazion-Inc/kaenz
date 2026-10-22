@@ -203,7 +203,9 @@ export async function listYachtListings(): Promise<YachtListing[]> {
       .order("created_at", { ascending: false });
     if (error) {
       if (error.code === "PGRST205") return [];
-      return (await readCatalog()).map(publicListing);
+      return (await readCatalog())
+        .filter((row) => row.status !== "draft")
+        .map(publicListing);
     }
     if (data) return (data as DbRow[]).map(fromRow).map(publicListing);
   } catch {
@@ -231,6 +233,7 @@ export async function insertYachtListing(row: {
   captainLanguages: CaptainLang[];
   captainRegion: string;
   captainWallet: string;
+  status?: "listed" | "draft";
 }): Promise<YachtListing> {
   const admin = getSupabaseAdmin();
   if (!admin) throw new Error("supabase");
@@ -241,11 +244,12 @@ export async function insertYachtListing(row: {
     .replace(/^-|-$/g, "")
     .slice(0, 40);
   const slug = `${slugBase || "yacht"}-${id.slice(0, 8)}`;
+  const status = row.status === "draft" ? "draft" : "listed";
   const listing: YachtListing = {
     id,
     slug,
     createdBy: row.createdBy,
-    status: "listed",
+    status,
     ownerName: row.ownerName,
     ownerWallet: row.ownerWallet,
     name: row.name,
@@ -266,7 +270,7 @@ export async function insertYachtListing(row: {
     id,
     slug,
     created_by: row.createdBy,
-    status: "listed",
+    status,
     owner_name: row.ownerName,
     owner_id_url: row.ownerIdUrl,
     owner_wallet: row.ownerWallet,

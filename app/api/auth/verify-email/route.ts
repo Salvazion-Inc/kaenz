@@ -19,7 +19,13 @@ export async function POST(req: Request) {
   const session = await readSession(cookieValue(req.headers.get("cookie"), SESSION_COOKIE));
   const email = String(session?.email || body.email || "").trim().toLowerCase();
   if (!EMAIL.test(email)) {
-    return Response.json({ error: "email" }, { status: 400 });
+    return Response.json(
+      {
+        error: "email",
+        message: "Add the email address to resend the confirmation.",
+      },
+      { status: 400 },
+    );
   }
 
   const result = await resendSignupVerification(email, emailConfirmRedirect(req));

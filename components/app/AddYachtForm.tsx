@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { at } from "@/lib/app-copy";
 import { compressListingImage, uploadSignedListingFile } from "@/lib/listing-direct";
 import {
@@ -15,6 +15,7 @@ import {
   type CaptainLang,
   type YachtTrait,
 } from "@/lib/listings";
+import { trackFunnel } from "@/lib/track-funnel";
 import { marinas } from "@/lib/yachts";
 import { PayoutsNotice } from "./PayoutsSection";
 import type { Locale } from "@/lib/locale";
@@ -47,12 +48,22 @@ export function AddYachtForm({
   locale,
   onCancel,
   onListed,
+  onDrafted,
+  initial,
+  role = "owner",
 }: {
   locale: Locale;
   onCancel: () => void;
   onListed: (yacht: Yacht) => void;
+  onDrafted?: () => void;
+  initial?: { name?: string; homePort?: string; ownerName?: string; captainName?: string };
+  role?: "owner" | "captain";
 }) {
   const c = at(locale).addYacht;
+  const formRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    trackFunnel("listing_started", role);
+  }, [role]);
   const [traits, setTraits] = useState<YachtTrait[]>([]);
   const [langs, setLangs] = useState<CaptainLang[]>([]);
   const [photos, setPhotos] = useState<File[]>([]);
@@ -226,8 +237,37 @@ export function AddYachtForm({
     }
   }
 
+  async function saveDraft() {
+    const form = formRef.current;
+    if (!form) return;
+    setMessage("");
+    setStatus("sending");
+    try {
+      const res = await fetch("/api/yachts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          draft: true,
+          role,
+          name: inputValue(form, "name"),
+          home_port: inputValue(form, "home_port"),
+          owner_name: inputValue(form, "owner_name"),
+          captain_name: inputValue(form, "captain_name"),
+        }),
+      });
+      const json = classifyListingResponse(res.status, await res.text());
+      if (!res.ok || json.error) throw new Error(messageFor(json.error || "save"));
+      onDrafted?.();
+      setStatus("idle");
+    } catch (err) {
+      setStatus("err");
+      setMessage(err instanceof Error ? err.message : c.error);
+    }
+  }
+
   return (
     <form
+      ref={formRef}
       onSubmit={onSubmit}
       className="mt-5 space-y-6 rounded-2xl border border-white/10 bg-white p-4 text-navy"
     >
@@ -250,7 +290,7 @@ export function AddYachtForm({
         <p className="text-xs text-navy/50">{c.ownerShare}</p>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.ownerName}
-          <input className={field} name="owner_name" required />
+          <input className={field} name="owner_name" defaultValue={initial?.ownerName || ""} required />
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.ownerId}
@@ -271,7 +311,7 @@ export function AddYachtForm({
         <h3 className="text-sm font-extrabold">{c.yachtSection}</h3>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.yachtName}
-          <input className={field} name="name" required />
+          <input className={field} name="name" defaultValue={initial?.name || ""} required />
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.photos}
@@ -341,7 +381,13 @@ export function AddYachtForm({
         </div>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.homePort}
-          <input className={field} name="home_port" required list="kaenz-marinas" />
+          <input
+            className={field}
+            name="home_port"
+            defaultValue={initial?.homePort || ""}
+            required
+            list="kaenz-marinas"
+          />
           <datalist id="kaenz-marinas">
             {marinas.map((marina) => (
               <option key={marina} value={marina} />
@@ -355,7 +401,12 @@ export function AddYachtForm({
         <p className="text-xs text-navy/50">{c.captainShare}</p>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.captainName}
-          <input className={field} name="captain_name" required />
+          <input
+            className={field}
+            name="captain_name"
+            defaultValue={initial?.captainName || ""}
+            required
+          />
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.captainId}
@@ -423,6 +474,14 @@ export function AddYachtForm({
         </p>
       ) : null}
 
+      <button
+        type="button"
+        onClick={saveDraft}
+        disabled={status === "sending"}
+        className="w-full rounded-xl border border-kaenz py-3 text-sm font-bold text-kaenz disabled:opacity-60"
+      >
+        {c.saveDraft}
+      </button>
       <button
         type="submit"
         disabled={status === "sending"}

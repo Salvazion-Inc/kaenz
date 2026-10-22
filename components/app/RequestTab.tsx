@@ -245,6 +245,7 @@ export function RequestTab({ locale }: { locale: Locale }) {
             value={trip.yachtId}
             onChange={(e) => setTrip({ yachtId: e.target.value })}
           >
+            <option value="">—</option>
             {fleet.map((y) => (
               <option key={y.id} value={y.id}>
                 {y.name} · {c.maxGuests} {y.guests}

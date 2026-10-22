@@ -16,7 +16,6 @@ import {
   DEMO_ORIGIN_ID,
   easeInOut,
   headingDeg,
-  minutesLeft,
   sampleCurve,
   yachtIconHtml,
 } from "@/lib/live-route";
@@ -202,7 +201,7 @@ export function WorldMap({
     variant === "site" ? "florida" : "world",
   );
   const [ready, setReady] = useState(false);
-  const [liveT, setLiveT] = useState(0);
+  const [, setLiveT] = useState(0);
   const demoOrigin = placeById(DEMO_ORIGIN_ID);
   const demoDest = placeById(DEMO_DEST_ID);
 
@@ -539,36 +538,10 @@ export function WorldMap({
           />
         ) : demoOrigin && demoDest ? (
           <div className="pointer-events-none absolute bottom-3 left-3 max-w-[17rem] rounded-2xl border border-white/15 bg-navy/84 px-3 py-2.5 shadow-lg backdrop-blur-md md:bottom-4 md:left-4">
-            <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-kaenz">
-              <span className="kaenz-live-dot" />
-              {c.liveBadge} · {c.liveTrip}
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/70">
+              {c.routeExample}
             </p>
-            <p className="mt-1 text-xs font-semibold text-white">
-              {demoOrigin.name} → {demoDest.name}
-            </p>
-            <p className="mt-0.5 text-[11px] text-white/70">
-              {c.liveAway.replace(
-                "{n}",
-                String(
-                  minutesLeft(
-                    demoDest.minutesByYacht || demoOrigin.minutesByYacht || 12,
-                    liveT,
-                  ),
-                ),
-              )}
-            </p>
-            <p className="text-[11px] text-white/55">
-              {c.liveFaster.replace(
-                "{n}",
-                String(
-                  Math.max(
-                    1,
-                    (demoDest.minutesByCar || demoOrigin.minutesByCar || 28) -
-                      (demoDest.minutesByYacht || demoOrigin.minutesByYacht || 12),
-                  ),
-                ),
-              )}
-            </p>
+            <p className="mt-1 text-xs font-semibold text-white">{c.routeExampleLead}</p>
           </div>
         ) : null}
       </div>

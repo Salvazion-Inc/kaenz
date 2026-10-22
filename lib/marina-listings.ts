@@ -16,6 +16,7 @@ export type MarinaListing = {
   website: string;
   wallet: string;
   createdAt: string;
+  status?: "listed" | "draft";
 };
 
 export function isCoord(lat: number, lng: number) {
