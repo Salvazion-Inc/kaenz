@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { RESET_PASSWORD_ERROR } from "@/lib/auth-link";
-import { createSessionToken, sessionCookie } from "@/lib/session";
-import { applyCookies, createRouteSupabase, type PendingCookie } from "@/lib/supabase-route";
+import { createSessionToken } from "@/lib/session";
+import {
+  applyCookies,
+  createRouteSupabase,
+  setKaenzSessionCookie,
+  type PendingCookie,
+} from "@/lib/supabase-route";
 
 export const runtime = "nodejs";
 
@@ -34,7 +39,7 @@ export async function POST(req: Request) {
     const session = await createSessionToken({ id: data.user.id, email, name });
     const res = NextResponse.json({ ok: true });
     applyCookies(res, pending);
-    res.headers.append("Set-Cookie", sessionCookie(session));
+    setKaenzSessionCookie(res, session);
     return res;
   } catch {
     return rejected();

@@ -1,3 +1,5 @@
+import { confirmationSignal, type AuthConfirmRow } from "./account-verification";
+
 const OTP_TYPES = ["signup", "invite", "magiclink", "recovery", "email_change", "email"] as const;
 
 export type EmailOtpType = (typeof OTP_TYPES)[number];
@@ -42,4 +44,22 @@ export function verificationLinkExpiredFromLocation(search: string, hash: string
 
 export const EMAIL_VERIFIED_SIGN_IN = "Email verified — please sign in";
 
+export const LINK_INVALID = "This link is invalid or already used";
+
 export const RESET_PASSWORD_ERROR = "Could not update the password. Request a new link.";
+
+/**
+ * The sign-in banner is only for a confirmation that actually succeeded and
+ * still has no session (the browser could not store one). An invalid or used
+ * link, and a failed recovery, are not that case.
+ */
+export function verifiedSignInAllowed(input: {
+  user: AuthConfirmRow | null | undefined;
+  session: unknown;
+  recovery: boolean;
+}) {
+  if (input.recovery || input.session) return false;
+  const email = String(input.user?.email || "").trim();
+  if (!input.user?.id || !email) return false;
+  return confirmationSignal(input.user) === "confirmed";
+}

@@ -127,25 +127,51 @@ export function traitLabel(trait: YachtTrait, locale: Locale) {
   const labels: Record<YachtTrait, Record<Locale, string>> = {
     luxurious: {
       en: "Luxurious",
-      es: "Luxurious",
+      es: "De lujo",
       fr: "Luxurious",
       it: "Luxurious",
       pt: "Luxurious",
     },
     fast: {
       en: "Fast",
-      es: "Fast",
+      es: "Rápido",
       fr: "Fast",
       it: "Fast",
       pt: "Fast",
     },
     small: {
       en: "Small",
-      es: "Small",
+      es: "Pequeño",
       fr: "Small",
       it: "Small",
       pt: "Small",
     },
   };
   return labels[trait][locale];
+}
+
+const YACHT_CLASS_ES: Record<string, string> = {
+  "Motor yacht": "Yate a motor",
+  "Express cruiser": "Crucero express",
+  "Day cruiser": "Crucero de día",
+  "Flybridge yacht": "Yate flybridge",
+  "Express yacht": "Yate express",
+  Catamaran: "Catamarán",
+  Bowrider: "Bowrider",
+  "Center console": "Consola central",
+  "Deck boat": "Lancha deck",
+  Yacht: "Yate",
+};
+
+export function yachtClassLabel(className: string, locale: Locale) {
+  if (locale !== "es") return className;
+  return YACHT_CLASS_ES[className] || className;
+}
+
+/** Licence line on a yacht card. Spanish locale does not leave USCG wording in English. */
+export function captainCredential(license: string, locale: Locale) {
+  if (locale !== "es") return license;
+  return license
+    .replace(/USCG Master (\d+) Ton/gi, "Patrón USCG, $1 toneladas")
+    .replace(/\bMMC\b/g, "Licencia MMC");
 }

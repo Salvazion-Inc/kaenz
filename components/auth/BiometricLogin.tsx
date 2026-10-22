@@ -11,8 +11,7 @@ import {
 import { loginRedirectPath } from "@/lib/login-redirect";
 import { t } from "@/lib/copy";
 import type { Locale } from "@/lib/locale";
-import { BiometricUnlockScreen } from "./BiometricUnlockScreen";
-import { useAutoBiometricPrompt, useBiometricGate } from "./useBiometric";
+import { useBiometricGate } from "./useBiometric";
 
 export function BiometricLogin({
   locale,
@@ -74,31 +73,39 @@ export function BiometricLogin({
     }
   }
 
-  useAutoBiometricPrompt({ active: true, run: handleUnlock });
-
-  const status =
-    loading || !attempted ? c.biometricProcessing : c.biometricRetry;
-
   return (
-    <BiometricUnlockScreen
-      title={c.biometricLockTitle}
-      subtitle={c.biometricLockSubtitle}
-      status={status}
-      email={email}
-      busy={loading}
-      error={error || null}
-      promptLabel={c.biometricEnter}
-      onPrompt={() => void handleUnlock()}
-      footer={
+    <div className="mb-4 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold">{c.biometricEnter}</p>
+          <p className="mt-1 text-xs text-white/60">{c.biometricLockSubtitle}</p>
+          {email ? <p className="mt-1 text-[11px] text-white/45">{email}</p> : null}
+        </div>
         <button
           type="button"
           onClick={onUsePassword}
           disabled={loading}
-          className="text-xs text-white/55 transition hover:text-kaenz"
+          className="shrink-0 text-xs text-white/60 hover:text-kaenz"
         >
           {c.biometricUsePassword}
         </button>
-      }
-    />
+      </div>
+      {error ? (
+        <p role="alert" className="mt-2 text-xs text-red-300">
+          {error}
+        </p>
+      ) : null}
+      {attempted && !loading && !error ? (
+        <p className="mt-2 text-xs text-white/55">{c.biometricRetry}</p>
+      ) : null}
+      <button
+        type="button"
+        onClick={() => void handleUnlock()}
+        disabled={loading}
+        className="mt-3 rounded-md bg-kaenz px-3 py-2 text-sm font-bold text-white disabled:opacity-60"
+      >
+        {loading ? c.biometricProcessing : c.biometricEnter}
+      </button>
+    </div>
   );
 }

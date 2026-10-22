@@ -16,8 +16,34 @@ export type AccountRecord = SessionUser & {
 
 type SessionPayload = SessionUser & { exp: number };
 
+let devSecret = "";
+
+/**
+ * Production must set AUTH_SECRET. Development and tests use a process-local
+ * random value so a public string is never the signing key.
+ */
+export function resolveAuthSecret(
+  env: { AUTH_SECRET?: string; NODE_ENV?: string },
+  devSecretValue: string,
+) {
+  const configured = env.AUTH_SECRET?.trim() || "";
+  if (configured) return configured;
+  if (env.NODE_ENV === "production") {
+    throw new Error("AUTH_SECRET is required in production.");
+  }
+  return devSecretValue;
+}
+
+/** Secure only on production HTTPS. Tests and local http stay non-Secure. */
+export function cookieIsSecure(env: { NODE_ENV?: string } = process.env) {
+  return env.NODE_ENV === "production";
+}
+
 function secret() {
-  return process.env.AUTH_SECRET || "kaenz-by-salvazion-inc-session-key";
+  if (!devSecret) {
+    devSecret = bytesToB64Url(crypto.getRandomValues(new Uint8Array(32)));
+  }
+  return resolveAuthSecret(process.env, devSecret);
 }
 
 function bytesToB64Url(bytes: Uint8Array) {
@@ -129,8 +155,12 @@ export async function signAccounts(users: AccountRecord[]) {
   return signValue(JSON.stringify({ users }));
 }
 
+function secureSuffix() {
+  return cookieIsSecure() ? "; Secure" : "";
+}
+
 export function sessionCookie(token: string) {
-  return `${SESSION_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${30 * DAY}`;
+  return `${SESSION_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${30 * DAY}${secureSuffix()}`;
 }
 
 export function clearSessionCookie() {
@@ -189,7 +219,7 @@ function expireCookie(name: string, secure: boolean) {
 }
 
 export function accountsCookie(token: string) {
-  return `${ACCOUNTS_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${400 * DAY}`;
+  return `${ACCOUNTS_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${400 * DAY}${secureSuffix()}`;
 }
 
 export function cookieValue(header: string | null | undefined, name: string) {

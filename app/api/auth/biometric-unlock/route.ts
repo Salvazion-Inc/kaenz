@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createSessionToken, readSession, sessionCookie } from "@/lib/session";
+import { createSessionToken, readSession } from "@/lib/session";
+import { setKaenzSessionCookie } from "@/lib/supabase-route";
 
 export const runtime = "nodejs";
 
@@ -12,6 +13,6 @@ export async function POST(req: Request) {
   }
   const session = await createSessionToken(user);
   const res = NextResponse.json({ user, token: session });
-  res.headers.append("Set-Cookie", sessionCookie(session));
+  setKaenzSessionCookie(res, session);
   return res;
 }

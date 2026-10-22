@@ -20,7 +20,7 @@ import {
   sessionRepair,
 } from "./account-verification.ts";
 import { applyCookies, setKaenzSessionCookie } from "./supabase-route.ts";
-import { createSessionToken, inspectSession, SESSION_COOKIE, signAccounts, signValue } from "./session.ts";
+import { cookieIsSecure, createSessionToken, inspectSession, SESSION_COOKIE, sessionCookie, signAccounts, signValue } from "./session.ts";
 
 const user = { id: "user-1", email: "ada@kaenz.com", name: "Ada" };
 
@@ -369,6 +369,27 @@ test("login redirect uses next immediately and fingerprint keeps the vault on 5x
   assert.match(biometric, /isDeadSessionError/);
   assert.match(biometric, /disableBiometric\(\)/);
   assert.match(biometric, /onUsePassword\(\)/);
+  assert.equal(biometric.includes("useAutoBiometricPrompt"), false);
+
+  assert.equal(cookieIsSecure({ NODE_ENV: "production" }), true);
+  assert.equal(cookieIsSecure({ NODE_ENV: "test" }), false);
+  assert.equal(sessionCookie("token").includes("; Secure"), cookieIsSecure());
+  assert.equal(sessionCookie("token").startsWith(`${SESSION_COOKIE}=token;`), true);
+  const sessionSrc = readFileSync(new URL("./session.ts", import.meta.url), "utf8");
+  assert.equal(sessionSrc.includes("kaenz-by-salvazion-inc-session-key"), false);
+  assert.match(sessionSrc, /resolveAuthSecret/);
+  const jar = readFileSync(new URL("./supabase-route.ts", import.meta.url), "utf8");
+  assert.match(jar, /secure: cookieIsSecure\(\)/);
+  const drafts = readFileSync(new URL("../app/api/yachts/drafts/route.ts", import.meta.url), "utf8");
+  assert.match(drafts, /export async function DELETE/);
+  assert.match(drafts, /requireVerifiedUser/);
+  const signup = readFileSync(new URL("../app/api/auth/signup/route.ts", import.meta.url), "utf8");
+  assert.match(signup, /signup-burst:/);
+  assert.match(signup, /signup-email:/);
+  assert.match(signup, /company_website/);
+  const signupApply = signup.indexOf("applyCookies(res, pending)");
+  const signupSet = signup.indexOf("setKaenzSessionCookie(res, session)");
+  assert.ok(signupApply > 0 && signupSet > signupApply);
 
   const guarded = [
     "../app/api/profile/route.ts",

@@ -1,6 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse } from "next/server";
-import { SESSION_COOKIE } from "./session";
+import { cookieIsSecure, SESSION_COOKIE } from "./session";
 
 const SESSION_MAX_AGE = 60 * 60 * 24 * 30;
 
@@ -64,6 +64,7 @@ export function setKaenzSessionCookie(res: NextResponse, token: string) {
     httpOnly: true,
     sameSite: "lax",
     maxAge: SESSION_MAX_AGE,
+    secure: cookieIsSecure(),
   });
   return res;
 }

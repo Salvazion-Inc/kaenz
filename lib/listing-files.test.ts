@@ -3,16 +3,19 @@ import fs from "node:fs";
 import test from "node:test";
 import { at } from "./app-copy";
 import {
+  FILE_TOO_BIG_MESSAGE,
   VERCEL_FUNCTION_BODY_LIMIT,
   assertListingPaths,
   classifyListingResponse,
   directListingPayload,
   isOwnedListingPath,
+  listingFileTooBig,
   listingObjectPath,
   multipartBodyBytes,
   parseStoredListingBody,
   validateListingFileSet,
 } from "./listing-files";
+import { draftDeleteDecision, missingPublishDocuments } from "./listing-draft";
 import { optionalWallet } from "./listings";
 
 const LISTING_ID = "6f1e5c2a-9b34-4d70-8a11-0c2d4e6f8a90";
@@ -237,6 +240,18 @@ test("empty Solana wallets stay optional and foreign paths are rejected", () => 
   ]);
   assert.equal(huge.ok, false);
   if (!huge.ok) assert.equal(huge.error, "file_too_big");
+  const pdf = validateListingFileSet([
+    { slot: "owner_id", name: "id.pdf", type: "application/pdf", size: mb(14.9) },
+    { slot: "captain_id", name: "id.pdf", type: "application/pdf", size: 1000 },
+    { slot: "captain_mmc", name: "licence.pdf", type: "application/pdf", size: 1000 },
+    { slot: "captain_photo", name: "face.jpg", type: "image/jpeg", size: 1000 },
+    { slot: "yacht_0", name: "boat.jpg", type: "image/jpeg", size: 1000 },
+  ]);
+  assert.equal(pdf.ok, false);
+  if (!pdf.ok) assert.equal(pdf.error, "file_too_big");
+  assert.equal(listingFileTooBig(mb(14.9)), true);
+  assert.equal(listingFileTooBig(mb(8)), false);
+  assert.match(FILE_TOO_BIG_MESSAGE, /8 MB/);
 });
 
 test("the listing form does not post files through the function or require a wallet", () => {
@@ -259,4 +274,41 @@ test("the listing form does not post files through the function or require a wal
   assert.match(route, /optionalWallet\(form\.get\("captain_wallet"\)\)/);
   assert.match(route, /ownerWallet: parsed\.ownerWallet/);
   assert.match(route, /captainWallet: parsed\.captainWallet/);
+  assert.match(src, /el\.value = ""/);
+  assert.match(src, /LISTING_MAX_BYTES/);
+  assert.match(src, /missingDocs/);
+  const sizeAt = route.indexOf("return fileTooBigResponse()");
+  const slotAt = route.indexOf('error: "owner_id"');
+  assert.ok(sizeAt > 0 && slotAt > sizeAt);
+  assert.match(route, /FILE_TOO_BIG_MESSAGE/);
+  assert.match(route, /Add these documents before publishing/);
+  const yachts = fs.readFileSync(new URL("../components/app/YachtsTab.tsx", import.meta.url), "utf8");
+  assert.match(yachts, /\/api\/yachts\/drafts/);
+  assert.match(yachts, /resumeDraft/);
+  assert.match(yachts, /deleteDraft/);
+  const owner = "user-1";
+  assert.equal(
+    draftDeleteDecision({ createdBy: owner, status: "draft" }, owner),
+    "delete",
+  );
+  assert.equal(
+    draftDeleteDecision({ createdBy: "other", status: "draft" }, owner),
+    "forbidden",
+  );
+  assert.equal(
+    draftDeleteDecision({ createdBy: owner, status: "listed" }, owner),
+    "forbidden",
+  );
+  assert.equal(draftDeleteDecision(null, owner), "missing");
+  assert.deepEqual(missingPublishDocuments([]), [
+    "owner_id",
+    "captain_id",
+    "captain_mmc",
+    "captain_photo",
+    "yacht_0",
+  ]);
+  assert.deepEqual(
+    missingPublishDocuments(["owner_id", "captain_id", "captain_mmc", "captain_photo", "yacht_0"]),
+    [],
+  );
 });

@@ -399,7 +399,9 @@ export function TripTab({ locale }: { locale: Locale }) {
           <p className="mt-3 text-sm">
             <span className="text-white/50">{c.route}</span>
             <br />
-            {originName} → {destinationName}
+            {originName || destinationName
+              ? `${originName} → ${destinationName}`
+              : c.choosePickup}
           </p>
           <p className="mt-2 text-sm text-white/70">
             {trip.whenMode === "now" ? c.leavingNow : `${trip.date} · ${trip.time}`}

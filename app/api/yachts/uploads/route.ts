@@ -1,6 +1,6 @@
 import { requireVerifiedUser } from "@/lib/account-verification";
 import { signListingUploads } from "@/lib/listing-store";
-import { validateListingFileSet } from "@/lib/listing-files";
+import { FILE_TOO_BIG_MESSAGE, validateListingFileSet } from "@/lib/listing-files";
 import { getSupabaseAdmin } from "@/lib/supabase";
 
 export const runtime = "nodejs";
@@ -16,7 +16,17 @@ export async function POST(req: Request) {
 
   const body = (await req.json().catch(() => null)) as { files?: unknown } | null;
   const parsed = validateListingFileSet(body?.files);
-  if (!parsed.ok) return gate.seal(Response.json({ error: parsed.error }, { status: 400 }));
+  if (!parsed.ok) {
+    if (parsed.error === "file_too_big") {
+      return gate.seal(
+        Response.json(
+          { error: "file_too_big", message: FILE_TOO_BIG_MESSAGE },
+          { status: 400 },
+        ),
+      );
+    }
+    return gate.seal(Response.json({ error: parsed.error }, { status: 400 }));
+  }
 
   const listingId = crypto.randomUUID();
   try {

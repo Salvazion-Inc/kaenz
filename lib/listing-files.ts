@@ -3,6 +3,12 @@ import { isHin, optionalWallet, parseLangs, parseTraits } from "./listings";
 /** Per-file cap. Matches the Supabase bucket fileSizeLimit used for listings. */
 export const LISTING_MAX_BYTES = 8 * 1024 * 1024;
 
+export const FILE_TOO_BIG_MESSAGE = "Each file must be 8 MB or smaller.";
+
+export function listingFileTooBig(size: number) {
+  return Number.isFinite(size) && size > LISTING_MAX_BYTES;
+}
+
 /**
  * Vercel rejects a serverless request before the function runs when the body
  * is over ~4.5 MB, with a plain-text "Request Entity Too Large" body
@@ -129,7 +135,7 @@ export function validateListingFileSet(
     const type = String(row.type || "");
     const size = Number(row.size);
     if (!Number.isFinite(size) || size <= 0) return { ok: false, error: spec.error };
-    if (size > LISTING_MAX_BYTES) return { ok: false, error: "file_too_big" };
+    if (listingFileTooBig(size)) return { ok: false, error: "file_too_big" };
     const ext = listingExt(name, type, spec.allowPdf);
     if (!ext) return { ok: false, error: spec.error };
     prepared.push({ slot, name, type, size, ext, ...spec });

@@ -20,9 +20,9 @@ import {
   cookieValue,
   createSessionToken,
   readAccounts,
-  sessionCookie,
   signAccounts,
 } from "@/lib/session";
+import { setKaenzSessionCookie } from "@/lib/supabase-route";
 import { getSupabase } from "@/lib/supabase";
 
 export const runtime = "nodejs";
@@ -214,7 +214,7 @@ export async function PUT(req: Request) {
   });
   const vault = await signProfileMap(map);
   const res = send({ profile: publicProfile(profile) });
-  res.headers.append("Set-Cookie", sessionCookie(session));
+  setKaenzSessionCookie(res as NextResponse, session);
   res.headers.append("Set-Cookie", profileCookie(vault));
   if (account) {
     res.headers.append("Set-Cookie", accountsCookie(await signAccounts(users)));
