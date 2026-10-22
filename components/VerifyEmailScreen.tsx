@@ -8,13 +8,19 @@ import { useLocale } from "@/lib/locale-context";
 export function VerifyEmailScreen({
   email,
   variant = "verify",
+  expired = false,
 }: {
   email?: string;
   variant?: "verify" | "check";
+  expired?: boolean;
 }) {
   const { locale } = useLocale();
   const c = t(locale);
-  const title = variant === "check" ? c.checkEmailTitle : c.verifyTitle;
+  const title = expired
+    ? c.linkExpired
+    : variant === "check"
+      ? c.checkEmailTitle
+      : c.verifyTitle;
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "err">("idle");
   const [resendError, setResendError] = useState("");
 

@@ -48,10 +48,10 @@ export function parseSignupPrefill(input: {
 export const ONBOARDING_COOKIE = "kaenz_onboarding";
 
 export function onboardingCookie(prefill: SignupPrefill) {
-  if (!prefill.role && !prefill.name && !prefill.yacht && !prefill.marina) return "";
+  if (!prefill.role && !prefill.yacht && !prefill.marina) return "";
+  // Role plus the yacht or marina being listed. Never the person's name or email.
   const payload = {
     role: prefill.role,
-    name: prefill.name,
     yacht: prefill.yacht,
     marina: prefill.marina,
   };
@@ -70,11 +70,10 @@ export function readOnboardingIntent(cookieHeader: string): SignupPrefill {
   try {
     const json = JSON.parse(raw) as {
       role?: unknown;
-      name?: unknown;
       yacht?: unknown;
       marina?: unknown;
     };
-    return parseSignupPrefill(json);
+    return { ...parseSignupPrefill(json), name: "", email: "" };
   } catch {
     return EMPTY_SIGNUP_PREFILL;
   }

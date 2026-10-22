@@ -1,4 +1,8 @@
 import { NextResponse } from "next/server";
+import {
+  emailOtpType,
+  verificationLinkExpired,
+} from "@/lib/auth-link";
 import { requestOrigin } from "@/lib/email-verification";
 import { logFunnel } from "@/lib/funnel";
 import { cookieValue, createSessionToken, sessionCookie } from "@/lib/session";
@@ -7,51 +11,107 @@ import { applyCookies, createRouteSupabase, type PendingCookie } from "@/lib/sup
 
 export const runtime = "nodejs";
 
+function redirectTo(origin: string, path: string) {
+  return NextResponse.redirect(new URL(path, origin));
+}
+
 /**
- * Supabase email confirmation lands here when Redirect URLs allow this host.
- * PKCE `code` becomes the Supabase session cookies plus the Kaenz session.
- * The email itself is confirmed by Supabase before this redirect.
+ * Hash errors never reach the server. This page stays on the callback URL
+ * long enough for the script to read location.hash.
+ */
+function hashSniffResponse() {
+  const html = `<!doctype html>
+<meta charset="utf-8">
+<title>Check your email</title>
+<p>Check your email</p>
+<script>
+  var hash = new URLSearchParams((location.hash || "").replace(/^#/, ""));
+  var query = new URLSearchParams(location.search || "");
+  var code = hash.get("error_code") || query.get("error_code") || "";
+  var error = (hash.get("error") || query.get("error") || "").toLowerCase();
+  var expired = Boolean(code) || error === "access_denied" || error === "otp_expired" || error.indexOf("expired") !== -1;
+  location.replace(expired ? "/check-email?expired=1" : "/login");
+</script>`;
+  return new Response(html, {
+    headers: { "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": "noindex" },
+  });
+}
+
+/**
+ * Supabase email confirmation lands here.
+ * PKCE `code` uses exchangeCodeForSession (the verifier cookie is missing when
+ * the link is opened in another browser). `token_hash` + `type` uses verifyOtp,
+ * which does not need that cookie. Either path sets the Supabase cookies and
+ * the Kaenz session, then opens /app. If the link confirmed the email but no
+ * session can be stored, the browser goes to /login?verified=1.
  */
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const code = url.searchParams.get("code");
   const origin = requestOrigin(req);
-  const pending: PendingCookie[] = [];
-  const supabase = code ? createRouteSupabase(req, pending) : null;
+  if (verificationLinkExpired(url.searchParams)) {
+    return redirectTo(origin, "/check-email?expired=1");
+  }
 
-  let session: string | null = null;
-  let nextPath = "/app";
-  if (supabase && code) {
+  const code = url.searchParams.get("code");
+  const tokenHash = url.searchParams.get("token_hash");
+  const otpType = emailOtpType(url.searchParams.get("type"));
+  const next = url.searchParams.get("next");
+  if (!code && !(tokenHash && otpType)) return hashSniffResponse();
+
+  const pending: PendingCookie[] = [];
+  const supabase = createRouteSupabase(req, pending);
+  let authUser: {
+    id?: string;
+    email?: string | null;
+    user_metadata?: { full_name?: string; kaenz_role?: string } | null;
+  } | null = null;
+
+  if (supabase && tokenHash && otpType) {
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: otpType,
+      });
+      if (!error && data.user?.id) authUser = data.user;
+    } catch {
+      authUser = null;
+    }
+  }
+  if (supabase && code && !authUser) {
     try {
       const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-      const email = data.user?.email?.trim().toLowerCase();
-      if (!error && data.user?.id && email) {
-        const name =
-          String(data.user.user_metadata?.full_name || "").trim() || email;
-        session = await createSessionToken({ id: data.user.id, email, name });
-        const metaRole = parseSignupPrefill({
-          role: data.user.user_metadata?.kaenz_role,
-        }).role;
-        const rawIntent = cookieValue(req.headers.get("cookie"), ONBOARDING_COOKIE);
-        let cookieRole: "" | "owner" | "captain" | "marina" = "";
-        if (rawIntent) {
-          try {
-            cookieRole = parseSignupPrefill(JSON.parse(rawIntent)).role;
-          } catch {
-            cookieRole = "";
-          }
-        }
-        const role = metaRole || cookieRole;
-        if (role === "owner" || role === "captain") nextPath = "/app/yachts";
-        logFunnel("email_verified", role || undefined);
-      }
+      if (!error && data.user?.id) authUser = data.user;
     } catch {
-      session = null;
+      authUser = null;
     }
   }
 
-  const res = NextResponse.redirect(new URL(nextPath, origin));
+  const email = authUser?.email?.trim().toLowerCase() || "";
+  if (!authUser?.id || !email) {
+    return redirectTo(origin, "/login?verified=1");
+  }
+
+  const name = String(authUser.user_metadata?.full_name || "").trim() || email;
+  const session = await createSessionToken({ id: authUser.id, email, name });
+  const metaRole = parseSignupPrefill({ role: authUser.user_metadata?.kaenz_role }).role;
+  const rawIntent = cookieValue(req.headers.get("cookie"), ONBOARDING_COOKIE);
+  let cookieRole: "" | "owner" | "captain" | "marina" = "";
+  if (rawIntent) {
+    try {
+      cookieRole = parseSignupPrefill(JSON.parse(rawIntent)).role;
+    } catch {
+      cookieRole = "";
+    }
+  }
+  const role = metaRole || cookieRole;
+  const recovery = otpType === "recovery" || next === "/reset-password";
+  let nextPath = "/app";
+  if (recovery) nextPath = "/reset-password";
+  else if (role === "owner" || role === "captain") nextPath = "/app/yachts";
+  if (!recovery) logFunnel("email_verified", role || undefined);
+
+  const res = redirectTo(origin, nextPath);
   applyCookies(res, pending);
-  if (session) res.headers.append("Set-Cookie", sessionCookie(session));
+  res.headers.append("Set-Cookie", sessionCookie(session));
   return res;
 }

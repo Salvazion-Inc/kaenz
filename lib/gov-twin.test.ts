@@ -114,11 +114,19 @@ test("partner signup links only keep safe prefill", () => {
   assert.equal(parseSignupPrefill({ email: "not-an-email" }).email, "");
   const cookie = onboardingCookie(parsed);
   assert.equal(cookie.includes("ada@example.com"), false);
+  assert.equal(cookie.includes("AdaLovelace"), false);
+  assert.equal(cookie.includes('"name"'), false);
   assert.equal(cookie.includes("password"), false);
   const read = readOnboardingIntent(cookie.split(";")[0]);
   assert.equal(read.role, "owner");
   assert.equal(read.yacht, "Sea Fairy");
   assert.equal(read.email, "");
+  assert.equal(read.name, "");
+  const poisoned = readOnboardingIntent(
+    `kaenz_onboarding=${encodeURIComponent(JSON.stringify({ role: "captain", name: "Ada Lovelace", yacht: "Sea Fairy" }))}`,
+  );
+  assert.equal(poisoned.name, "");
+  assert.equal(poisoned.role, "captain");
 });
 
 test("a listing draft defers documents and a full listing still requires them", () => {

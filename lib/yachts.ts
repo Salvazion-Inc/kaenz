@@ -101,11 +101,11 @@ export const yachts: Yacht[] = [
       verified: true,
     },
     blurb: blurb(
-      "42 ft fast boat for up to 10. Beats the causeways from Island Gardens Miami.",
-      "Bote rápido de 42 ft para hasta 10. Le gana a las calzadas desde Island Gardens Miami.",
-      "Bateau rapide de 42 ft pour 10. Gagne sur les chaussées depuis Island Gardens Miami.",
-      "Barca veloce da 42 ft per 10. Vince sulle calzate da Island Gardens Miami.",
-      "Barco rápido de 42 ft para até 10. Ganha das calçadas a partir de Island Gardens Miami.",
+      "42 ft fast boat for up to 10. Beats the causeways across the bay.",
+      "Bote rápido de 42 ft para hasta 10. Le gana a las calzadas de la bahía.",
+      "Bateau rapide de 42 ft pour 10. Gagne sur les chaussées de la baie.",
+      "Barca veloce da 42 ft per 10. Vince sulle calzate della baia.",
+      "Barco rápido de 42 ft para até 10. Ganha das calçadas da baía.",
     ),
   },
   {

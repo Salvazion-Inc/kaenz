@@ -143,6 +143,19 @@ export function hasSupabaseAuthCookie(cookieHeader: string | null | undefined) {
   );
 }
 
+/** Drop a previous account's Supabase session. Leave PKCE verifiers for the signup in progress. */
+export function clearStaleSupabaseSessionHeaders(cookieHeader: string | null | undefined) {
+  const headers: string[] = [];
+  if (!cookieHeader) return headers;
+  for (const part of cookieHeader.split(";")) {
+    const name = part.trim().split("=")[0]?.trim();
+    if (!name?.startsWith("sb-") || name.includes("code-verifier")) continue;
+    headers.push(expireCookie(name, false));
+    headers.push(expireCookie(name, true));
+  }
+  return headers;
+}
+
 /**
  * Expire one cookie twice: with and without Secure. Host-only, Path=/, no Domain,
  * matching how Kaenz and Supabase SSR set these cookies. A Secure cookie set on

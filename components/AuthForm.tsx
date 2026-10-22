@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { BiometricLogin } from "@/components/auth/BiometricLogin";
 import { VerifyEmailScreen } from "@/components/VerifyEmailScreen";
 import { useBiometricGate } from "@/components/auth/useBiometric";
+import { EMAIL_VERIFIED_SIGN_IN, verificationLinkExpiredFromLocation } from "@/lib/auth-link";
 import { t } from "@/lib/copy";
 import { useLocale } from "@/lib/locale-context";
 import { onboardingCookie, parseSignupPrefill } from "@/lib/signup-prefill";
@@ -41,11 +42,17 @@ export function AuthForm({
     [roleQuery, emailQuery, nameQuery, yachtQuery, marinaQuery],
   );
   useEffect(() => {
+    if (verificationLinkExpiredFromLocation(window.location.search, window.location.hash)) {
+      router.replace("/check-email?expired=1");
+    }
+  }, [router]);
+  useEffect(() => {
     if (mode !== "signup") return;
     const cookie = onboardingCookie(prefill);
     if (cookie) document.cookie = cookie;
     trackFunnel("signup_started", prefill.role || undefined);
   }, [mode, prefill]);
+  const justVerified = mode === "login" && search.get("verified") === "1";
   const [status, setStatus] = useState<"idle" | "sending" | "err">("idle");
   const [message, setMessage] = useState("");
   const [passwordFallback, setPasswordFallback] = useState(false);
@@ -167,6 +174,11 @@ export function AuthForm({
           />
         ) : (
           <>
+        {justVerified ? (
+          <p className="mb-4 rounded-xl border border-kaenz/40 bg-kaenz/10 px-4 py-3 text-sm text-white">
+            {EMAIL_VERIFIED_SIGN_IN}
+          </p>
+        ) : null}
         <p className="text-sm text-kaenz">{c.sessionNeeded}</p>
         <h1 className="mt-2 text-4xl font-extrabold">
           {mode === "login" ? c.loginTitle : c.signupTitle}
@@ -224,6 +236,11 @@ export function AuthForm({
               required
             />
           </label>
+          {mode === "login" ? (
+            <Link href="/forgot-password" className="mt-3 inline-block text-sm font-semibold text-kaenz">
+              {c.forgotPassword}
+            </Link>
+          ) : null}
           {mode === "signup" ? (
             <label className="mt-4 block text-sm font-semibold">
               {c.passwordConfirm}
