@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { emailConfirmRedirect, registerUnconfirmedUser } from "@/lib/email-verification";
+import { logFunnel } from "@/lib/funnel";
+import { onboardingCookie, parseSignupPrefill } from "@/lib/signup-prefill";
 import { applyCookies, createRouteSupabase, type PendingCookie } from "@/lib/supabase-route";
 import { hashPassword } from "@/lib/passwords";
 import {
@@ -17,8 +19,15 @@ export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
-  const email = String(body.email || "").trim().toLowerCase();
-  const name = String(body.full_name || "").trim();
+  const prefill = parseSignupPrefill({
+    role: body.role,
+    email: body.email,
+    name: body.full_name,
+    yacht: body.yacht,
+    marina: body.marina,
+  });
+  const email = prefill.email || String(body.email || "").trim().toLowerCase();
+  const name = prefill.name || String(body.full_name || "").trim();
   const password = String(body.password || "");
   if (!name) {
     return NextResponse.json({ error: "name" }, { status: 400 });
@@ -42,6 +51,7 @@ export async function POST(req: Request) {
     email,
     password,
     name,
+    role: prefill.role || undefined,
     redirectTo: emailConfirmRedirect(req),
     auth: createRouteSupabase(req, pending),
   });
@@ -61,10 +71,14 @@ export async function POST(req: Request) {
 
   const session = await createSessionToken({ id: registered.id, email, name });
   const vault = await signAccounts(users);
+  logFunnel("signup_completed", prefill.role || undefined);
   const res = NextResponse.json({
     user: { id: registered.id, email, name },
     verified: registered.confirmed,
+    confirmationRequired: !registered.confirmed,
   });
+  const intent = onboardingCookie(prefill);
+  if (intent) res.headers.append("Set-Cookie", intent);
   res.headers.append("Set-Cookie", sessionCookie(session));
   res.headers.append("Set-Cookie", accountsCookie(vault));
   applyCookies(res, pending);

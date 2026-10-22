@@ -1,4 +1,6 @@
 import { requireVerifiedUser } from "@/lib/account-verification";
+import { logFunnel } from "@/lib/funnel";
+import { buildYachtDraft } from "@/lib/listing-draft";
 import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 import { listBookableYachts } from "@/lib/inventory";
 import {
@@ -57,8 +59,54 @@ function listingErrorResponse(err: unknown) {
   return Response.json({ error: "save" }, { status: 500 });
 }
 
-async function postStoredListing(req: Request, userId: string) {
-  const parsed = parseStoredListingBody(await req.json().catch(() => null));
+async function postYachtDraft(
+  body: unknown,
+  user: { id: string; name: string },
+) {
+  const record = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  const draft = buildYachtDraft({
+    name: record.name,
+    homePort: record.home_port,
+    ownerName: record.owner_name || user.name,
+    captainName: record.captain_name,
+  });
+  if (!draft.ok) return Response.json({ error: draft.error }, { status: 400 });
+  const role = record.role === "captain" ? "captain" : "owner";
+  try {
+    const listing = await insertYachtListing({
+      id: crypto.randomUUID(),
+      createdBy: user.id,
+      ownerName: draft.ownerName,
+      ownerIdUrl: "",
+      ownerWallet: "",
+      name: draft.name,
+      hin: "",
+      guests: 1,
+      traits: [],
+      homePort: draft.homePort,
+      photos: [],
+      captainName: draft.captainName,
+      captainIdUrl: "",
+      captainMmcUrl: "",
+      captainPhoto: "",
+      captainLanguages: [],
+      captainRegion: "",
+      captainWallet: "",
+      status: "draft",
+    });
+    logFunnel("listing_submitted", role);
+    return Response.json({
+      yacht: { ...listingToYacht(listing), bookable: false },
+      documents: "pending",
+      status: "draft",
+    });
+  } catch (err) {
+    return listingErrorResponse(err);
+  }
+}
+
+async function postStoredListing(body: unknown, userId: string) {
+  const parsed = parseStoredListingBody(body);
   if (!parsed.ok) return Response.json({ error: parsed.error }, { status: 400 });
   const paths = assertListingPaths(userId, parsed.listingId, parsed.files);
   if (!paths.ok) return Response.json({ error: paths.error }, { status: 400 });
@@ -109,6 +157,7 @@ async function postStoredListing(req: Request, userId: string) {
       captainRegion: parsed.captainRegion,
       captainWallet: parsed.captainWallet,
     });
+    logFunnel("listing_submitted", "owner");
     return Response.json({ yacht: listingToYacht(listing) });
   } catch (err) {
     return listingErrorResponse(err);
@@ -130,7 +179,11 @@ export async function POST(req: Request) {
 
   const contentType = req.headers.get("content-type") || "";
   if (contentType.includes("application/json")) {
-    return postStoredListing(req, user.id);
+    const body = await req.json().catch(() => null);
+    if (body && typeof body === "object" && (body as { draft?: unknown }).draft === true) {
+      return postYachtDraft(body, user);
+    }
+    return postStoredListing(body, user.id);
   }
 
   const form = await req.formData();
@@ -238,6 +291,7 @@ export async function POST(req: Request) {
       captainRegion,
       captainWallet,
     });
+    logFunnel("listing_submitted", "owner");
     return Response.json({ yacht: listingToYacht(listing) });
   } catch {
     return Response.json({ error: "save" }, { status: 500 });

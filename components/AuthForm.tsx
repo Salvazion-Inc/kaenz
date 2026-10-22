@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BiometricLogin } from "@/components/auth/BiometricLogin";
 import { VerifyEmailScreen } from "@/components/VerifyEmailScreen";
 import { useBiometricGate } from "@/components/auth/useBiometric";
 import { t } from "@/lib/copy";
 import { useLocale } from "@/lib/locale-context";
+import { onboardingCookie, parseSignupPrefill } from "@/lib/signup-prefill";
+import { trackFunnel } from "@/lib/track-funnel";
 import { Site } from "./Site";
 
 export function AuthForm({
@@ -22,6 +24,28 @@ export function AuthForm({
   const router = useRouter();
   const search = useSearchParams();
   const next = search.get("next") || "/app";
+  const roleQuery = search.get("role");
+  const emailQuery = search.get("email");
+  const nameQuery = search.get("name");
+  const yachtQuery = search.get("yacht");
+  const marinaQuery = search.get("marina");
+  const prefill = useMemo(
+    () =>
+      parseSignupPrefill({
+        role: roleQuery,
+        email: emailQuery,
+        name: nameQuery,
+        yacht: yachtQuery,
+        marina: marinaQuery,
+      }),
+    [roleQuery, emailQuery, nameQuery, yachtQuery, marinaQuery],
+  );
+  useEffect(() => {
+    if (mode !== "signup") return;
+    const cookie = onboardingCookie(prefill);
+    if (cookie) document.cookie = cookie;
+    trackFunnel("signup_started", prefill.role || undefined);
+  }, [mode, prefill]);
   const [status, setStatus] = useState<"idle" | "sending" | "err">("idle");
   const [message, setMessage] = useState("");
   const [passwordFallback, setPasswordFallback] = useState(false);
@@ -77,12 +101,20 @@ export function AuthForm({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, full_name }),
+          body: JSON.stringify({
+            email,
+            password,
+            full_name,
+            role: prefill.role,
+            yacht: prefill.yacht,
+            marina: prefill.marina,
+          }),
         },
       );
       const data = (await res.json().catch(() => ({}))) as {
         error?: string;
         verified?: boolean;
+        confirmationRequired?: boolean;
       };
       if (!res.ok) {
         if (data.error === "unverified") {
@@ -97,7 +129,10 @@ export function AuthForm({
         }
         throw new Error("auth");
       }
-      if (mode === "signup" && data.verified !== true) {
+      if (
+        mode === "signup" &&
+        (data.confirmationRequired === true || data.verified !== true)
+      ) {
         const address = email.trim();
         router.replace(`/check-email?email=${encodeURIComponent(address)}`);
         router.refresh();
@@ -136,6 +171,11 @@ export function AuthForm({
         <h1 className="mt-2 text-4xl font-extrabold">
           {mode === "login" ? c.loginTitle : c.signupTitle}
         </h1>
+        {mode === "signup" && (prefill.role || prefill.yacht || prefill.marina) ? (
+          <p className="mt-3 text-sm text-white/70">
+            {[prefill.role, prefill.yacht, prefill.marina].filter(Boolean).join(" · ")}
+          </p>
+        ) : null}
         <form
           onSubmit={onSubmit}
           className="mt-8 rounded-2xl border border-white/10 bg-white p-6 text-navy"
@@ -161,12 +201,18 @@ export function AuthForm({
           {mode === "signup" ? (
             <label className="block text-sm font-semibold">
               {c.form.name}
-              <input className={field} name="full_name" required />
+              <input className={field} name="full_name" defaultValue={prefill.name} required />
             </label>
           ) : null}
           <label className="mt-4 block text-sm font-semibold">
             {c.form.email}
-            <input className={field} type="email" name="email" required />
+            <input
+              className={field}
+              type="email"
+              name="email"
+              defaultValue={mode === "signup" ? prefill.email : undefined}
+              required
+            />
           </label>
           <label className="mt-4 block text-sm font-semibold">
             {c.password}

@@ -16,16 +16,23 @@ export function VerifyEmailScreen({
   const c = t(locale);
   const title = variant === "check" ? c.checkEmailTitle : c.verifyTitle;
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "err">("idle");
+  const [resendError, setResendError] = useState("");
 
   async function resend() {
     setStatus("sending");
+    setResendError("");
     try {
       const res = await fetch("/api/auth/verify-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(email ? { email } : {}),
       });
-      if (!res.ok) throw new Error("resend");
+      const data = (await res.json().catch(() => ({}))) as { message?: string };
+      if (!res.ok) {
+        setResendError(typeof data.message === "string" ? data.message : "");
+        setStatus("err");
+        return;
+      }
       setStatus("sent");
     } catch {
       setStatus("err");
@@ -53,7 +60,7 @@ export function VerifyEmailScreen({
       ) : null}
       {status === "err" ? (
         <p className="mt-4 text-sm text-red-300" role="alert">
-          {c.verifyResendError}
+          {resendError || c.verifyResendError}
         </p>
       ) : null}
       <LogoutButton

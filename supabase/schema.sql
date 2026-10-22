@@ -258,6 +258,22 @@ grant select, insert, update, delete on table public.profiles to service_role;
 grant select, insert, update, delete on table public.partner_payout_accounts to service_role;
 grant select, insert, update, delete on table public.pending_payouts to service_role;
 
+-- DEC-20261022-02. Not applied by the app. See supabase/migrations/20261022_funnel_events.sql.
+create table if not exists public.funnel_events (
+  id uuid primary key default gen_random_uuid(),
+  step text not null check (step in (
+    'signup_started',
+    'signup_completed',
+    'email_verified',
+    'listing_started',
+    'listing_submitted'
+  )),
+  role text check (role is null or role in ('owner', 'captain', 'marina')),
+  created_at timestamptz not null default now()
+);
+revoke all on table public.funnel_events from anon, authenticated;
+grant select, insert on table public.funnel_events to service_role;
+
 -- seed-real bookable inventory (Miami Beach–FLL–Hollywood–Palm Beach).
 -- Evidence: origin catalog slugs already published on /fleet at public marinas.
 insert into public.yachts (

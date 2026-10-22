@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { requestOrigin } from "@/lib/email-verification";
-import { createSessionToken, sessionCookie } from "@/lib/session";
+import { logFunnel } from "@/lib/funnel";
+import { cookieValue, createSessionToken, sessionCookie } from "@/lib/session";
+import { ONBOARDING_COOKIE, parseSignupPrefill } from "@/lib/signup-prefill";
 import { applyCookies, createRouteSupabase, type PendingCookie } from "@/lib/supabase-route";
 
 export const runtime = "nodejs";
@@ -18,6 +20,7 @@ export async function GET(req: Request) {
   const supabase = code ? createRouteSupabase(req, pending) : null;
 
   let session: string | null = null;
+  let nextPath = "/app";
   if (supabase && code) {
     try {
       const { data, error } = await supabase.auth.exchangeCodeForSession(code);
@@ -26,13 +29,28 @@ export async function GET(req: Request) {
         const name =
           String(data.user.user_metadata?.full_name || "").trim() || email;
         session = await createSessionToken({ id: data.user.id, email, name });
+        const metaRole = parseSignupPrefill({
+          role: data.user.user_metadata?.kaenz_role,
+        }).role;
+        const rawIntent = cookieValue(req.headers.get("cookie"), ONBOARDING_COOKIE);
+        let cookieRole: "" | "owner" | "captain" | "marina" = "";
+        if (rawIntent) {
+          try {
+            cookieRole = parseSignupPrefill(JSON.parse(rawIntent)).role;
+          } catch {
+            cookieRole = "";
+          }
+        }
+        const role = metaRole || cookieRole;
+        if (role === "owner" || role === "captain") nextPath = "/app/yachts";
+        logFunnel("email_verified", role || undefined);
       }
     } catch {
       session = null;
     }
   }
 
-  const res = NextResponse.redirect(new URL("/app", origin));
+  const res = NextResponse.redirect(new URL(nextPath, origin));
   applyCookies(res, pending);
   if (session) res.headers.append("Set-Cookie", sessionCookie(session));
   return res;

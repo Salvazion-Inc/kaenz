@@ -25,6 +25,7 @@ export function LiveRouteMap({
   onProgress,
   className = "",
   overlay = true,
+  example = false,
 }: {
   origin: Place;
   destination: Place;
@@ -34,6 +35,7 @@ export function LiveRouteMap({
   onProgress?: (value: number) => void;
   className?: string;
   overlay?: boolean;
+  example?: boolean;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const [shown, setShown] = useState(Math.min(1, Math.max(0, progress ?? 0)));
@@ -172,19 +174,30 @@ export function LiveRouteMap({
       <div ref={host} className="h-full w-full" />
       {overlay ? (
         <div className="pointer-events-none absolute left-3 top-3 max-w-[16rem] rounded-2xl border border-white/15 bg-navy/82 px-3 py-2.5 shadow-lg backdrop-blur-md">
-          <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-kaenz">
-            <span className="kaenz-live-dot" />
-            {c.liveBadge} · {c.liveTrip}
-          </p>
-          <p className="mt-1 text-xs font-semibold text-white">
-            {origin.name} → {destination.name}
-          </p>
-          <p className="mt-0.5 text-[11px] text-white/70">
-            {c.liveAway.replace("{n}", String(left))}
-          </p>
-          <p className="text-[11px] text-white/55">
-            {c.liveFaster.replace("{n}", String(faster))}
-          </p>
+          {example ? (
+            <>
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/70">
+                {c.routeExample}
+              </p>
+              <p className="mt-1 text-xs font-semibold text-white">{c.routeExampleLead}</p>
+            </>
+          ) : (
+            <>
+              <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-kaenz">
+                <span className="kaenz-live-dot" />
+                {c.liveBadge} · {c.liveTrip}
+              </p>
+              <p className="mt-1 text-xs font-semibold text-white">
+                {origin.name} → {destination.name}
+              </p>
+              <p className="mt-0.5 text-[11px] text-white/70">
+                {c.liveAway.replace("{n}", String(left))}
+              </p>
+              <p className="text-[11px] text-white/55">
+                {c.liveFaster.replace("{n}", String(faster))}
+              </p>
+            </>
+          )}
         </div>
       ) : null}
     </div>

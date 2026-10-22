@@ -17,6 +17,7 @@ import { yachts, type Yacht } from "@/lib/yachts";
 import { useTrip } from "@/lib/trip-store";
 import { CaptainAvatar } from "@/components/CaptainAvatar";
 import { useOperator } from "@/lib/operator-store";
+import { readOnboardingIntent } from "@/lib/signup-prefill";
 import { useProfile } from "@/lib/profile-store";
 import { AddYachtForm } from "./AddYachtForm";
 import { IconBadge } from "./icons";
@@ -30,13 +31,18 @@ export function YachtsTab({ locale }: { locale: Locale }) {
   const { here, located, locating, locate } = useLocation();
   const router = useRouter();
   const [adding, setAdding] = useState(false);
+  const [intent, setIntent] = useState({ name: "", yacht: "", marina: "", role: "" as "" | "owner" | "captain" | "marina" });
   const [listings, setListings] = useState<Yacht[]>([]);
   const [notice, setNotice] = useState("");
   const [klass, setKlass] = useState<"all" | YachtTrait>("all");
 
   useEffect(() => {
+    const saved = readOnboardingIntent(document.cookie);
+    setIntent(saved);
     const add = new URLSearchParams(window.location.search).get("add");
-    if (add === "yacht" || add === "1") setAdding(true);
+    if (add === "yacht" || add === "1" || saved.role === "owner" || saved.role === "captain" || saved.yacht) {
+      setAdding(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -94,7 +100,18 @@ export function YachtsTab({ locale }: { locale: Locale }) {
       {adding ? (
         <AddYachtForm
           locale={locale}
+          role={intent.role === "captain" ? "captain" : "owner"}
+          initial={{
+            name: intent.yacht,
+            homePort: intent.marina,
+            ownerName: intent.role === "captain" ? "" : intent.name,
+            captainName: intent.role === "captain" ? intent.name : "",
+          }}
           onCancel={() => setAdding(false)}
+          onDrafted={() => {
+            setAdding(false);
+            setNotice(c.addYacht.draftSaved);
+          }}
           onListed={(yacht) => {
             setListings((cur) => [yacht, ...cur.filter((item) => item.id !== yacht.id)]);
             enrollOwner({

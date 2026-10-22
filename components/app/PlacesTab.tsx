@@ -18,6 +18,7 @@ import { formatKm, haversineKm } from "@/lib/geo";
 import { pathFor, type Locale } from "@/lib/locale";
 import { useLocation } from "@/lib/location";
 import { placeCountry, type Place } from "@/lib/places";
+import { readOnboardingIntent } from "@/lib/signup-prefill";
 import { useTrip } from "@/lib/trip-store";
 import { AddMarinaForm } from "./AddMarinaForm";
 
@@ -84,6 +85,7 @@ export function PlacesTab({ locale }: { locale: Locale }) {
   const { here, located, locating, locate } = useLocation();
   const router = useRouter();
   const [adding, setAdding] = useState(false);
+  const [marinaName, setMarinaName] = useState("");
   const [notice, setNotice] = useState("");
   const [activeTrip, setActiveTrip] = useState<{ origin: string; destination: string } | null>(
     null,
@@ -91,8 +93,10 @@ export function PlacesTab({ locale }: { locale: Locale }) {
   const [tripsReady, setTripsReady] = useState(false);
 
   useEffect(() => {
+    const saved = readOnboardingIntent(document.cookie);
+    setMarinaName(saved.marina);
     const add = new URLSearchParams(window.location.search).get("add");
-    if (add === "marina" || add === "port") setAdding(true);
+    if (add === "marina" || add === "port" || saved.role === "marina") setAdding(true);
   }, []);
 
   useEffect(() => {
@@ -159,7 +163,12 @@ export function PlacesTab({ locale }: { locale: Locale }) {
       {adding ? (
         <AddMarinaForm
           locale={locale}
+          initialName={marinaName}
           onCancel={() => setAdding(false)}
+          onDrafted={() => {
+            setAdding(false);
+            setNotice(c.addMarina.draftSaved);
+          }}
           onListed={(place) => {
             addPartnerPlace(place);
             setAdding(false);

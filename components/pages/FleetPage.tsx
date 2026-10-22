@@ -5,7 +5,13 @@ import { FleetGrid } from "@/components/pages/FleetGrid";
 import { t } from "@/lib/copy";
 import { pathFor, type Locale } from "@/lib/locale";
 
-export function FleetPage({ locale }: { locale: Locale }) {
+export function FleetPage({
+  locale,
+  signedIn = false,
+}: {
+  locale: Locale;
+  signedIn?: boolean;
+}) {
   const c = t(locale);
   return (
     <Site locale={locale}>
@@ -29,7 +35,7 @@ export function FleetPage({ locale }: { locale: Locale }) {
         <Link href={pathFor(locale, "/join")} className="btn-ghost mt-6 text-sm">
           {c.joinAsOwner}
         </Link>
-        <FleetGrid locale={locale} />
+        <FleetGrid locale={locale} signedIn={signedIn} />
       </section>
     </Site>
   );

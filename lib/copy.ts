@@ -137,6 +137,7 @@ export const copy = {
     requestPlatformLead:
       "Trips are requested in Kaenz Yachts — verified captain, Stripe, live tracking.",
     bookStripe: "Book this trip — pay with Stripe",
+    signInToBook: "Sign in to book",
     bookStripeLead:
       "Choose Commute, Tour, or Special Occasion. Pay in USD with Stripe.",
     bookableNow: "Bookable now",
@@ -220,6 +221,8 @@ export const copy = {
     liveBadge: "Live",
     liveAway: "{n} min away",
     liveFaster: "{n} min faster than driving",
+    routeExample: "Example route",
+    routeExampleLead: "Marina to marina",
     liveArrived: "Arrived — ready to pay",
     appPreviewEyebrow: "On your phone",
     appPreviewTitle: "Watch your yacht move, marina to marina",
@@ -419,6 +422,7 @@ export const copy = {
     requestPlatformLead:
       "Los viajes se piden en Yates de Kaenz — capitán verificado, Stripe y seguimiento en vivo.",
     bookStripe: "Reserva este viaje — paga con Stripe",
+    signInToBook: "Inicia sesión para reservar",
     bookStripeLead:
       "Elige Commute, Tour u Ocasión especial. Paga en USD con Stripe.",
     bookableNow: "Reservable ahora",
@@ -502,6 +506,8 @@ export const copy = {
     liveBadge: "En vivo",
     liveAway: "A {n} min",
     liveFaster: "{n} min más rápido que en auto",
+    routeExample: "Ruta de ejemplo",
+    routeExampleLead: "De marina a marina",
     liveArrived: "Llegaste — listo para pagar",
     appPreviewEyebrow: "En tu móvil",
     appPreviewTitle: "Mira el yate ir de marina a marina",
@@ -702,6 +708,7 @@ export const copy = {
     requestPlatformLead:
       "Les trajets se demandent dans Yachts Kaenz — capitaine vérifié, Stripe et suivi en direct.",
     bookStripe: "Réserver ce trajet — payer avec Stripe",
+    signInToBook: "Connectez-vous pour réserver",
     bookStripeLead:
       "Choisissez Trajet, Tour ou Occasion spéciale. Payez en USD avec Stripe.",
     bookableNow: "Réservable maintenant",
@@ -785,6 +792,8 @@ export const copy = {
     liveBadge: "En direct",
     liveAway: "À {n} min",
     liveFaster: "{n} min plus rapide qu’en voiture",
+    routeExample: "Exemple d’itinéraire",
+    routeExampleLead: "De marina à marina",
     liveArrived: "Arrivé — prêt à payer",
     appPreviewEyebrow: "Sur votre téléphone",
     appPreviewTitle: "Voyez le yacht aller de marina en marina",
@@ -985,6 +994,7 @@ export const copy = {
     requestPlatformLead:
       "I viaggi si richiedono in Yacht Kaenz — capitano verificato, Stripe e tracciamento in diretta.",
     bookStripe: "Prenota questo viaggio — paga con Stripe",
+    signInToBook: "Accedi per prenotare",
     bookStripeLead:
       "Scegli Commute, Tour o Occasione speciale. Paga in USD con Stripe.",
     bookableNow: "Prenotabile ora",
@@ -1068,6 +1078,8 @@ export const copy = {
     liveBadge: "Live",
     liveAway: "A {n} min",
     liveFaster: "{n} min più veloce dell’auto",
+    routeExample: "Esempio di rotta",
+    routeExampleLead: "Da marina a marina",
     liveArrived: "Arrivato — pronto a pagare",
     appPreviewEyebrow: "Sul tuo telefono",
     appPreviewTitle: "Guarda lo yacht da marina a marina",
@@ -1267,6 +1279,7 @@ export const copy = {
     requestPlatformLead:
       "As viagens pedem-se em Iates da Kaenz — capitão verificado, Stripe e acompanhamento ao vivo.",
     bookStripe: "Reserve esta viagem — pague com Stripe",
+    signInToBook: "Entre para reservar",
     bookStripeLead:
       "Escolha Trajeto, Passeio ou Ocasião especial. Pague em USD com Stripe.",
     bookableNow: "Reservável agora",
@@ -1350,6 +1363,8 @@ export const copy = {
     liveBadge: "Ao vivo",
     liveAway: "A {n} min",
     liveFaster: "{n} min mais rápido que de carro",
+    routeExample: "Rota de exemplo",
+    routeExampleLead: "De marina a marina",
     liveArrived: "Chegou — pronto para pagar",
     appPreviewEyebrow: "No seu celular",
     appPreviewTitle: "Veja o iate ir de marina em marina",

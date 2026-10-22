@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { at } from "@/lib/app-copy";
+import { trackFunnel } from "@/lib/track-funnel";
 import type { Locale } from "@/lib/locale";
 import type { Place } from "@/lib/places";
 import { PayoutsNotice } from "./PayoutsSection";
@@ -22,12 +23,20 @@ export function AddMarinaForm({
   locale,
   onCancel,
   onListed,
+  onDrafted,
+  initialName = "",
 }: {
   locale: Locale;
   onCancel: () => void;
   onListed: (place: Place) => void;
+  onDrafted?: () => void;
+  initialName?: string;
 }) {
   const c = at(locale).addMarina;
+  const formRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    trackFunnel("listing_started", "marina");
+  }, []);
   const [status, setStatus] = useState<"idle" | "sending" | "err">("idle");
   const [message, setMessage] = useState("");
 
@@ -73,8 +82,31 @@ export function AddMarinaForm({
     }
   }
 
+  async function saveDraft() {
+    const form = formRef.current;
+    if (!form) return;
+    const data = new FormData(form);
+    setMessage("");
+    setStatus("sending");
+    try {
+      const res = await fetch("/api/marinas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ draft: true, name: String(data.get("name") || "") }),
+      });
+      const json = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) throw new Error(json.error === "auth" ? c.needAuth : c.error);
+      onDrafted?.();
+      setStatus("idle");
+    } catch (err) {
+      setStatus("err");
+      setMessage(err instanceof Error ? err.message : c.error);
+    }
+  }
+
   return (
     <form
+      ref={formRef}
       onSubmit={onSubmit}
       className="mt-5 space-y-4 rounded-2xl border border-white/10 bg-white p-4 text-navy"
     >
@@ -98,7 +130,7 @@ export function AddMarinaForm({
       </label>
       <label className="block text-xs font-bold uppercase tracking-wide text-navy/60">
         {c.name}
-        <input className={field} name="name" required />
+        <input className={field} name="name" defaultValue={initialName} required />
       </label>
       <div className="grid grid-cols-2 gap-3">
         <label className="block text-xs font-bold uppercase tracking-wide text-navy/60">
@@ -153,6 +185,14 @@ export function AddMarinaForm({
         </p>
       ) : null}
 
+      <button
+        type="button"
+        onClick={saveDraft}
+        disabled={status === "sending"}
+        className="w-full rounded-xl border border-kaenz py-3 text-sm font-bold text-kaenz disabled:opacity-60"
+      >
+        {c.saveDraft}
+      </button>
       <button
         type="submit"
         disabled={status === "sending"}

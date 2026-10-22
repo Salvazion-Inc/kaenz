@@ -16,7 +16,7 @@ import {
   type WhenMode,
 } from "./pricing";
 import { placeById, places, type Place } from "./places";
-import { DEFAULT_YACHT_ID, yachtById, yachts, type Yacht } from "./yachts";
+import { yachtById, yachts, type Yacht } from "./yachts";
 
 export type { TripKind, WhenMode };
 export const TRIP_STEPS = [
@@ -72,12 +72,26 @@ export type TripDraft = {
 
 const KEY = "kaenz-trip-v1";
 
+const SEEDED_DESTINATIONS = new Set(["brickell", "island-gardens"]);
+
+/** Drop the old marketing seed so Your Trip does not open as a fake request. */
+export function withoutSeededRequest<T extends Partial<TripDraft>>(parsed: T): T {
+  const status = parsed.status === undefined ? "draft" : parseTripStatus(parsed.status);
+  if (status !== "draft" || parsed.bookingId) return parsed;
+  const originId = String(parsed.originId || "");
+  const destinationId = String(parsed.destinationId || "");
+  if (originId === "miami-beach-marina" && SEEDED_DESTINATIONS.has(destinationId)) {
+    return { ...parsed, originId: "", destinationId: "", yachtId: "" };
+  }
+  return parsed;
+}
+
 const empty: TripDraft = {
   kind: "commute",
   whenMode: "now",
-  originId: "miami-beach-marina",
-  destinationId: "brickell",
-  yachtId: DEFAULT_YACHT_ID,
+  originId: "",
+  destinationId: "",
+  yachtId: "",
   date: "",
   time: "",
   hours: defaultHoursFor("commute"),
@@ -122,7 +136,7 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
     try {
       const raw = localStorage.getItem(KEY);
       if (raw) {
-        const parsed = JSON.parse(raw) as Partial<TripDraft>;
+        const parsed = withoutSeededRequest(JSON.parse(raw) as Partial<TripDraft>);
         const kind = parsed.kind || empty.kind;
         const yachtId = yachtById(String(parsed.yachtId || ""))
           ? String(parsed.yachtId)

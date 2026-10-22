@@ -44,10 +44,10 @@ export function AppPhonePreview({ locale }: { locale: Locale }) {
         <div className="flex items-center justify-between px-4 pb-1 pt-3">
           <div>
             <p className="text-[11px] font-bold leading-none">{a.appName}</p>
-            <p className="mt-1 text-[10px] text-kaenz">{origin.city}</p>
+            <p className="mt-1 text-[10px] text-kaenz">{c.routeExample}</p>
           </div>
-          <span className="rounded-full bg-kaenz/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-kaenz">
-            {c.liveBadge}
+          <span className="rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white/70">
+            {c.routeExample}
           </span>
         </div>
         <div className="px-2">
@@ -56,6 +56,7 @@ export function AppPhonePreview({ locale }: { locale: Locale }) {
             destination={destination}
             locale={locale}
             loop
+            example
             className="h-[22rem] rounded-2xl"
           />
         </div>

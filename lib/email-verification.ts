@@ -40,6 +40,7 @@ export async function registerUnconfirmedUser(opts: {
   password: string;
   name: string;
   redirectTo: string;
+  role?: string;
   auth?: SupabaseClient | null;
 }): Promise<
   | { ok: true; id: string; confirmed: boolean }
@@ -53,7 +54,12 @@ export async function registerUnconfirmedUser(opts: {
     email: opts.email,
     password: opts.password,
     options: {
-      data: { full_name: opts.name },
+      data: {
+        full_name: opts.name,
+        ...(opts.role === "owner" || opts.role === "captain" || opts.role === "marina"
+          ? { kaenz_role: opts.role }
+          : {}),
+      },
       emailRedirectTo: opts.redirectTo,
     },
   });
