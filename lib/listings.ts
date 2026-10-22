@@ -157,7 +157,7 @@ const YACHT_CLASS_ES: Record<string, string> = {
   "Flybridge yacht": "Yate flybridge",
   "Express yacht": "Yate express",
   Catamaran: "Catamarán",
-  Bowrider: "Bowrider",
+  Bowrider: "Lancha bowrider",
   "Center console": "Consola central",
   "Deck boat": "Lancha deck",
   Yacht: "Yate",
@@ -172,6 +172,7 @@ export function yachtClassLabel(className: string, locale: Locale) {
 export function captainCredential(license: string, locale: Locale) {
   if (locale !== "es") return license;
   return license
+    .replace(/USCG OUPV Six-Pack/gi, "Patrón USCG OUPV, hasta 6 pasajeros")
     .replace(/USCG Master (\d+) Ton/gi, "Patrón USCG, $1 toneladas")
     .replace(/\bMMC\b/g, "Licencia MMC");
 }

@@ -1,7 +1,6 @@
 import { requireVerifiedUser } from "@/lib/account-verification";
 import { logFunnel } from "@/lib/funnel";
 import { buildMarinaDraft } from "@/lib/listing-draft";
-import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 import { listBookablePlaces } from "@/lib/inventory";
 import { optionalWallet } from "@/lib/listings";
 import {
@@ -27,14 +26,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const user = await readSession(
-    cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
-  );
-  if (!user) {
-    return Response.json({ error: "auth" }, { status: 401 });
-  }
   const gate = await requireVerifiedUser(req);
   if ("response" in gate) return gate.response;
+  const user = gate.user;
   if (!getSupabaseAdmin()) {
     return Response.json({ error: "supabase" }, { status: 503 });
   }

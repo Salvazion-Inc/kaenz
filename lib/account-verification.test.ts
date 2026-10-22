@@ -6,6 +6,9 @@ import { POST as postCheckout } from "../app/api/checkout/route.ts";
 import { POST as postGuest } from "../app/api/checkout/guest/route.ts";
 import { POST as postSignup } from "../app/api/auth/signup/route.ts";
 import { POST as postYacht } from "../app/api/yachts/route.ts";
+import { GET as getProfile } from "../app/api/profile/route.ts";
+import { GET as getTrips } from "../app/api/trips/route.ts";
+import { loginRedirectPath } from "./auth-link.ts";
 import { emailConfirmRedirect } from "./email-verification.ts";
 import {
   accessDecision,
@@ -164,6 +167,61 @@ test("booking, checkout, and yacht listing gate the three cases", async () => {
     assert.equal(status, 503);
     assert.equal(body.error, "supabase");
   });
+});
+
+test("a verified session is the same user on profile, trips, and yacht draft", async () => {
+  const keys = ["SUPABASE_SERVICE_ROLE_KEY", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "NEXT_PUBLIC_SUPABASE_URL"] as const;
+  const previous = new Map(keys.map((key) => [key, process.env[key]]));
+  for (const key of keys) delete process.env[key];
+  try {
+    const token = await createSessionToken(user);
+    const headers = { cookie: `${SESSION_COOKIE}=${encodeURIComponent(token)}` };
+    const profile = await getProfile(new Request("https://kaenz.com/api/profile", { headers }));
+    assert.equal(profile.status, 200);
+    const trips = await getTrips(new Request("https://kaenz.com/api/trips", { headers }));
+    assert.equal(trips.status, 200);
+    const draft = await postYacht(
+      new Request("https://kaenz.com/api/yachts", {
+        method: "POST",
+        headers: { ...headers, "content-type": "application/json" },
+        body: JSON.stringify({ draft: true, name: "Sea Trial" }),
+      }),
+    );
+    assert.equal(draft.status, 200);
+    const body = (await draft.json()) as { status?: string; error?: string };
+    assert.equal(body.status, "draft");
+    assert.notEqual(body.error, "auth");
+
+    const yachts = readFileSync(new URL("../app/api/yachts/route.ts", import.meta.url), "utf8");
+    const profileSrc = readFileSync(new URL("../app/api/profile/route.ts", import.meta.url), "utf8");
+    const tripsSrc = readFileSync(new URL("../app/api/trips/route.ts", import.meta.url), "utf8");
+    assert.equal(yachts.includes("readSession("), false);
+    assert.match(yachts, /requireVerifiedUser/);
+    assert.match(profileSrc, /readApiSession/);
+    assert.equal(profileSrc.includes("readSession("), false);
+    assert.match(tripsSrc, /readApiSession/);
+    assert.equal(tripsSrc.includes("readSession("), false);
+  } finally {
+    for (const key of keys) {
+      const value = previous.get(key);
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+});
+
+test("login follows next and does not stay on Sending", () => {
+  assert.equal(loginRedirectPath("/app/yachts"), "/app/yachts");
+  assert.equal(loginRedirectPath("https://evil.example"), "/app");
+  assert.equal(loginRedirectPath("//evil.example"), "/app");
+  const form = readFileSync(new URL("../components/AuthForm.tsx", import.meta.url), "utf8");
+  const login = readFileSync(new URL("../app/api/auth/login/route.ts", import.meta.url), "utf8");
+  assert.match(form, /loginRedirectPath\(next\)/);
+  assert.match(form, /AbortSignal\.timeout\(12_000\)/);
+  assert.match(login, /12_000/);
+  const files = readFileSync(new URL("../components/app/AddYachtForm.tsx", import.meta.url), "utf8");
+  assert.match(files, /noteFileChoice/);
+  assert.match(files, /setMessage\(""\)/);
 });
 
 test("guest checkout is gone for every session state", async () => {

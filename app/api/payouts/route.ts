@@ -1,4 +1,4 @@
-import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
+import { readApiSession } from "@/lib/account-verification";
 import { parseCountry, refreshPartner, startOnboarding } from "@/lib/payouts";
 import { appOrigin, getStripe, stripeConfigured } from "@/lib/stripe";
 import { getSupabaseAdmin } from "@/lib/supabase";
@@ -18,7 +18,7 @@ function guard() {
 }
 
 async function sessionUser(req: Request) {
-  return readSession(cookieValue(req.headers.get("cookie"), SESSION_COOKIE));
+  return readApiSession(req);
 }
 
 /** Current payout status; releases retained shares once the account is active. */

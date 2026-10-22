@@ -12,6 +12,13 @@ export function passwordResetMessage() {
 }
 
 /** Recovery mail returns to this host, then the callback sends the browser to set a password. */
+/** In-app path after login. Anything off-site stays on /app. */
+export function loginRedirectPath(next: string | null | undefined) {
+  const value = String(next || "").trim();
+  if (!value.startsWith("/") || value.startsWith("//") || value.includes("\\")) return "/app";
+  return value;
+}
+
 export function passwordResetRedirect(origin: string) {
   const base = origin.replace(/\/$/, "");
   return `${base}/auth/callback?next=/reset-password`;

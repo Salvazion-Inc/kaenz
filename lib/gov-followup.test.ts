@@ -508,6 +508,16 @@ test("spanish locale translates the remaining product strings", () => {
   assert.equal(traitLabel("fast", "es"), "Rápido");
   assert.equal(yachtClassLabel("Express cruiser", "es"), "Crucero express");
   assert.equal(captainCredential("USCG Master 100 Ton", "es"), "Patrón USCG, 100 toneladas");
+  assert.equal(
+    captainCredential("USCG OUPV Six-Pack", "es"),
+    "Patrón USCG OUPV, hasta 6 pasajeros",
+  );
+  assert.equal(yachtClassLabel("Bowrider", "es"), "Lancha bowrider");
+  assert.match(at("es").yachtsLead, /Rápido, Pequeño o De lujo/);
+  assert.equal(at("es").yachtsLead.includes("Fast, Small"), false);
+  assert.equal(es.joinCaptains.includes("Six-Pack"), false);
+  assert.match(es.joinCaptains, /hasta 6 pasajeros/);
+  assert.equal(es.captain, "Capitán");
   assert.match(captainCredential("MMC", "es"), /Licencia MMC/);
   assert.equal(es.forgotPassword, "¿Olvidaste tu contraseña?");
   assert.equal(es.forgotTitle, "Restablece tu contraseña");

@@ -305,6 +305,15 @@ export async function resolveRequestSession(
   };
 }
 
+/**
+ * Caller for every API route. Same decision as GET /api/auth/me: a live
+ * Supabase user wins when the Kaenz cookie was signed with an older key.
+ */
+export async function readApiSession(req: Request): Promise<SessionUser | null> {
+  const { user } = await resolveRequestSession(req.headers.get("cookie"), req);
+  return user;
+}
+
 export async function requireVerifiedUser(
   req: Request,
 ): Promise<{ user: SessionUser } | { response: Response }> {

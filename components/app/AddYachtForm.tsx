@@ -39,6 +39,21 @@ function clearIfOversized(form: HTMLFormElement, name: string) {
   return true;
 }
 
+function noteFileChoice(
+  oversized: boolean,
+  setStatus: (value: "idle" | "err") => void,
+  setMessage: (value: string) => void,
+  tooBig: string,
+) {
+  if (oversized) {
+    setStatus("err");
+    setMessage(tooBig);
+    return;
+  }
+  setMessage("");
+  setStatus("idle");
+}
+
 function inputValue(form: HTMLFormElement, name: string) {
   const el = form.elements.namedItem(name);
   return el instanceof HTMLInputElement ? el.value : "";
@@ -324,10 +339,14 @@ export function AddYachtForm({
             type="file"
             accept="image/*"
             onChange={(e) => {
-              if (clearIfOversized(e.currentTarget.form!, "owner_id")) {
-                setStatus("err");
-                setMessage(c.fileTooBig);
-              }
+              const form = e.currentTarget.form;
+              if (!form || !e.currentTarget.files?.[0]) return;
+              noteFileChoice(
+                clearIfOversized(form, "owner_id"),
+                setStatus,
+                setMessage,
+                c.fileTooBig,
+              );
             }}
           />
         </label>
@@ -357,6 +376,7 @@ export function AddYachtForm({
             multiple
             onChange={(e) => {
               const picked = Array.from(e.target.files || []).slice(0, 5);
+              if (!picked.length) return;
               if (picked.some((file) => file.size > LISTING_MAX_BYTES)) {
                 e.target.value = "";
                 setPhotos(picked.filter((file) => file.size <= LISTING_MAX_BYTES));
@@ -365,6 +385,8 @@ export function AddYachtForm({
                 return;
               }
               setPhotos(picked);
+              setMessage("");
+              setStatus("idle");
             }}
           />
         </label>
@@ -459,10 +481,14 @@ export function AddYachtForm({
             type="file"
             accept="image/*,.pdf"
             onChange={(e) => {
-              if (clearIfOversized(e.currentTarget.form!, "captain_id")) {
-                setStatus("err");
-                setMessage(c.fileTooBig);
-              }
+              const form = e.currentTarget.form;
+              if (!form || !e.currentTarget.files?.[0]) return;
+              noteFileChoice(
+                clearIfOversized(form, "captain_id"),
+                setStatus,
+                setMessage,
+                c.fileTooBig,
+              );
             }}
           />
         </label>
@@ -474,10 +500,14 @@ export function AddYachtForm({
             type="file"
             accept="image/*,.pdf"
             onChange={(e) => {
-              if (clearIfOversized(e.currentTarget.form!, "captain_mmc")) {
-                setStatus("err");
-                setMessage(c.fileTooBig);
-              }
+              const form = e.currentTarget.form;
+              if (!form || !e.currentTarget.files?.[0]) return;
+              noteFileChoice(
+                clearIfOversized(form, "captain_mmc"),
+                setStatus,
+                setMessage,
+                c.fileTooBig,
+              );
             }}
           />
         </label>
@@ -489,10 +519,14 @@ export function AddYachtForm({
             type="file"
             accept="image/*"
             onChange={(e) => {
-              if (clearIfOversized(e.currentTarget.form!, "captain_photo")) {
-                setStatus("err");
-                setMessage(c.fileTooBig);
-              }
+              const form = e.currentTarget.form;
+              if (!form || !e.currentTarget.files?.[0]) return;
+              noteFileChoice(
+                clearIfOversized(form, "captain_photo"),
+                setStatus,
+                setMessage,
+                c.fileTooBig,
+              );
             }}
           />
         </label>

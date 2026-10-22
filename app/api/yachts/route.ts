@@ -1,7 +1,6 @@
 import { requireVerifiedUser } from "@/lib/account-verification";
 import { logFunnel } from "@/lib/funnel";
 import { buildYachtDraft } from "@/lib/listing-draft";
-import { cookieValue, readSession, SESSION_COOKIE } from "@/lib/session";
 import { listBookableYachts } from "@/lib/inventory";
 import {
   assertUploadedListingFile,
@@ -79,6 +78,13 @@ async function postYachtDraft(
     captainName: record.captain_name,
   });
   if (!draft.ok) return Response.json({ error: draft.error }, { status: 400 });
+  if (!getSupabaseAdmin()) {
+    return Response.json({
+      yacht: { id: "draft", name: draft.name, bookable: false },
+      documents: "pending",
+      status: "draft",
+    });
+  }
   const role = record.role === "captain" ? "captain" : "owner";
   try {
     const listing = await insertYachtListing({
@@ -173,17 +179,9 @@ async function postStoredListing(body: unknown, userId: string) {
 }
 
 export async function POST(req: Request) {
-  const user = await readSession(
-    cookieValue(req.headers.get("cookie"), SESSION_COOKIE),
-  );
-  if (!user) {
-    return Response.json({ error: "auth" }, { status: 401 });
-  }
   const gate = await requireVerifiedUser(req);
   if ("response" in gate) return gate.response;
-  if (!getSupabaseAdmin()) {
-    return Response.json({ error: "supabase" }, { status: 503 });
-  }
+  const user = gate.user;
 
   const contentType = req.headers.get("content-type") || "";
   if (contentType.includes("application/json")) {
@@ -191,7 +189,13 @@ export async function POST(req: Request) {
     if (body && typeof body === "object" && (body as { draft?: unknown }).draft === true) {
       return postYachtDraft(body, user);
     }
+    if (!getSupabaseAdmin()) {
+      return Response.json({ error: "supabase" }, { status: 503 });
+    }
     return postStoredListing(body, user.id);
+  }
+  if (!getSupabaseAdmin()) {
+    return Response.json({ error: "supabase" }, { status: 503 });
   }
 
   const form = await req.formData();

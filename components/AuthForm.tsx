@@ -7,7 +7,11 @@ import { BiometricLogin } from "@/components/auth/BiometricLogin";
 import { VerifyEmailScreen } from "@/components/VerifyEmailScreen";
 import { useBiometricGate } from "@/components/auth/useBiometric";
 import { disableBiometric } from "@/lib/auth/biometric";
-import { EMAIL_VERIFIED_SIGN_IN, verificationLinkExpiredFromLocation } from "@/lib/auth-link";
+import {
+  EMAIL_VERIFIED_SIGN_IN,
+  loginRedirectPath,
+  verificationLinkExpiredFromLocation,
+} from "@/lib/auth-link";
 import { t } from "@/lib/copy";
 import { useLocale } from "@/lib/locale-context";
 import { onboardingCookie, parseSignupPrefill } from "@/lib/signup-prefill";
@@ -145,6 +149,7 @@ export function AuthForm({
         mode === "login" ? "/api/auth/login" : "/api/auth/signup",
         {
           method: "POST",
+          signal: AbortSignal.timeout(12_000),
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email,
@@ -179,11 +184,13 @@ export function AuthForm({
         mode === "signup" &&
         (data.confirmationRequired === true || data.verified !== true)
       ) {
+        setStatus("idle");
         router.replace("/check-email");
         router.refresh();
         return;
       }
-      router.replace(next.startsWith("/") ? next : "/app");
+      setStatus("idle");
+      router.replace(loginRedirectPath(next));
       router.refresh();
     } catch {
       setStatus("err");
