@@ -40,6 +40,18 @@ export function JoinForm({ locale }: { locale: Locale }) {
       onSubmit={onSubmit}
       className="rounded-2xl border border-white/10 bg-white p-6 text-navy md:p-8"
     >
+      <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
+        <label>
+          Company website
+          <input
+            type="text"
+            name="company_website"
+            tabIndex={-1}
+            autoComplete="off"
+            defaultValue=""
+          />
+        </label>
+      </div>
       <div className="grid gap-5 md:grid-cols-2">
         <label className="block text-sm font-semibold">
           {c.form.name}

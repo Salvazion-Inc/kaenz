@@ -5,7 +5,7 @@ import {
   readSession,
   SESSION_COOKIE,
 } from "./session";
-import { getSupabaseAdmin } from "./supabase";
+import { getSupabase, getSupabaseAdmin } from "./supabase";
 import { createRouteSupabase } from "./supabase-route";
 
 /**
@@ -21,7 +21,7 @@ export type AuthConfirmRow = {
   email_confirmed_at?: string | null;
   confirmed_at?: string | null;
   email_confirmed?: boolean | null;
-  user_metadata?: { email_verified?: boolean } | null;
+  user_metadata?: { email_verified?: boolean; full_name?: string } | null;
 };
 
 export type ConfirmationSignal = "confirmed" | "unconfirmed" | "unknown";
@@ -43,6 +43,24 @@ export function confirmationSignal(
 /** Unknown means the auth row could not be read. Do not treat that as unverified. */
 export function signalAllowsUse(signal: ConfirmationSignal) {
   return signal !== "unconfirmed";
+}
+
+/**
+ * `email_confirmed_at` on the auth user is the flag. A session payload can omit
+ * it; the admin auth row wins when it is confirmed. This does not read profiles.
+ */
+export function signalFromAuthUsers(
+  sessionRow: AuthConfirmRow | null | undefined,
+  adminRow: AuthConfirmRow | null | undefined,
+): ConfirmationSignal {
+  if (confirmationSignal(adminRow) === "confirmed") return "confirmed";
+  if (confirmationSignal(sessionRow) === "confirmed") return "confirmed";
+  if (adminRow) return confirmationSignal(adminRow);
+  return confirmationSignal(sessionRow);
+}
+
+export function verifiedFromAuthUser(row: AuthConfirmRow | null | undefined) {
+  return confirmationSignal(row) === "confirmed";
 }
 
 /** No session, unverified session, or a session allowed to book and use the app. */
@@ -94,6 +112,26 @@ export async function findAuthUserByEmail(email: string): Promise<AuthConfirmRow
 export function previewUnverifiedOverride(req: { headers: Headers }) {
   if (process.env.VERCEL_ENV !== "preview") return false;
   return req.headers.get("x-kaenz-preview-unverified") === "1";
+}
+
+/** Refresh email and name on an existing profile. No new column, and no insert. */
+export async function syncConfirmedProfile(user: AuthConfirmRow | null | undefined) {
+  if (!verifiedFromAuthUser(user) || !user?.id) return;
+  const db = getSupabase();
+  if (!db) return;
+  try {
+    const existing = await db.from("profiles").select("id").eq("id", user.id).maybeSingle();
+    if (existing.error || !existing.data) return;
+    const email = String(user.email || "").trim().toLowerCase();
+    const name = String(user.user_metadata?.full_name || "").trim();
+    const patch: { email?: string; full_name?: string } = {};
+    if (email) patch.email = email;
+    if (name) patch.full_name = name;
+    if (!Object.keys(patch).length) return;
+    await db.from("profiles").update(patch).eq("id", user.id);
+  } catch {
+    /* profile table missing or paused */
+  }
 }
 
 export async function accountSignal(user: SessionUser, req?: Request): Promise<ConfirmationSignal> {
@@ -227,8 +265,12 @@ export async function resolveRequestSession(
 
   let signal: ConfirmationSignal = "unknown";
   if (req && previewUnverifiedOverride(req)) signal = "unconfirmed";
-  else if (live.user) signal = confirmationSignal(live.user);
-  else if (cookieUser) signal = await accountSignal(cookieUser, req);
+  else if (live.user) {
+    const identity = sessionUserFromAuth(live.user, cookieUser);
+    const adminRow = identity ? await findAuthUser(identity).catch(() => null) : null;
+    signal = signalFromAuthUsers(live.user, adminRow);
+    if (signal === "confirmed") void syncConfirmedProfile(adminRow || live.user);
+  } else if (cookieUser) signal = await accountSignal(cookieUser, req);
 
   return decideSession({
     cookieUser,

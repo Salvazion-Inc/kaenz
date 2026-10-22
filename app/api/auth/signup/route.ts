@@ -10,6 +10,7 @@ import {
   cookieValue,
   createSessionToken,
   readAccounts,
+  clearStaleSupabaseSessionHeaders,
   sessionCookie,
   signAccounts,
   type AccountRecord,
@@ -79,6 +80,9 @@ export async function POST(req: Request) {
   });
   const intent = onboardingCookie(prefill);
   if (intent) res.headers.append("Set-Cookie", intent);
+  for (const header of clearStaleSupabaseSessionHeaders(req.headers.get("cookie"))) {
+    res.headers.append("Set-Cookie", header);
+  }
   res.headers.append("Set-Cookie", sessionCookie(session));
   res.headers.append("Set-Cookie", accountsCookie(vault));
   applyCookies(res, pending);
