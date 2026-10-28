@@ -1,14 +1,13 @@
-"use client";
-
-import { HomePage } from "@/components/HomePage";
+import { HomeScreen } from "@/components/HomeScreen";
 import { HomeJsonLd } from "@/components/seo/JsonLd";
-import { WithLocale } from "@/components/WithLocale";
+
+export const revalidate = 86400;
 
 export default function Page() {
   return (
     <>
       <HomeJsonLd />
-      <WithLocale Component={HomePage} />
+      <HomeScreen />
     </>
   );
 }

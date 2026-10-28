@@ -57,6 +57,12 @@ export async function middleware(request: NextRequest) {
     return applySecurityHeaders(res);
   }
 
+  // Home does not read cookies. Skip the locale header so the static page
+  // is not varied into a no-store response.
+  if (pathname === "/") {
+    return applySecurityHeaders(NextResponse.next());
+  }
+
   let repairedSession: string | null = null;
   if (pathname.startsWith("/app")) {
     const session = await resolveRequestSession(request.headers.get("cookie"), request);

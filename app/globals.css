@@ -98,12 +98,21 @@ textarea {
     background 0.2s ease;
 }
 
+a.btn-kaenz:not(.btn-book) {
+  background: #0077a3;
+  color: #fff;
+}
+
 .btn-kaenz:hover {
   background: var(--color-kaenz-deep);
   transform: translateY(-1px);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.22) inset,
     0 16px 36px color-mix(in srgb, var(--color-kaenz) 48%, transparent);
+}
+
+a.btn-kaenz:not(.btn-book):hover {
+  background: #00648c;
 }
 
 .btn-kaenz:disabled {
@@ -361,6 +370,28 @@ button.kaenz-card:hover,
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-foam) 22%, transparent);
 }
 
+.leaflet-div-icon.kaenz-pin-hit {
+  background: transparent;
+  border: none;
+}
+
+.kaenz-pin-target {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 7px;
+  background: transparent;
+  border: 0;
+}
+
+.kaenz-pin-target .kaenz-pin {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+}
+
 .leaflet-div-icon.kaenz-pin {
   background: var(--color-kaenz);
   border: 2px solid var(--color-foam);
@@ -450,6 +481,14 @@ button.kaenz-card:hover,
   100% {
     box-shadow: 0 0 0 0 rgba(61, 255, 154, 0);
   }
+}
+
+.phone-bezel .mt-2 .flex {
+  color: #7e8496;
+}
+
+.phone-bezel .mt-2 .flex.text-kaenz {
+  color: #00a1d6;
 }
 
 .phone-bezel {

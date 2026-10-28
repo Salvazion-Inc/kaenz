@@ -52,20 +52,24 @@ export function LocaleProvider({
   }, []);
 
   useEffect(() => {
-    const hasCookie = document.cookie
+    const raw = document.cookie
       .split(";")
-      .some((p) => p.trim().startsWith(`${LOCALE_COOKIE}=`));
-    if (!hasCookie) {
-      try {
-        const stored = localStorage.getItem(LOCALE_COOKIE);
-        if (isLocale(stored) && stored !== locale) {
-          persist(stored);
-          setLocaleState(stored);
-          return;
-        }
-      } catch {
-        /* ignore */
+      .map((part) => part.trim())
+      .find((part) => part.startsWith(`${LOCALE_COOKIE}=`));
+    const fromCookie = raw?.slice(LOCALE_COOKIE.length + 1);
+    if (isLocale(fromCookie)) {
+      if (fromCookie !== locale) setLocaleState(fromCookie);
+      return;
+    }
+    try {
+      const stored = localStorage.getItem(LOCALE_COOKIE);
+      if (isLocale(stored) && stored !== locale) {
+        persist(stored);
+        setLocaleState(stored);
+        return;
       }
+    } catch {
+      /* ignore */
     }
     persist(locale);
     // eslint-disable-next-line react-hooks/exhaustive-deps

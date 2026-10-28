@@ -2,27 +2,15 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { aiJson, aiTxt, robotsTxt } from "../lib/discoverability";
 
-test("kaenz robots opens public pages to search and AI use", () => {
+test("kaenz robots opens public pages and keeps private paths closed", () => {
   const body = robotsTxt();
-  const agents = body.match(/^User-agent: /gm) || [];
-  const signals =
-    body.match(/^Content-Signal: search=yes, ai-input=yes, ai-train=yes$/gm) || [];
-  assert.equal(signals.length, agents.length);
-  assert.ok(agents.length > 20);
-  for (const token of [
-    "Googlebot",
-    "OAI-SearchBot",
-    "ChatGPT-User",
-    "GPTBot",
-    "Claude-SearchBot",
-    "PerplexityBot",
-    "Google-Extended",
-  ]) {
-    assert.match(body, new RegExp(`^User-agent: ${token}$`, "m"));
-  }
+  assert.match(body, /^User-agent: \*$/m);
+  assert.match(body, /^Allow: \/$/m);
+  assert.equal(body.includes("Content-Signal:"), false);
   assert.equal(body.includes("\nDisallow: /\n"), false);
   assert.match(body, /^Disallow: \/api\/$/m);
   assert.match(body, /^Disallow: \/app\/$/m);
+  assert.match(body, /^Disallow: \/mapucoin-auth$/m);
   assert.match(body, /^Sitemap: https:\/\/kaenz\.com\/sitemap\.xml$/m);
 });
 

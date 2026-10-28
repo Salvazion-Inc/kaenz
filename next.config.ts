@@ -8,8 +8,14 @@ import {
 
 const assetCache = [{ key: "Cache-Control", value: STATIC_ASSET_CACHE }];
 
+const longCache = [
+  { key: "Cache-Control", value: "public, max-age=31536000, stale-while-revalidate=31536000" },
+];
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Lighthouse is not a streaming bot. Put metadata in <head> for every agent.
+  htmlLimitedBots: /.*/,
   // A lockfile above this repo was being chosen as the tracing root.
   outputFileTracingRoot: path.join(__dirname),
   transpilePackages: ["leaflet"],
@@ -34,8 +40,13 @@ const nextConfig: NextConfig = {
       { source: "/flags/:path*", headers: assetCache },
       { source: "/brand/:path*", headers: assetCache },
       { source: "/site/:path*", headers: assetCache },
-      { source: "/hero.mp4", headers: assetCache },
-      { source: "/hero-poster.jpg", headers: assetCache },
+      { source: "/hero.mp4", headers: longCache },
+      { source: "/hero.webm", headers: longCache },
+      { source: "/hero-720.mp4", headers: longCache },
+      { source: "/hero-720.webm", headers: longCache },
+      { source: "/hero-poster.jpg", headers: longCache },
+      { source: "/hero-poster.webp", headers: longCache },
+      { source: "/hero-poster.avif", headers: longCache },
       { source: "/icon.png", headers: assetCache },
       { source: "/icon-512.png", headers: assetCache },
       { source: "/favicon.png", headers: assetCache },

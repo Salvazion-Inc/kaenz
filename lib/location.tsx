@@ -106,8 +106,9 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
       setCity(cached.label);
       setLocated(true);
     }
-    locate();
-  }, [locate]);
+    // GPS runs only from locate(), after an explicit tap. The default city
+    // stays in place until then.
+  }, []);
 
   const value = useMemo(
     () => ({ here, city, located, locating, denied, locate }),

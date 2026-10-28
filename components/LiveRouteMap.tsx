@@ -89,14 +89,21 @@ export function LiveRouteMap({
         opacity: 0.9,
       }).addTo(map);
       const dock = L.divIcon({
-        className: "kaenz-pin kaenz-pin-marina",
-        iconSize: [12, 12],
-        iconAnchor: [6, 6],
+        className: "kaenz-pin-hit",
+        html: '<span class="kaenz-pin-target" aria-hidden="true"><span class="kaenz-pin kaenz-pin-marina"></span></span>',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
       });
-      L.marker([start.lat, start.lng], { icon: dock, interactive: false }).addTo(
-        map,
-      );
-      L.marker([end.lat, end.lng], { icon: dock, interactive: false }).addTo(map);
+      L.marker([start.lat, start.lng], {
+        icon: dock,
+        interactive: false,
+        keyboard: false,
+      }).addTo(map);
+      L.marker([end.lat, end.lng], {
+        icon: dock,
+        interactive: false,
+        keyboard: false,
+      }).addTo(map);
       const boat = L.divIcon({
         className: "kaenz-yacht-icon",
         html: yachtIconHtml(0),
@@ -106,6 +113,7 @@ export function LiveRouteMap({
       const marker = L.marker([start.lat, start.lng], {
         icon: boat,
         interactive: false,
+        keyboard: false,
         zIndexOffset: 900,
       }).addTo(map);
       map.fitBounds(L.latLngBounds(latlngs).pad(0.45));

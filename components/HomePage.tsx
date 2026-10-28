@@ -5,7 +5,8 @@ import { HtmlLang } from "./HtmlLang";
 import { Logo } from "./Logo";
 import { Nav } from "./Nav";
 import { AppPhonePreview } from "./AppPhonePreview";
-import { WorldMap } from "./WorldMap";
+import { HeroVideo } from "./HeroVideo";
+import { LazyWorldMap } from "./LazyWorldMap";
 import { t } from "@/lib/copy";
 import { pathFor, type Locale } from "@/lib/locale";
 import { yachts } from "@/lib/yachts";
@@ -25,21 +26,14 @@ export function HomePage({ locale }: { locale: Locale }) {
       <HtmlLang locale={locale} />
       <Nav locale={locale} />
       <section className="relative min-h-screen overflow-hidden">
-        <video
-          className="absolute inset-0 h-full w-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster="/hero-poster.jpg"
-        >
-          <source src="/hero.mp4" type="video/mp4" />
-        </video>
+        <HeroVideo />
         <div className="hero-veil absolute inset-0" />
         <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5 pb-16 pt-28 text-center">
           <Logo
-            size={256}
+            size={224}
+            sizes="(min-width:768px) 224px, 176px"
             className="h-44 w-44 sm:h-52 sm:w-52 md:h-56 md:w-56"
+            priority
           />
           <h1
             id="hero-heading"
@@ -115,7 +109,7 @@ export function HomePage({ locale }: { locale: Locale }) {
         </Link>
         <div className="mt-8 grid items-start gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
           <div className="kaenz-card overflow-hidden p-2">
-            <WorldMap locale={locale} variant="site" />
+            <LazyWorldMap locale={locale} />
           </div>
           <AppPhonePreview locale={locale} />
         </div>

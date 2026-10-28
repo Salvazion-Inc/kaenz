@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
-import { cookies } from "next/headers";
 import { Outfit } from "next/font/google";
 import { ConciergeFlag } from "@/components/ConciergeFlag";
 import { SiteJsonLd } from "@/components/seo/JsonLd";
 import { conciergeEnabled } from "@/lib/concierge";
 import { LocaleProvider } from "@/lib/locale-context";
 import { LocationProvider } from "@/lib/location";
-import { LOCALE_COOKIE, parseLocale } from "@/lib/locale";
+import { DEFAULT_LOCALE } from "@/lib/locale";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -109,16 +108,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const jar = await cookies();
-  const locale = parseLocale(jar.get(LOCALE_COOKIE)?.value);
   return (
-    <html lang={locale}>
+    <html lang={DEFAULT_LOCALE}>
       <body className={`${outfit.className} antialiased`}>
         <SiteJsonLd />
-        <LocaleProvider initialLocale={locale}>
+        <LocaleProvider initialLocale={DEFAULT_LOCALE}>
           <ConciergeFlag enabled={conciergeEnabled()}>
             <LocationProvider>{children}</LocationProvider>
           </ConciergeFlag>
