@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useConciergeEnabled } from "./ConciergeFlag";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { Logo } from "./Logo";
 import { LogoutButton } from "./LogoutButton";
@@ -18,6 +19,7 @@ export function Nav({
   viewer?: NavViewer | null;
 }) {
   const c = t(locale);
+  const concierge = useConciergeEnabled();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -34,6 +36,11 @@ export function Nav({
           <Logo size={40} className="h-9 w-9 md:h-10 md:w-10" />
         </Link>
         <div className="hidden items-center gap-5 text-sm font-semibold text-white/88 md:flex">
+          {concierge ? (
+            <Link href="/concierge" className="hover:text-kaenz">
+              {c.nav.concierge}
+            </Link>
+          ) : null}
           <LanguageSwitcher />
           {viewer ? (
             <span className="flex items-center gap-2">

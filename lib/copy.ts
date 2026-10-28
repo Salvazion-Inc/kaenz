@@ -241,8 +241,8 @@ export const copy = {
       "Application received. We will contact you to verify license and yacht.",
     conciergeHello:
       "I’m the Kaenz concierge. Tell me Commute, Tour, or Special Occasion — origin, destination, guests, duration, and date. I’ll match a yacht worldwide.",
-    conciergeMissingKey:
-      "Missing XAI_API_KEY on the server. Add it to enable Grok.",
+    conciergeMissingKey: "The concierge is coming soon.",
+    conciergeComingSoon: "The concierge is coming soon.",
     conciergeUnavailable:
       "Concierge is unavailable right now. Book directly from the fleet.",
     loginTitle: "Enter the Kaenz platform",
@@ -536,8 +536,8 @@ export const copy = {
       "Solicitud enviada. Te contactamos para verificar licencia y yate.",
     conciergeHello:
       "Soy el concierge de Kaenz. Dime Commute, Tour u Ocasión especial — origen, destino, pasajeros, duración y fecha. Te propongo un yate en el mundo.",
-    conciergeMissingKey:
-      "Falta XAI_API_KEY en el servidor. Añádela para activar Grok.",
+    conciergeMissingKey: "El concierge estará disponible pronto.",
+    conciergeComingSoon: "El concierge estará disponible pronto.",
     conciergeUnavailable:
       "El concierge no está disponible ahora. Reserva directo en la flota.",
     loginTitle: "Entra a la plataforma Kaenz",
@@ -832,8 +832,8 @@ export const copy = {
       "Candidature reçue. Nous vous contactons pour vérifier licence et yacht.",
     conciergeHello:
       "Je suis le concierge Kaenz. Dites-moi trajet, croisière ou occasion spéciale — origine, destination, passagers, durée et date. Je vous propose un yacht dans le monde.",
-    conciergeMissingKey:
-      "XAI_API_KEY manquante sur le serveur. Ajoutez-la pour activer Grok.",
+    conciergeMissingKey: "Le concierge arrive bientôt.",
+    conciergeComingSoon: "Le concierge arrive bientôt.",
     conciergeUnavailable:
       "Le concierge n’est pas disponible pour le moment. Réservez directement dans la flotte.",
     loginTitle: "Entrer dans la plateforme Kaenz",
@@ -1128,8 +1128,8 @@ export const copy = {
       "Candidatura ricevuta. Ti contatteremo per verificare licenza e yacht.",
     conciergeHello:
       "Sono il concierge Kaenz. Dimmi tragitto, tour o occasione speciale — origine, destinazione, passeggeri, durata e data. Ti propongo uno yacht nel mondo.",
-    conciergeMissingKey:
-      "Manca XAI_API_KEY sul server. Aggiungila per attivare Grok.",
+    conciergeMissingKey: "Il concierge arriverà presto.",
+    conciergeComingSoon: "Il concierge arriverà presto.",
     conciergeUnavailable:
       "Il concierge non è disponibile ora. Prenota direttamente dalla flotta.",
     loginTitle: "Entra nella piattaforma Kaenz",
@@ -1423,8 +1423,8 @@ export const copy = {
       "Candidatura recebida. Vamos contactá-lo para verificar licença e iate.",
     conciergeHello:
       "Sou o concierge Kaenz. Diga Trajeto, Passeio ou Ocasião especial — origem, destino, passageiros, duração e data. Eu combino um iate no mundo.",
-    conciergeMissingKey:
-      "Falta XAI_API_KEY no servidor. Adicione-a para ativar o Grok.",
+    conciergeMissingKey: "O concierge estará disponível em breve.",
+    conciergeComingSoon: "O concierge estará disponível em breve.",
     conciergeUnavailable:
       "O concierge está indisponível agora. Reserve direto pela frota.",
     loginTitle: "Entre na plataforma Kaenz",

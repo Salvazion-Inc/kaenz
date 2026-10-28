@@ -432,6 +432,7 @@ export const appCopy = {
       yourDrafts: "Your drafts",
       resumeDraft: "Resume",
       deleteDraft: "Delete",
+      confirmDeleteDraft: "Delete this draft? This cannot be undone.",
       missingDocs: "Add these documents before publishing:",
     },
     payouts: {
@@ -884,6 +885,7 @@ export const appCopy = {
       yourDrafts: "Tus borradores",
       resumeDraft: "Continuar",
       deleteDraft: "Eliminar",
+      confirmDeleteDraft: "¿Eliminar este borrador? No se puede deshacer.",
       missingDocs: "Faltan estos documentos para publicar:",
     },
     payouts: {
@@ -1336,6 +1338,7 @@ export const appCopy = {
       yourDrafts: "Vos brouillons",
       resumeDraft: "Reprendre",
       deleteDraft: "Supprimer",
+      confirmDeleteDraft: "Supprimer ce brouillon ? Cette action est définitive.",
       missingDocs: "Ajoutez ces documents avant de publier :",
     },
     payouts: {
@@ -1788,6 +1791,7 @@ export const appCopy = {
       yourDrafts: "Le tue bozze",
       resumeDraft: "Riprendi",
       deleteDraft: "Elimina",
+      confirmDeleteDraft: "Eliminare questa bozza? L'azione è definitiva.",
       missingDocs: "Aggiungi questi documenti prima di pubblicare:",
     },
     payouts: {
@@ -2240,6 +2244,7 @@ export const appCopy = {
       yourDrafts: "Seus rascunhos",
       resumeDraft: "Continuar",
       deleteDraft: "Excluir",
+      confirmDeleteDraft: "Excluir este rascunho? Esta ação não pode ser desfeita.",
       missingDocs: "Adicione estes documentos antes de publicar:",
     },
     payouts: {

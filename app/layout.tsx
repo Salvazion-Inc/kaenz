@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { cookies } from "next/headers";
 import { Outfit } from "next/font/google";
+import { ConciergeFlag } from "@/components/ConciergeFlag";
 import { SiteJsonLd } from "@/components/seo/JsonLd";
+import { conciergeEnabled } from "@/lib/concierge";
 import { LocaleProvider } from "@/lib/locale-context";
 import { LocationProvider } from "@/lib/location";
 import { LOCALE_COOKIE, parseLocale } from "@/lib/locale";
@@ -117,7 +119,9 @@ export default async function RootLayout({
       <body className={`${outfit.className} antialiased`}>
         <SiteJsonLd />
         <LocaleProvider initialLocale={locale}>
-          <LocationProvider>{children}</LocationProvider>
+          <ConciergeFlag enabled={conciergeEnabled()}>
+            <LocationProvider>{children}</LocationProvider>
+          </ConciergeFlag>
         </LocaleProvider>
         <Analytics />
       </body>
