@@ -58,14 +58,9 @@ export function LocaleProvider({
       .find((part) => part.startsWith(`${LOCALE_COOKIE}=`));
     const fromCookie = raw?.slice(LOCALE_COOKIE.length + 1);
     if (isLocale(fromCookie)) {
-      if (fromCookie === locale) {
-        persist(locale);
-      } else {
-        // The static home is rendered in English. Keep the saved cookie for
-        // other routes and leave this document as rendered, so it does not flash.
-        document.documentElement.lang = localeMeta[locale].htmlLang;
-        document.documentElement.dataset.locale = locale;
-      }
+      // First paint matches the static HTML. Apply a saved locale only after hydration.
+      if (fromCookie !== locale) setLocaleState(fromCookie);
+      persist(fromCookie);
       return;
     }
     try {
