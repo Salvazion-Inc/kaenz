@@ -14,6 +14,10 @@ const longCache = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    // Unmatched URLs use app/global-not-found.tsx instead of the default 404 shell.
+    globalNotFound: true,
+  },
   // Lighthouse is not a streaming bot. Put metadata in <head> for every agent.
   htmlLimitedBots: /.*/,
   // A lockfile above this repo was being chosen as the tracing root.
