@@ -4,9 +4,13 @@ import { aiJson, aiTxt, robotsTxt } from "../lib/discoverability";
 
 test("kaenz robots opens public pages and keeps private paths closed", () => {
   const body = robotsTxt();
+  const agents = body.match(/^User-agent: /gm) || [];
+  const commented =
+    body.match(/^# Content-Signal: search=yes, ai-input=yes, ai-train=yes$/gm) || [];
+  assert.equal(commented.length, agents.length);
+  assert.equal(body.split("\n").some((line) => line.startsWith("Content-Signal:")), false);
   assert.match(body, /^User-agent: \*$/m);
   assert.match(body, /^Allow: \/$/m);
-  assert.equal(body.includes("Content-Signal:"), false);
   assert.equal(body.includes("\nDisallow: /\n"), false);
   assert.match(body, /^Disallow: \/api\/$/m);
   assert.match(body, /^Disallow: \/app\/$/m);

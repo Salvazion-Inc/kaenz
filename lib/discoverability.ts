@@ -2,9 +2,9 @@
  * Files crawlers and answer engines actually fetch.
  * Public pages are open for search, AI answers, and training.
  * The signed-in app and API stay closed.
- * robots.txt stays a standard crawl file. Content-Signal lives in ai.txt,
- * not here: Lighthouse rejects unknown robots directives. No edge header
- * in this app injects Content-Signal into /robots.txt.
+ * Content-Signal is kept in robots.txt as comments (`# Content-Signal: ...`).
+ * Lighthouse rejects the bare directive, and a leading "# " leaves the policy
+ * in the file as documentation.
  */
 
 export const SITE = "https://kaenz.com";
@@ -67,12 +67,29 @@ export const DISCOVERY_HEADERS: { key: string; value: string }[] = [
   },
 ];
 
+const POLICY = `# Content Signals
+# search: index this site and show links and short excerpts.
+# ai-input: use public pages as input when answering (retrieval and grounding).
+# ai-train: use public pages to train or fine-tune models.
+# Private paths stay disallowed for every agent.`;
+
+function group(agent: string): string {
+  return [
+    `User-agent: ${agent}`,
+    `# Content-Signal: ${CONTENT_SIGNAL}`,
+    "Allow: /",
+    ...PRIVATE_PATHS.map((path) => `Disallow: ${path}`),
+  ].join("\n");
+}
+
 export function robotsTxt(): string {
-  return `User-agent: *
-Allow: /
-${PRIVATE_PATHS.map((path) => `Disallow: ${path}`).join("\n")}
+  const groups = [...NAMED_AGENTS, "*"].map((agent) => group(agent));
+  return `${POLICY}
+
+${groups.join("\n\n")}
 
 Sitemap: ${SITE}/sitemap.xml
+Host: ${SITE}
 `;
 }
 
