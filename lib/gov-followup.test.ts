@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { GET as getCallback } from "../app/auth/callback/route.ts";
+import { GET as getCallback } from "../app/(site)/auth/callback/route.ts";
 import { POST as postForgot } from "../app/api/auth/forgot-password/route.ts";
 import { POST as postJoin } from "../app/api/join/route.ts";
 import { POST as postReset } from "../app/api/auth/reset-password/route.ts";
@@ -150,7 +150,7 @@ test("a filled honeypot is ignored and the same email or IP waits 60s", async ()
 
 test("callback keeps a session or sends a verified user to sign in", async () => {
   const restore = withoutSupabase();
-  const source = readFileSync(new URL("../app/auth/callback/route.ts", import.meta.url), "utf8");
+  const source = readFileSync(new URL("../app/(site)/auth/callback/route.ts", import.meta.url), "utf8");
   assert.match(source, /verifyOtp/);
   assert.match(source, /exchangeCodeForSession/);
   assert.match(source, /\/login\?verified=1/);
@@ -262,7 +262,7 @@ test("check-email shows only the signed signup cookie", async () => {
   assert.equal(await readCheckEmail(token), "new@kaenz.com");
   assert.equal(await readCheckEmail(`${token}tampered`), "");
   assert.equal(await readCheckEmail("not-signed"), "");
-  const page = readFileSync(new URL("../app/check-email/page.tsx", import.meta.url), "utf8");
+  const page = readFileSync(new URL("../app/(site)/check-email/page.tsx", import.meta.url), "utf8");
   assert.match(page, /Suspense/);
   assert.match(page, /fallback=/);
   assert.match(page, /CHECK_EMAIL_COOKIE/);
@@ -401,7 +401,7 @@ test("password reset does not reveal whether the account exists", async () => {
   assert.equal(EMAIL_VERIFIED_SIGN_IN, "Email verified — please sign in");
   assert.equal(form.includes('router.replace("/app")'), false);
   assert.match(resetForm, /router\.replace\("\/app"\)/);
-  const login = readFileSync(new URL("../app/login/page.tsx", import.meta.url), "utf8");
+  const login = readFileSync(new URL("../app/(site)/login/page.tsx", import.meta.url), "utf8");
   assert.match(login, /verificationLinkExpired/);
   assert.match(login, /\/check-email\?expired=1/);
 

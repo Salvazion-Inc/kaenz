@@ -2,6 +2,12 @@
   "name": "kaenz",
   "version": "1.0.0",
   "private": true,
+  "browserslist": [
+    "chrome >= 111",
+    "edge >= 111",
+    "firefox >= 111",
+    "safari >= 16.4"
+  ],
   "description": "Kaenz — end-to-end yacht platform for Commute, Tour, and Special Occasion trips worldwide.",
   "scripts": {
     "dev": "next dev --turbopack",

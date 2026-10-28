@@ -58,6 +58,28 @@ function AppTripBanner({
   );
 }
 
+function escapeAttr(value: string) {
+  return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+}
+
+function focusableMarker(marker: import("leaflet").Marker, label: string) {
+  const arm = () => {
+    const el = marker.getElement();
+    if (!el) return;
+    el.setAttribute("role", "button");
+    el.tabIndex = 0;
+    el.setAttribute("aria-label", label);
+    el.setAttribute("title", label);
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      marker.fire("click");
+    };
+    el.addEventListener("keydown", onKey);
+  };
+  marker.on("add", arm);
+}
+
 function tooltipFor(place: Place, locale: Locale) {
   const c = t(locale);
   const kind =
@@ -300,10 +322,16 @@ export function WorldMap({
           const icon = L!.divIcon({
             className: "kaenz-cluster",
             html: String(point.count),
-            iconSize: [size, size],
-            iconAnchor: [size / 2, size / 2],
+            iconSize: [Math.max(size, 28), Math.max(size, 28)],
+            iconAnchor: [Math.max(size, 28) / 2, Math.max(size, 28) / 2],
           });
-          const marker = L!.marker([point.lat, point.lng], { icon });
+          const marker = L!.marker([point.lat, point.lng], {
+            icon,
+            keyboard: true,
+            alt: point.label,
+            title: point.label,
+          });
+          focusableMarker(marker, point.label);
           marker.bindTooltip(point.label, {
             direction: "top",
             offset: [0, -10],
@@ -323,19 +351,27 @@ export function WorldMap({
           continue;
         }
         const place = point.place;
+        const label = tooltipFor(place, localeRef.current);
+        const pinClass =
+          place.kind === "port"
+            ? "kaenz-pin-port"
+            : place.featured
+              ? "kaenz-pin-place"
+              : "kaenz-pin-marina";
         const pin = L!.divIcon({
-          className: `kaenz-pin ${
-            place.kind === "port"
-              ? "kaenz-pin-port"
-              : place.featured
-                ? "kaenz-pin-place"
-                : "kaenz-pin-marina"
-          }`,
-          iconSize: [14, 14],
-          iconAnchor: [7, 7],
+          className: "kaenz-pin-hit",
+          html: `<span class="kaenz-pin-target" role="button" tabindex="0" aria-label="${escapeAttr(label)}" title="${escapeAttr(label)}"><span class="kaenz-pin ${pinClass}"></span></span>`,
+          iconSize: [28, 28],
+          iconAnchor: [14, 14],
         });
-        const marker = L!.marker([place.lat, place.lng], { icon: pin });
-        marker.bindTooltip(tooltipFor(place, localeRef.current), {
+        const marker = L!.marker([place.lat, place.lng], {
+          icon: pin,
+          keyboard: true,
+          alt: label,
+          title: label,
+        });
+        focusableMarker(marker, label);
+        marker.bindTooltip(label, {
           direction: "top",
           offset: [0, -8],
         });
@@ -438,14 +474,22 @@ export function WorldMap({
     if (!L || !map || !located) return;
 
     const pin = L.divIcon({
-      className: "kaenz-pin kaenz-pin-you",
-      iconSize: [16, 16],
-      iconAnchor: [8, 8],
+      className: "kaenz-pin-hit",
+      html: `<span class="kaenz-pin-target" role="button" tabindex="0" aria-label="${escapeAttr(here.label)}" title="${escapeAttr(here.label)}"><span class="kaenz-pin kaenz-pin-you"></span></span>`,
+      iconSize: [28, 28],
+      iconAnchor: [14, 14],
     });
     if (youRef.current) {
       youRef.current.setLatLng([here.lat, here.lng]);
     } else {
-      const marker = L.marker([here.lat, here.lng], { icon: pin, zIndexOffset: 800 });
+      const marker = L.marker([here.lat, here.lng], {
+        icon: pin,
+        zIndexOffset: 800,
+        keyboard: true,
+        alt: here.label,
+        title: here.label,
+      });
+      focusableMarker(marker, here.label);
       marker.bindTooltip(here.label, { direction: "top", offset: [0, -8] });
       marker.addTo(map);
       youRef.current = marker;

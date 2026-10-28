@@ -172,7 +172,7 @@ test("fleet gate and booking contact follow the server session", async () => {
   assert.equal(fleetAccess(user, false), "unverified");
   assert.equal(fleetAccess(user, true), "verified");
 
-  const page = readFileSync(new URL("../app/fleet/[id]/page.tsx", import.meta.url), "utf8");
+  const page = readFileSync(new URL("../app/(site)/fleet/[id]/page.tsx", import.meta.url), "utf8");
   const gate = readFileSync(new URL("../components/pages/BookGate.tsx", import.meta.url), "utf8");
   assert.match(page, /resolveRequestSession/);
   assert.match(page, /loadBookingContact/);

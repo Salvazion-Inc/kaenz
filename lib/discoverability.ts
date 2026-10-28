@@ -2,8 +2,9 @@
  * Files crawlers and answer engines actually fetch.
  * Public pages are open for search, AI answers, and training.
  * The signed-in app and API stay closed.
- * A named User-agent does not inherit rules from User-agent: *,
- * so every group repeats Allow, Disallow, and Content-Signal.
+ * Content-Signal is kept in robots.txt as comments (`# Content-Signal: ...`).
+ * Lighthouse rejects the bare directive, and a leading "# " leaves the policy
+ * in the file as documentation.
  */
 
 export const SITE = "https://kaenz.com";
@@ -75,7 +76,7 @@ const POLICY = `# Content Signals
 function group(agent: string): string {
   return [
     `User-agent: ${agent}`,
-    `Content-Signal: ${CONTENT_SIGNAL}`,
+    `# Content-Signal: ${CONTENT_SIGNAL}`,
     "Allow: /",
     ...PRIVATE_PATHS.map((path) => `Disallow: ${path}`),
   ].join("\n");
