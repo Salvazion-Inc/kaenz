@@ -1,5 +1,6 @@
-import { HomeScreen } from "@/components/HomeScreen";
+import { HomePage } from "@/components/HomePage";
 import { HomeJsonLd } from "@/components/seo/JsonLd";
+import { DEFAULT_LOCALE } from "@/lib/locale";
 
 export const revalidate = 86400;
 
@@ -7,7 +8,7 @@ export default function Page() {
   return (
     <>
       <HomeJsonLd />
-      <HomeScreen />
+      <HomePage locale={DEFAULT_LOCALE} />
     </>
   );
 }

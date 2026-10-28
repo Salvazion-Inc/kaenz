@@ -9,7 +9,6 @@ import {
   useState,
 } from "react";
 import { defaultHere, haversineKm, nearestPlace } from "./geo";
-import { places } from "./places";
 
 export type GpsPoint = { lat: number; lng: number; label: string };
 
@@ -46,6 +45,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   const [denied, setDenied] = useState(false);
 
   const apply = useCallback((lat: number, lng: number) => {
+    void import("./places").then(({ places }) => {
     const near = nearestPlace({ lat, lng }, places);
     const label = near ? near.city : "Near you";
     const next = { lat, lng, label };
@@ -77,6 +77,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
       .catch(() => {
         /* nearest marina city already set */
       });
+    });
   }, []);
 
   const locate = useCallback(() => {

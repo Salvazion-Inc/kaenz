@@ -11,8 +11,11 @@ import "./globals.css";
 
 const outfit = Outfit({
   subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "700", "800"],
   display: "swap",
+  preload: true,
+  adjustFontFallback: true,
+  fallback: ["Arial", "sans-serif"],
 });
 
 export const viewport = {

@@ -11,7 +11,7 @@
   "description": "Kaenz — end-to-end yacht platform for Commute, Tour, and Special Occasion trips worldwide.",
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "next build && node scripts/defer-home-scripts.mjs",
     "test": "node --experimental-strip-types --experimental-detect-module --test lib/salvazion-key.test.ts",
     "start": "next start",
     "test": "tsx --test lib/listing-files.test.ts lib/fare-allocation.test.ts lib/supabase-client.test.ts lib/account-verification.test.ts lib/session-logout.test.ts lib/active-trip.test.ts lib/gov-twin.test.ts lib/gov-followup.test.ts lib/concierge.test.ts",

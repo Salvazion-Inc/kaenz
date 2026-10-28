@@ -31,6 +31,17 @@ textarea {
   color: #050a30;
 }
 
+.hero-media {
+  background-color: #050a30;
+  background-position: center;
+  background-size: cover;
+}
+
+.below-fold {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
 .hero-title {
   letter-spacing: -0.03em;
   text-shadow: 0 8px 40px rgba(5, 10, 48, 0.45);

@@ -4,9 +4,8 @@ import { Footer } from "./Footer";
 import { HtmlLang } from "./HtmlLang";
 import { Logo } from "./Logo";
 import { Nav } from "./Nav";
-import { AppPhonePreview } from "./AppPhonePreview";
+import { BelowFoldMedia } from "./BelowFoldMedia";
 import { HeroVideo } from "./HeroVideo";
-import { LazyWorldMap } from "./LazyWorldMap";
 import { t } from "@/lib/copy";
 import { pathFor, type Locale } from "@/lib/locale";
 import { yachts } from "@/lib/yachts";
@@ -25,7 +24,7 @@ export function HomePage({ locale }: { locale: Locale }) {
     <div className="bg-navy text-foam">
       <HtmlLang locale={locale} />
       <Nav locale={locale} />
-      <section className="relative min-h-screen overflow-hidden">
+      <section className="hero-media relative min-h-screen overflow-hidden">
         <HeroVideo />
         <div className="hero-veil absolute inset-0" />
         <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5 pb-16 pt-28 text-center">
@@ -58,6 +57,7 @@ export function HomePage({ locale }: { locale: Locale }) {
         </div>
       </section>
 
+      <div className="below-fold">
       <section className="mx-auto max-w-6xl px-5 py-24">
         <p className="kaenz-kicker">{c.solveEyebrow}</p>
         <h2 className="mt-3 max-w-3xl text-3xl font-bold tracking-tight md:text-5xl">
@@ -78,6 +78,8 @@ export function HomePage({ locale }: { locale: Locale }) {
           src="/site/yacht-dusk.jpg"
           alt=""
           fill
+          loading="lazy"
+          sizes="100vw"
           className="object-cover opacity-30"
         />
         <div className="relative mx-auto max-w-6xl px-5 py-24">
@@ -107,12 +109,7 @@ export function HomePage({ locale }: { locale: Locale }) {
         >
           {c.marinasCta}
         </Link>
-        <div className="mt-8 grid items-start gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-          <div className="kaenz-card overflow-hidden p-2">
-            <LazyWorldMap locale={locale} />
-          </div>
-          <AppPhonePreview locale={locale} />
-        </div>
+        <BelowFoldMedia locale={locale} />
       </section>
 
       <section className="mx-auto max-w-6xl px-5 py-24">
@@ -163,6 +160,8 @@ export function HomePage({ locale }: { locale: Locale }) {
           src="/site/crew-lifestyle.jpg"
           alt=""
           fill
+          loading="lazy"
+          sizes="100vw"
           className="object-cover opacity-25"
         />
         <div className="relative mx-auto max-w-3xl px-5 py-28 text-center">
@@ -210,6 +209,8 @@ export function HomePage({ locale }: { locale: Locale }) {
           src="/site/captain-helm.jpg"
           alt=""
           fill
+          loading="lazy"
+          sizes="100vw"
           className="object-cover opacity-25"
         />
         <div className="relative mx-auto max-w-3xl px-5 py-28 text-center">
@@ -222,6 +223,7 @@ export function HomePage({ locale }: { locale: Locale }) {
           </Link>
         </div>
       </section>
+      </div>
 
       <Footer locale={locale} />
     </div>
