@@ -25,6 +25,19 @@ export function HomePage({ locale }: { locale: Locale }) {
       <HtmlLang locale={locale} />
       <Nav locale={locale} />
       <section className="hero-media relative min-h-screen overflow-hidden">
+        <picture>
+          <source srcSet="/hero-poster.avif" type="image/avif" />
+          <source srcSet="/hero-poster.webp" type="image/webp" />
+          {/* Public AVIF/WebP poster, not the image optimizer. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/hero-poster.jpg"
+            alt=""
+            fetchPriority="high"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        </picture>
         <HeroVideo />
         <div className="hero-veil absolute inset-0" />
         <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5 pb-16 pt-28 text-center">
@@ -32,7 +45,6 @@ export function HomePage({ locale }: { locale: Locale }) {
             size={224}
             sizes="(min-width:768px) 224px, 176px"
             className="h-44 w-44 sm:h-52 sm:w-52 md:h-56 md:w-56"
-            priority
           />
           <h1
             id="hero-heading"

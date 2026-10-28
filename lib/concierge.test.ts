@@ -51,7 +51,7 @@ test("concierge stays hidden without a key and returns when one is set", async (
     assert.ok(at(locale).addYacht.confirmDeleteDraft.length > 8);
   }
 
-  const page = readFileSync(new URL("../app/concierge/page.tsx", import.meta.url), "utf8");
+  const page = readFileSync(new URL("../app/(site)/concierge/page.tsx", import.meta.url), "utf8");
   assert.match(page, /conciergeEnabled\(\)/);
   assert.match(page, /redirect\("\/"\)/);
   const nav = readFileSync(new URL("../components/Nav.tsx", import.meta.url), "utf8");

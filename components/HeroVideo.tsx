@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 
 /**
- * The poster is the first paint. The video element is added only after the
- * window load event and an idle callback, so it cannot cover the poster and
- * move LCP onto the heading.
+ * The poster is a real image in the server HTML. This island only attaches
+ * the video after load, once the browser is idle.
  */
 export function HeroVideo() {
   const [play, setPlay] = useState(false);
@@ -14,26 +13,13 @@ export function HeroVideo() {
     let cancelled = false;
     let idleId = 0;
     let timer = 0;
-    const paintPoster = () => {
-      const hero = document.querySelector<HTMLElement>(".hero-media");
-      if (!hero) return;
-      hero.style.backgroundImage =
-        'image-set(url("/hero-poster.avif") type("image/avif"), url("/hero-poster.jpg") type("image/jpeg"))';
-    };
     const attach = () => {
-      if (cancelled) return;
-      paintPoster();
-      setPlay(true);
+      if (!cancelled) setPlay(true);
     };
     const afterLoad = () => {
-      // requestIdleCallback fires immediately once hydration is done, which is
-      // still inside the LCP window. Wait until that window has closed, then
-      // attach the file while the browser is idle.
-      timer = window.setTimeout(() => {
-        const idle = window.requestIdleCallback;
-        if (typeof idle === "function") idleId = idle(attach, { timeout: 2000 });
-        else attach();
-      }, 12000);
+      const idle = window.requestIdleCallback;
+      if (typeof idle === "function") idleId = idle(attach, { timeout: 2000 });
+      else timer = window.setTimeout(attach, 1);
     };
     if (document.readyState === "complete") afterLoad();
     else window.addEventListener("load", afterLoad, { once: true });
@@ -45,23 +31,21 @@ export function HeroVideo() {
     };
   }, []);
 
+  if (!play) return null;
+
   return (
-    <>
-      {play ? (
-        <video
-          className="absolute inset-0 h-full w-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="none"
-        >
-          <source src="/hero-720.webm" type="video/webm" media="(max-width: 767px)" />
-          <source src="/hero-720.mp4" type="video/mp4" media="(max-width: 767px)" />
-          <source src="/hero.webm" type="video/webm" />
-          <source src="/hero.mp4" type="video/mp4" />
-        </video>
-      ) : null}
-    </>
+    <video
+      className="absolute inset-0 h-full w-full object-cover"
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="none"
+    >
+      <source src="/hero-720.webm" type="video/webm" media="(max-width: 767px)" />
+      <source src="/hero-720.mp4" type="video/mp4" media="(max-width: 767px)" />
+      <source src="/hero.webm" type="video/webm" />
+      <source src="/hero.mp4" type="video/mp4" />
+    </video>
   );
 }

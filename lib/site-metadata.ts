@@ -1,29 +1,11 @@
 import type { Metadata } from "next";
-import { Analytics } from "@vercel/analytics/next";
-import { Outfit } from "next/font/google";
-import { ConciergeFlag } from "@/components/ConciergeFlag";
-import { SiteJsonLd } from "@/components/seo/JsonLd";
-import { conciergeEnabled } from "@/lib/concierge";
-import { LocaleProvider } from "@/lib/locale-context";
-import { LocationProvider } from "@/lib/location";
-import { DEFAULT_LOCALE } from "@/lib/locale";
-import "./globals.css";
 
-const outfit = Outfit({
-  subsets: ["latin", "latin-ext"],
-  weight: ["400", "700", "800"],
-  display: "swap",
-  preload: true,
-  adjustFontFallback: true,
-  fallback: ["Arial", "sans-serif"],
-});
-
-export const viewport = {
+export const siteViewport = {
   themeColor: "#00a1d6",
   viewportFit: "cover" as const,
 };
 
-export const metadata: Metadata = {
+export const siteMetadata: Metadata = {
   metadataBase: new URL("https://kaenz.com"),
   title: "Kaenz: Commute, Tour & Special Occasion by yacht",
   description:
@@ -110,21 +92,3 @@ export const metadata: Metadata = {
     "tdm-reservation": "0",
   },
 };
-
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <html lang={DEFAULT_LOCALE}>
-      <body className={`${outfit.className} antialiased`}>
-        <SiteJsonLd />
-        <LocaleProvider initialLocale={DEFAULT_LOCALE}>
-          <ConciergeFlag enabled={conciergeEnabled()}>
-            <LocationProvider>{children}</LocationProvider>
-          </ConciergeFlag>
-        </LocaleProvider>
-        <Analytics />
-      </body>
-    </html>
-  );
-}

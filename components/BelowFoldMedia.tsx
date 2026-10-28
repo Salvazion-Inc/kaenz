@@ -1,16 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState, type ComponentType } from "react";
+import dynamic from "next/dynamic";
+import { useEffect, useRef, useState } from "react";
 import type { Locale } from "@/lib/locale";
 
-type MapProps = { locale: Locale; variant?: "site" };
-type PhoneProps = { locale: Locale };
+const WorldMap = dynamic(() => import("./WorldMap").then((mod) => mod.WorldMap), {
+  ssr: false,
+});
+
+const AppPhonePreview = dynamic(
+  () => import("./AppPhonePreview").then((mod) => mod.AppPhonePreview),
+  { ssr: false },
+);
 
 /** Map and phone preview stay out of the initial JS until the section is near the viewport and the browser is idle. */
 export function BelowFoldMedia({ locale }: { locale: Locale }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [MapView, setMapView] = useState<ComponentType<MapProps> | null>(null);
-  const [Phone, setPhone] = useState<ComponentType<PhoneProps> | null>(null);
+  const [show, setShow] = useState(false);
 
   useEffect(() => {
     const node = ref.current;
@@ -20,13 +26,7 @@ export function BelowFoldMedia({ locale }: { locale: Locale }) {
     let timer = 0;
 
     const load = () => {
-      if (cancelled) return;
-      void import("./WorldMap").then((mod) => {
-        if (!cancelled) setMapView(() => mod.WorldMap);
-      });
-      void import("./AppPhonePreview").then((mod) => {
-        if (!cancelled) setPhone(() => mod.AppPhonePreview);
-      });
+      if (!cancelled) setShow(true);
     };
 
     const whenIdle = () => {
@@ -62,9 +62,9 @@ export function BelowFoldMedia({ locale }: { locale: Locale }) {
   return (
     <div ref={ref} className="mt-8 grid items-start gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
       <div className="kaenz-card min-h-[420px] overflow-hidden p-2 md:min-h-[520px]">
-        {MapView ? <MapView locale={locale} variant="site" /> : null}
+        {show ? <WorldMap locale={locale} variant="site" /> : null}
       </div>
-      <div className="min-h-[36rem]">{Phone ? <Phone locale={locale} /> : null}</div>
+      <div className="min-h-[36rem]">{show ? <AppPhonePreview locale={locale} /> : null}</div>
     </div>
   );
 }
