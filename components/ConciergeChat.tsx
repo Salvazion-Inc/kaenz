@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useConciergeEnabled } from "@/components/ConciergeFlag";
 import { t } from "@/lib/copy";
 import type { Locale } from "@/lib/locale";
 
@@ -8,6 +9,7 @@ type Msg = { role: "user" | "assistant"; content: string };
 
 export function ConciergeChat({ locale }: { locale: Locale }) {
   const c = t(locale);
+  const enabled = useConciergeEnabled();
   const [messages, setMessages] = useState<Msg[]>([
     {
       role: "assistant",
@@ -34,8 +36,9 @@ export function ConciergeChat({ locale }: { locale: Locale }) {
         body: JSON.stringify({ messages: next, locale }),
       });
       if (!res.ok || !res.body) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Chat failed");
+        const err = (await res.json().catch(() => ({}))) as { error?: string };
+        if (err.error === "concierge_disabled") throw new Error("concierge_disabled");
+        throw new Error("chat");
       }
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -53,8 +56,8 @@ export function ConciergeChat({ locale }: { locale: Locale }) {
       }
     } catch (err) {
       const fallback =
-        err instanceof Error && err.message.includes("XAI")
-          ? c.conciergeMissingKey
+        err instanceof Error && err.message === "concierge_disabled"
+          ? c.conciergeComingSoon
           : c.conciergeUnavailable;
       setMessages((m) => {
         const copy = [...m];
@@ -66,6 +69,8 @@ export function ConciergeChat({ locale }: { locale: Locale }) {
       bottom.current?.scrollIntoView({ behavior: "smooth" });
     }
   }
+
+  if (!enabled) return null;
 
   return (
     <div className="flex h-[70vh] flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5">

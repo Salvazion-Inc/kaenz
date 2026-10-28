@@ -1,3 +1,4 @@
+import { conciergeEnabled } from "@/lib/concierge";
 import { localeMeta, parseLocale, type Locale } from "@/lib/locale";
 import { yachts } from "@/lib/yachts";
 
@@ -31,8 +32,8 @@ Help the guest pick a yacht, pickup marina, destination, duration, and guest cou
 
 export async function POST(req: Request) {
   const key = process.env.XAI_API_KEY;
-  if (!key) {
-    return Response.json({ error: "Missing XAI_API_KEY" }, { status: 500 });
+  if (!conciergeEnabled() || !key) {
+    return Response.json({ error: "concierge_disabled" }, { status: 503 });
   }
 
   const body = await req.json();

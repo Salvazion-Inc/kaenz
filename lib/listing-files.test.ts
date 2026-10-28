@@ -286,6 +286,7 @@ test("the listing form does not post files through the function or require a wal
   assert.match(yachts, /\/api\/yachts\/drafts/);
   assert.match(yachts, /resumeDraft/);
   assert.match(yachts, /deleteDraft/);
+  assert.match(yachts, /window\.confirm\(c\.addYacht\.confirmDeleteDraft\)/);
   const owner = "user-1";
   assert.equal(
     draftDeleteDecision({ createdBy: owner, status: "draft" }, owner),

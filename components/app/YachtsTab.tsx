@@ -72,6 +72,7 @@ export function YachtsTab({ locale }: { locale: Locale }) {
   }, []);
 
   async function removeDraft(id: string) {
+    if (!window.confirm(c.addYacht.confirmDeleteDraft)) return;
     const res = await fetch(`/api/yachts/drafts?id=${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
