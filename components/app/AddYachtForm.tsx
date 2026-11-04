@@ -12,6 +12,7 @@ import {
 import {
   CAPTAIN_LANG_FLAGS,
   CAPTAIN_LANGS,
+  isHin,
   YACHT_TRAITS,
   type CaptainLang,
   type YachtTrait,
@@ -154,29 +155,38 @@ export function AddYachtForm({
       captainPhoto ? "" : c.captainPhoto,
       photos.length ? "" : c.photos,
     ].filter(Boolean);
-    if (!ownerId || !captainId || !captainMmc || !captainPhoto || !photos.length) {
+    // HIN is optional; a value we cannot read is flagged before any upload so
+    // the owner never re-attaches photos just to hit a HIN error at the end.
+    const hinValue = inputValue(form, "hin");
+    if (hinValue && !isHin(hinValue)) {
       setStatus("err");
-      setMessage(`${c.missingDocs} ${missing.join(", ")}.`);
+      setMessage(c.needHin);
       return;
     }
     setStatus("sending");
     try {
-      const prepared: Array<{ slot: string; file: File }> = [
-        { slot: "owner_id", file: await compressListingImage(ownerId) },
-        {
+      // Missing files are fine: the server saves the listing as a draft.
+      const prepared: Array<{ slot: string; file: File }> = [];
+      if (ownerId) prepared.push({ slot: "owner_id", file: await compressListingImage(ownerId) });
+      if (captainId) {
+        prepared.push({
           slot: "captain_id",
           file: captainId.type.startsWith("image/")
             ? await compressListingImage(captainId)
             : captainId,
-        },
-        {
+        });
+      }
+      if (captainMmc) {
+        prepared.push({
           slot: "captain_mmc",
           file: captainMmc.type.startsWith("image/")
             ? await compressListingImage(captainMmc)
             : captainMmc,
-        },
-        { slot: "captain_photo", file: await compressListingImage(captainPhoto) },
-      ];
+        });
+      }
+      if (captainPhoto) {
+        prepared.push({ slot: "captain_photo", file: await compressListingImage(captainPhoto) });
+      }
       // One photo at a time: decoding several phone photos in parallel can
       // exhaust mobile memory and freeze the tab while "sending".
       for (const [index, file] of photos.entries()) {
@@ -188,13 +198,13 @@ export function AddYachtForm({
         type: file.type,
         size: file.size,
       }));
-      const checked = validateListingFileSet(descriptors);
+      const checked = validateListingFileSet(descriptors, { partial: true });
       if (!checked.ok) throw new Error(messageFor(checked.error));
 
       const signRes = await fetch("/api/yachts/uploads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ files: descriptors }),
+        body: JSON.stringify({ files: descriptors, partial: true }),
       });
       const signed = classifyListingResponse(signRes.status, await signRes.text());
       if (!signRes.ok || signed.error) throw new Error(messageFor(signed.error));
@@ -235,6 +245,16 @@ export function AddYachtForm({
       });
       const json = classifyListingResponse(res.status, await res.text());
       if (!res.ok || json.error) throw new Error(messageFor(json.error));
+      if (json.status === "draft") {
+        form.reset();
+        setTraits([]);
+        setLangs([]);
+        setPhotos([]);
+        setStatus("idle");
+        setMessage(missing.length ? `${c.savedDraft} ${c.missingDocs} ${missing.join(", ")}.` : c.savedDraft);
+        onDrafted?.();
+        return;
+      }
       onListed(json.yacht as Yacht);
       form.reset();
       setTraits([]);
@@ -382,9 +402,7 @@ export function AddYachtForm({
           <input
             className={field}
             name="hin"
-            required
-            minLength={12}
-            maxLength={24}
+            maxLength={40}
             placeholder={c.hinPlaceholder}
           />
         </label>

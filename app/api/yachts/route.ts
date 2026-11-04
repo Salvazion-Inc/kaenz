@@ -12,6 +12,7 @@ import {
   FILE_TOO_BIG_MESSAGE,
   isListingClientError,
   listingFileTooBig,
+  missingStoredFiles,
   parseStoredListingBody,
 } from "@/lib/listing-files";
 import {
@@ -115,31 +116,21 @@ async function postYachtDraft(
 async function postStoredListing(body: unknown, userId: string) {
   const parsed = parseStoredListingBody(body);
   if (!parsed.ok) return Response.json({ error: parsed.error }, { status: 400 });
-  const paths = assertListingPaths(userId, parsed.listingId, parsed.files);
+  const paths = assertListingPaths(userId, parsed.listingId, parsed.files, { partial: true });
   if (!paths.ok) return Response.json({ error: paths.error }, { status: 400 });
+  const missing = missingStoredFiles(parsed.files);
+  // Missing documents/photos or an unreadable HIN never block saving: the
+  // listing is stored as a draft and can be completed later.
+  const draft = missing.length > 0 || parsed.hinInvalid || !parsed.hin;
+  const check = (path: string, kind: "photo" | "doc", error: string) =>
+    path ? assertUploadedListingFile({ path, kind, error }) : Promise.resolve("");
   try {
     const [ownerIdUrl, captainIdUrl, captainMmcUrl, captainPhotoUrl, ...photos] =
       await Promise.all([
-        assertUploadedListingFile({
-          path: parsed.files.owner_id,
-          kind: "doc",
-          error: "owner_id",
-        }),
-        assertUploadedListingFile({
-          path: parsed.files.captain_id,
-          kind: "doc",
-          error: "captain_id",
-        }),
-        assertUploadedListingFile({
-          path: parsed.files.captain_mmc,
-          kind: "doc",
-          error: "mmc",
-        }),
-        assertUploadedListingFile({
-          path: parsed.files.captain_photo,
-          kind: "photo",
-          error: "captain_photo",
-        }),
+        check(parsed.files.owner_id, "doc", "owner_id"),
+        check(parsed.files.captain_id, "doc", "captain_id"),
+        check(parsed.files.captain_mmc, "doc", "mmc"),
+        check(parsed.files.captain_photo, "photo", "captain_photo"),
         ...parsed.files.yacht_photos.map((path) =>
           assertUploadedListingFile({ path, kind: "photo", error: "photos" }),
         ),
@@ -163,9 +154,18 @@ async function postStoredListing(body: unknown, userId: string) {
       captainLanguages: parsed.captainLanguages,
       captainRegion: parsed.captainRegion,
       captainWallet: parsed.captainWallet,
+      status: draft ? "draft" : "listed",
     });
     logFunnel("listing_submitted", "owner");
-    return Response.json({ yacht: listingToYacht(listing) });
+    if (draft) {
+      return Response.json({
+        yacht: { ...listingToYacht(listing), bookable: false },
+        status: "draft",
+        missing,
+        hin: parsed.hinInvalid ? "invalid" : parsed.hin ? "ok" : "empty",
+      });
+    }
+    return Response.json({ yacht: listingToYacht(listing), status: "listed" });
   } catch (err) {
     return listingErrorResponse(err);
   }
