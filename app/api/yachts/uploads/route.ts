@@ -14,8 +14,11 @@ export async function POST(req: Request) {
     return gate.seal(Response.json({ error: "supabase" }, { status: 503 }));
   }
 
-  const body = (await req.json().catch(() => null)) as { files?: unknown } | null;
-  const parsed = validateListingFileSet(body?.files);
+  const body = (await req.json().catch(() => null)) as
+    | { files?: unknown; partial?: unknown }
+    | null;
+  // partial: the owner may save a draft with only some (or none) of the files.
+  const parsed = validateListingFileSet(body?.files, { partial: body?.partial === true });
   if (!parsed.ok) {
     if (parsed.error === "file_too_big") {
       return gate.seal(

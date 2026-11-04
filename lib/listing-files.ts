@@ -1,4 +1,4 @@
-import { isHin, optionalWallet, parseLangs, parseTraits } from "./listings";
+import { optionalHin, optionalWallet, parseLangs, parseTraits } from "./listings";
 
 /** Per-file cap. Matches the Supabase bucket fileSizeLimit used for listings. */
 export const LISTING_MAX_BYTES = 8 * 1024 * 1024;
@@ -119,6 +119,7 @@ export function listingExt(name: string, type: string, allowPdf: boolean) {
 
 export function validateListingFileSet(
   files: unknown,
+  opts: { partial?: boolean } = {},
 ): { ok: true; files: PreparedListingFile[] } | { ok: false; error: string } {
   if (!Array.isArray(files) || files.length > 9) return { ok: false, error: "photos" };
   const prepared: PreparedListingFile[] = [];
@@ -140,12 +141,14 @@ export function validateListingFileSet(
     if (!ext) return { ok: false, error: spec.error };
     prepared.push({ slot, name, type, size, ext, ...spec });
   }
-  if (!seen.has("owner_id")) return { ok: false, error: "owner_id" };
-  if (!seen.has("captain_id")) return { ok: false, error: "captain_id" };
-  if (!seen.has("captain_mmc")) return { ok: false, error: "mmc" };
-  if (!seen.has("captain_photo")) return { ok: false, error: "captain_photo" };
+  if (!opts.partial) {
+    if (!seen.has("owner_id")) return { ok: false, error: "owner_id" };
+    if (!seen.has("captain_id")) return { ok: false, error: "captain_id" };
+    if (!seen.has("captain_mmc")) return { ok: false, error: "mmc" };
+    if (!seen.has("captain_photo")) return { ok: false, error: "captain_photo" };
+  }
   const yacht = [0, 1, 2, 3, 4].filter((index) => seen.has(`yacht_${index}`));
-  if (!yacht.length || yacht.some((index, order) => index !== order)) {
+  if ((!opts.partial && !yacht.length) || yacht.some((index, order) => index !== order)) {
     return { ok: false, error: "photos" };
   }
   const order = [
@@ -208,7 +211,7 @@ export function parseStoredListingBody(input: unknown) {
   if (!LISTING_ID.test(listingId)) return { ok: false as const, error: "fields" };
   const ownerName = String(body.owner_name || "").trim();
   const name = String(body.name || "").trim();
-  const hin = String(body.hin || "").trim();
+  const hinRaw = optionalHin(body.hin);
   const guests = Number(body.guests);
   const traits = parseTraits(body.traits);
   const homePort = String(body.home_port || "").trim();
@@ -221,7 +224,8 @@ export function parseStoredListingBody(input: unknown) {
   if (!ownerName || !name || !captainName || !homePort || !captainRegion) {
     return { ok: false as const, error: "fields" };
   }
-  if (!isHin(hin)) return { ok: false as const, error: "hin" };
+  // A bad HIN never blocks a draft: it is dropped and the listing stays draft.
+  const hin = hinRaw || "";
   if (!Number.isFinite(guests) || guests < 1 || guests > 50) {
     return { ok: false as const, error: "guests" };
   }
@@ -246,6 +250,7 @@ export function parseStoredListingBody(input: unknown) {
     ownerWallet,
     name,
     hin,
+    hinInvalid: hinRaw === null,
     guests,
     traits,
     homePort,
@@ -257,7 +262,12 @@ export function parseStoredListingBody(input: unknown) {
   };
 }
 
-export function assertListingPaths(userId: string, listingId: string, files: ListingStoredFiles) {
+export function assertListingPaths(
+  userId: string,
+  listingId: string,
+  files: ListingStoredFiles,
+  opts: { partial?: boolean } = {},
+) {
   const checks: Array<[string, string, boolean, string]> = [
     [files.owner_id, "owner-id", false, "owner_id"],
     [files.captain_id, "captain-id", true, "captain_id"],
@@ -265,11 +275,12 @@ export function assertListingPaths(userId: string, listingId: string, files: Lis
     [files.captain_photo, "captain-photo", false, "captain_photo"],
   ];
   for (const [path, base, allowPdf, error] of checks) {
+    if (opts.partial && !path) continue;
     if (!isOwnedListingPath(userId, listingId, path, base, allowPdf)) {
       return { ok: false as const, error };
     }
   }
-  if (files.yacht_photos.length < 1 || files.yacht_photos.length > 5) {
+  if ((!opts.partial && files.yacht_photos.length < 1) || files.yacht_photos.length > 5) {
     return { ok: false as const, error: "photos" };
   }
   for (let index = 0; index < files.yacht_photos.length; index += 1) {
@@ -375,10 +386,22 @@ export function classifyListingResponse(status: number, body: string) {
     return {
       error: "",
       yacht: json.yacht,
+      status: typeof json.status === "string" ? json.status : "",
       listingId: typeof json.listingId === "string" ? json.listingId : "",
       uploads: Array.isArray(json.uploads) ? json.uploads : [],
     };
   } catch {
     return { error: "http" };
   }
+}
+
+/** Slots still missing before a stored listing can be published. */
+export function missingStoredFiles(files: ListingStoredFiles) {
+  const missing: string[] = [];
+  if (!files.owner_id) missing.push("owner_id");
+  if (!files.captain_id) missing.push("captain_id");
+  if (!files.captain_mmc) missing.push("captain_mmc");
+  if (!files.captain_photo) missing.push("captain_photo");
+  if (!files.yacht_photos.length) missing.push("yacht_0");
+  return missing;
 }

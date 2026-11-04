@@ -323,3 +323,34 @@ test("listing uploads are sequential and time out instead of stalling", () => {
   assert.match(direct, /UPLOAD_TIMEOUT_MS/);
   assert.match(direct, /withTimeout\(createImageBitmap/);
 });
+
+test("HIN accepts ES/EU prefixes, spaces and hyphens and is optional (DEC-20261104)", async () => {
+  const { isHin, optionalHin } = await import("./listings");
+  for (const value of ["ES-B12345678", "es b12345678", "ES-ABC12345D404", "EU-ABC12345D404", "US-ABC12345D404", "ABC12345D404", "ES 1234/AB.56"]) {
+    assert.equal(isHin(value), true, value);
+  }
+  assert.equal(optionalHin(""), "");
+  assert.equal(optionalHin(" es-b1234 5678 "), "ESB12345678");
+  assert.equal(optionalHin("??"), null);
+  const parsed = parseStoredListingBody({
+    listingId: "11111111-2222-4333-8444-555555555555",
+    owner_name: "O", name: "Y", hin: "ÑÑ", guests: "6", traits: "fast",
+    home_port: "Barcelona", captain_name: "C", languages: "es", captain_region: "Barcelona",
+    files: {},
+  });
+  assert.equal(parsed.ok, true);
+  if (parsed.ok) assert.equal(parsed.hinInvalid, true);
+});
+
+test("partial uploads: photos only or nothing at all are valid for a draft", () => {
+  assert.equal(validateListingFileSet([], { partial: true }).ok, true);
+  assert.equal(validateListingFileSet([], {}).ok, false);
+  const photosOnly = validateListingFileSet(
+    [{ slot: "yacht_0", name: "a.jpg", type: "image/jpeg", size: 10 }],
+    { partial: true },
+  );
+  assert.equal(photosOnly.ok, true);
+  const empty = { owner_id: "", captain_id: "", captain_mmc: "", captain_photo: "", yacht_photos: [] };
+  assert.equal(assertListingPaths("u", "11111111-2222-4333-8444-555555555555", empty, { partial: true }).ok, true);
+  assert.equal(assertListingPaths("u", "11111111-2222-4333-8444-555555555555", empty).ok, false);
+});

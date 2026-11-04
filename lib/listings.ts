@@ -45,9 +45,9 @@ export function optionalWallet(value: unknown) {
   return isSolanaWallet(wallet) ? wallet : "";
 }
 
-/** Strips spaces and hyphens and upper-cases a HIN / CIN. */
+/** Strips spaces, hyphens, dots and slashes and upper-cases a HIN / CIN. */
 export function normalizeHin(value: string) {
-  return value.replace(/[\s-]/g, "").toUpperCase();
+  return String(value ?? "").replace(/[\s\-./_]/g, "").toUpperCase();
 }
 
 /**
@@ -58,7 +58,17 @@ export function normalizeHin(value: string) {
  */
 export function isHin(value: string) {
   const hin = normalizeHin(value);
-  return /^[A-Z0-9]{12,17}$/.test(hin);
+  // DEC-20261104: a country prefix (ES, EU, US…) plus any 6–24 alphanumeric
+  // identifier is accepted (US HIN, EU CIN, or the Spanish registration/tax id
+  // owners often use, e.g. "ES-B12345678"). Format is not enforced further.
+  return /^[A-Z0-9]{6,26}$/.test(hin);
+}
+
+/** "" when empty; the normalized HIN when valid; null when present but invalid. */
+export function optionalHin(value: unknown): string | null {
+  const hin = normalizeHin(String(value ?? ""));
+  if (!hin) return "";
+  return isHin(hin) ? hin : null;
 }
 
 export function parseTraits(value: unknown): YachtTrait[] {
