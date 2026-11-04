@@ -7,7 +7,7 @@ import {
   type PendingCookie,
 } from "@/lib/supabase-route";
 
-import { csrfOk, isRecoveryToken } from "@/lib/session-hash";
+import { csrfOk, isRecoverySession } from "@/lib/session-hash";
 
 export const runtime = "nodejs";
 
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     }
     const name = String(data.user.user_metadata?.full_name || "").trim() || email;
     const session = await createSessionToken({ id: data.user.id, email, name });
-    const next = isRecoveryToken(access_token) ? "/reset-password" : "/app";
+    const next = isRecoverySession(access_token, data.user.recovery_sent_at) ? "/reset-password" : "/app";
     const res = NextResponse.json({ ok: true, next });
     applyCookies(res, pending);
     setKaenzSessionCookie(res, session);

@@ -32,3 +32,16 @@ test("only amr recovery goes to reset-password; body.recovery is ignored", () =>
   assert.match(cb, /x-kaenz-csrf/);
   assert.match(cb, /history\.replaceState\(null, "", location\.pathname\);\s*fetch/);
 });
+
+test("Supabase recovery tokens (amr otp) open reset-password only with a fresh recovery_sent_at", async () => {
+  const { isRecoverySession } = await import("./session-hash.ts");
+  const now = Date.parse("2026-11-04T02:22:00Z");
+  const otp = jwt({ amr: [{ method: "otp", timestamp: 1 }] });
+  assert.equal(isRecoverySession(otp, "2026-11-04T02:21:30Z", now), true);
+  assert.equal(isRecoverySession(otp, "2026-11-04T00:00:00Z", now), false);
+  assert.equal(isRecoverySession(otp, null, now), false);
+  assert.equal(isRecoverySession(jwt({ amr: [{ method: "password" }] }), "2026-11-04T02:21:30Z", now), false);
+  assert.equal(isRecoverySession(jwt({ amr: [{ method: "recovery" }] }), null, now), true);
+  const api = fs.readFileSync(new URL("../app/api/auth/session-from-hash/route.ts", import.meta.url), "utf8");
+  assert.match(api, /isRecoverySession\(access_token, data\.user\.recovery_sent_at\)/);
+});
