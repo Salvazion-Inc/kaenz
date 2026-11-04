@@ -39,13 +39,12 @@ function hashSniffResponse() {
   var at = hash.get("access_token") || "";
   var rt = hash.get("refresh_token") || "";
   if (!expired && at && rt) {
-    var next = query.get("next") || "";
-    var recovery = hash.get("type") === "recovery" || next === "/reset-password";
+    history.replaceState(null, "", location.pathname);
     fetch("/api/auth/session-from-hash", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-kaenz-csrf": "1" },
       credentials: "same-origin",
-      body: JSON.stringify({ access_token: at, refresh_token: rt, recovery: recovery })
+      body: JSON.stringify({ access_token: at, refresh_token: rt })
     }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
       .then(function (x) { location.replace(x.ok && x.d && x.d.next ? x.d.next : "/check-email?invalid=1"); })
       .catch(function () { location.replace("/check-email?invalid=1"); });
