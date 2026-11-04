@@ -36,7 +36,22 @@ function hashSniffResponse() {
   var code = hash.get("error_code") || query.get("error_code") || "";
   var error = (hash.get("error") || query.get("error") || "").toLowerCase();
   var expired = Boolean(code) || error === "access_denied" || error === "otp_expired" || error.indexOf("expired") !== -1;
-  location.replace(expired ? "/check-email?expired=1" : "/login");
+  var at = hash.get("access_token") || "";
+  var rt = hash.get("refresh_token") || "";
+  if (!expired && at && rt) {
+    var next = query.get("next") || "";
+    var recovery = hash.get("type") === "recovery" || next === "/reset-password";
+    fetch("/api/auth/session-from-hash", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ access_token: at, refresh_token: rt, recovery: recovery })
+    }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (x) { location.replace(x.ok && x.d && x.d.next ? x.d.next : "/check-email?invalid=1"); })
+      .catch(function () { location.replace("/check-email?invalid=1"); });
+  } else {
+    location.replace(expired ? "/check-email?expired=1" : "/login");
+  }
 </script>`;
   return new Response(html, {
     headers: { "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": "noindex" },

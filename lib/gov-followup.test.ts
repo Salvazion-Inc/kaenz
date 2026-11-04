@@ -537,3 +537,15 @@ test("logout stays hidden without a session and biometric does not cover the for
   assert.equal(enroll.includes("fixed "), false);
   assert.match(shell, /<main[\s\S]*<BiometricEnrollPrompt/);
 });
+
+test("recovery link with hash tokens opens reset-password instead of /login", () => {
+  const cb = readFileSync(new URL("../app/(site)/auth/callback/route.ts", import.meta.url), "utf8");
+  assert.match(cb, /access_token/);
+  assert.match(cb, /\/api\/auth\/session-from-hash/);
+  const api = readFileSync(
+    new URL("../app/api/auth/session-from-hash/route.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(api, /setSession/);
+  assert.match(api, /\/reset-password/);
+});
