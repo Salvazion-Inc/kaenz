@@ -161,7 +161,7 @@ export function AddYachtForm({
     }
     setStatus("sending");
     try {
-      const prepared = [
+      const prepared: Array<{ slot: string; file: File }> = [
         { slot: "owner_id", file: await compressListingImage(ownerId) },
         {
           slot: "captain_id",
@@ -176,13 +176,12 @@ export function AddYachtForm({
             : captainMmc,
         },
         { slot: "captain_photo", file: await compressListingImage(captainPhoto) },
-        ...(await Promise.all(
-          photos.map(async (file, index) => ({
-            slot: `yacht_${index}`,
-            file: await compressListingImage(file),
-          })),
-        )),
       ];
+      // One photo at a time: decoding several phone photos in parallel can
+      // exhaust mobile memory and freeze the tab while "sending".
+      for (const [index, file] of photos.entries()) {
+        prepared.push({ slot: `yacht_${index}`, file: await compressListingImage(file) });
+      }
       const descriptors = prepared.map(({ slot, file }) => ({
         slot,
         name: file.name,
@@ -205,13 +204,11 @@ export function AddYachtForm({
         signedUrl?: string;
       }>;
       const bySlot = new Map(prepared.map((item) => [item.slot, item.file]));
-      await Promise.all(
-        uploads.map(async (upload) => {
-          const file = upload.slot ? bySlot.get(upload.slot) : undefined;
-          if (!file || !upload.signedUrl || !upload.path) throw new Error(c.uploadFailed);
-          await uploadSignedListingFile(upload.signedUrl, file);
-        }),
-      );
+      for (const upload of uploads) {
+        const file = upload.slot ? bySlot.get(upload.slot) : undefined;
+        if (!file || !upload.signedUrl || !upload.path) throw new Error(c.uploadFailed);
+        await uploadSignedListingFile(upload.signedUrl, file);
+      }
 
       const payload = directListingPayload({
         listingId: signed.listingId || "",

@@ -313,3 +313,13 @@ test("the listing form does not post files through the function or require a wal
     [],
   );
 });
+
+test("listing uploads are sequential and time out instead of stalling", () => {
+  const form = fs.readFileSync(new URL("../components/app/AddYachtForm.tsx", import.meta.url), "utf8");
+  const direct = fs.readFileSync(new URL("./listing-direct.ts", import.meta.url), "utf8");
+  assert.equal(/Promise\.all\(\s*photos\.map/.test(form), false);
+  assert.equal(/Promise\.all\(\s*uploads\.map/.test(form), false);
+  assert.match(direct, /AbortController/);
+  assert.match(direct, /UPLOAD_TIMEOUT_MS/);
+  assert.match(direct, /withTimeout\(createImageBitmap/);
+});

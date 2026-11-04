@@ -3,6 +3,16 @@ import { isSupabaseSignedUploadUrl } from "./listing-files";
 const COMPRESS_OVER = Math.floor(1.5 * 1024 * 1024);
 const MAX_EDGE = 2400;
 const JPEG_QUALITY = 0.85;
+/** A stalled PUT fails with a visible error instead of spinning forever. */
+export const UPLOAD_TIMEOUT_MS = 120_000;
+const DECODE_TIMEOUT_MS = 30_000;
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error("timeout")), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
 
 function isRaster(file: File) {
   return (
@@ -22,7 +32,7 @@ export async function compressListingImage(file: File): Promise<File> {
   if (!file.type.startsWith("image/") && !exotic) return file;
   if (typeof document === "undefined" || typeof createImageBitmap !== "function") return file;
   try {
-    const bitmap = await createImageBitmap(file);
+    const bitmap = await withTimeout(createImageBitmap(file), DECODE_TIMEOUT_MS);
     const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
     const width = Math.max(1, Math.round(bitmap.width * scale));
     const height = Math.max(1, Math.round(bitmap.height * scale));
@@ -33,9 +43,12 @@ export async function compressListingImage(file: File): Promise<File> {
     if (!ctx) return file;
     ctx.drawImage(bitmap, 0, 0, width, height);
     bitmap.close?.();
-    const blob = await new Promise<Blob | null>((resolve) => {
-      canvas.toBlob((next) => resolve(next), "image/jpeg", JPEG_QUALITY);
-    });
+    const blob = await withTimeout(
+      new Promise<Blob | null>((resolve) => {
+        canvas.toBlob((next) => resolve(next), "image/jpeg", JPEG_QUALITY);
+      }),
+      DECODE_TIMEOUT_MS,
+    );
     if (!blob || blob.size >= file.size) return file;
     const base = file.name.replace(/\.[^.]+$/, "") || "photo";
     return new File([blob], `${base}.jpg`, {
@@ -53,10 +66,19 @@ export async function uploadSignedListingFile(signedUrl: string, file: File) {
   const body = new FormData();
   body.append("cacheControl", "3600");
   body.append("", file);
-  const res = await fetch(signedUrl, {
-    method: "PUT",
-    headers: { "x-upsert": "true" },
-    body,
-  });
-  if (!res.ok) throw new Error("upload");
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), UPLOAD_TIMEOUT_MS);
+  try {
+    const res = await fetch(signedUrl, {
+      method: "PUT",
+      headers: { "x-upsert": "true" },
+      body,
+      signal: ctrl.signal,
+    });
+    if (!res.ok) throw new Error("upload");
+  } catch {
+    throw new Error("upload");
+  } finally {
+    clearTimeout(timer);
+  }
 }
