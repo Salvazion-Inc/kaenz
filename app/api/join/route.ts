@@ -1,10 +1,10 @@
+import { joinApplicationRole } from "@/lib/captain-eligibility";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { getSupabase } from "@/lib/supabase";
 
 export const runtime = "nodejs";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const ROLES = new Set(["owner", "captain", "both"]);
 const BURST_MS = 60 * 1000;
 
 function joinHoneypotFilled(body: unknown) {
@@ -48,12 +48,13 @@ export async function POST(req: Request) {
     return tooMany(Math.max(burstIp.retryAfterSec, burstEmail.retryAfterSec));
   }
 
-  const roleRaw = String((body as { role?: string }).role || "captain");
+  // Pending application only. This does not write profiles.role or captain_verified.
+  const role = joinApplicationRole((body as { role?: string }).role);
   const row = {
     full_name,
     email,
     phone: String((body as { phone?: string }).phone || "").slice(0, 40),
-    role: ROLES.has(roleRaw) ? roleRaw : "captain",
+    role,
     yacht_name: String((body as { yacht_name?: string }).yacht_name || "").slice(
       0,
       80,

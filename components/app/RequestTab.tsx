@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { at } from "@/lib/app-copy";
 import { pathFor, type Locale } from "@/lib/locale";
@@ -16,6 +16,7 @@ import {
 } from "@/lib/pricing";
 import { useTripLog } from "@/lib/trip-log";
 import { useDispatch } from "@/lib/dispatch-store";
+import { postTripOffer } from "@/lib/offer-client";
 import { useTrip } from "@/lib/trip-store";
 import { maskCard } from "@/lib/profile";
 import { useProfile } from "@/lib/profile-store";
@@ -35,6 +36,8 @@ export function RequestTab({ locale }: { locale: Locale }) {
   const { profile, ready: profileReady, complete } = useProfile();
   const { here } = useLocation();
   const router = useRouter();
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
   const kinds: TripKind[] = ["commute", "tour", "special"];
   const whenModes: WhenMode[] = ["now", "schedule"];
   const hoursRange = HOURS_RANGE[trip.kind];
@@ -56,7 +59,7 @@ export function RequestTab({ locale }: { locale: Locale }) {
     setTrip({ whenMode: "schedule" });
   }
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     const stamp =
       trip.whenMode === "now"
@@ -67,7 +70,26 @@ export function RequestTab({ locale }: { locale: Locale }) {
       router.push(pathFor(locale, "/app/account"));
       return;
     }
-    const offerId = trip.bookingId || `req-${Date.now()}`;
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    const created = await postTripOffer({
+      yachtId: trip.yachtId,
+      originName,
+      destName: destinationName,
+      guests: trip.guests,
+      kind: trip.kind,
+      hours: trip.hours,
+    });
+    let offerId = created.id;
+    if (!created.ok) {
+      if (!created.autoAccept) {
+        setBusy(false);
+        setError(c.errCaptain);
+        return;
+      }
+      offerId = trip.bookingId || `req-${Date.now()}`;
+    }
     const origin = originPlace || here;
     postOffer(
       {
@@ -114,6 +136,7 @@ export function RequestTab({ locale }: { locale: Locale }) {
         photos: [],
       });
     }
+    setBusy(false);
   }
 
   return (
@@ -321,9 +344,11 @@ export function RequestTab({ locale }: { locale: Locale }) {
             <p className="text-xs text-white/55">{c.payAfterQuote}</p>
           </div>
         ) : null}
+        {error ? <p className="text-sm text-red-400">{error}</p> : null}
         <button
           type="submit"
-          className="w-full rounded-xl bg-kaenz py-3 text-sm font-bold text-white"
+          disabled={busy}
+          className="w-full rounded-xl bg-kaenz py-3 text-sm font-bold text-white disabled:opacity-60"
         >
           {c.continueTrip}
         </button>

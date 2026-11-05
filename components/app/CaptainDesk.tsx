@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { at } from "@/lib/app-copy";
 import { formatKm } from "@/lib/geo";
 import type { Locale } from "@/lib/locale";
-import { useDispatch } from "@/lib/dispatch-store";
+import { useDispatch, type TripOffer } from "@/lib/dispatch-store";
+import { fetchOfferGate, postOfferAccept, postOfferDecline } from "@/lib/offer-client";
 import { useOperator } from "@/lib/operator-store";
 import { useTrip } from "@/lib/trip-store";
 
@@ -12,16 +13,64 @@ export function CaptainDesk({ locale }: { locale: Locale }) {
   const o = at(locale).ops;
   const { captain, available, setAvailable, yachts } = useOperator();
   const { offers, accept, decline, addPassenger } = useDispatch();
-  const { setTrip, fleet } = useTrip();
+  const { fleet } = useTrip();
   const [name, setName] = useState("");
   const [pickup, setPickup] = useState("");
+  const [remote, setRemote] = useState<TripOffer[]>([]);
+  const [autoAccept, setAutoAccept] = useState(false);
   const mine = yachts.map((y) => y.id);
-  const incoming = offers.filter((offer) => {
+
+  useEffect(() => {
+    if (!captain) return;
+    let cancelled = false;
+    async function load() {
+      const gate = await fetchOfferGate();
+      if (cancelled) return;
+      setAutoAccept(gate.autoAccept);
+      setRemote(
+        gate.offers.map((row) => ({
+          id: row.id,
+          customerName: row.customerName,
+          originId: "",
+          destinationId: "",
+          originName: row.originName,
+          destName: row.destName,
+          originLat: 0,
+          originLng: 0,
+          guests: row.guests,
+          kind: row.kind,
+          hours: row.hours,
+          yachtId: row.yachtId,
+          ranked: [],
+          status: row.status,
+          extraPassengers: [],
+          createdAt: Date.now(),
+        })),
+      );
+    }
+    load();
+    const timer = window.setInterval(load, 4000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [captain]);
+
+  const remoteIds = new Set(remote.map((offer) => offer.id));
+  const merged = new Map<string, TripOffer>();
+  for (const offer of [...offers, ...remote]) {
+    const prev = merged.get(offer.id);
+    if (!prev || (prev.status !== "accepted" && offer.status === "accepted")) {
+      merged.set(offer.id, offer);
+    }
+  }
+  const incoming = [...merged.values()].filter((offer) => {
     if (offer.status === "declined") return false;
     if (offer.status === "accepted") {
       return mine.includes(offer.yachtId) || captain;
     }
     if (!available) return false;
+    if (remoteIds.has(offer.id)) return captain;
     if (mine.length) return offer.ranked.some((r) => mine.includes(r.yachtId));
     return captain;
   });
@@ -72,14 +121,18 @@ export function CaptainDesk({ locale }: { locale: Locale }) {
                   <div className="mt-3 flex gap-2">
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={async () => {
                         const yid = mine[0] || offer.ranked[0]?.yachtId || offer.yachtId;
+                        const saved = await postOfferAccept(offer.id, yid);
+                        if (!saved.ok && !saved.autoAccept) return;
                         accept(offer.id, yid);
-                        setTrip({
-                          status: "approved",
-                          yachtId: yid,
-                          bookingId: offer.id,
-                        });
+                        setRemote((cur) =>
+                          cur.map((item) =>
+                            item.id === offer.id
+                              ? { ...item, status: "accepted", yachtId: yid }
+                              : item,
+                          ),
+                        );
                       }}
                       className="btn-kaenz !px-3 !py-1.5 text-[11px]"
                     >
@@ -87,7 +140,16 @@ export function CaptainDesk({ locale }: { locale: Locale }) {
                     </button>
                     <button
                       type="button"
-                      onClick={() => decline(offer.id)}
+                      onClick={async () => {
+                        const saved = await postOfferDecline(offer.id);
+                        if (!saved.declined && !saved.autoAccept && !autoAccept) return;
+                        decline(offer.id);
+                        setRemote((cur) =>
+                          cur.map((item) =>
+                            item.id === offer.id ? { ...item, status: "declined" } : item,
+                          ),
+                        );
+                      }}
                       className="rounded-full border border-white/20 px-3 py-1.5 text-[11px] font-bold"
                     >
                       {o.decline}

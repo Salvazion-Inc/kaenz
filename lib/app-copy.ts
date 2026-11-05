@@ -24,6 +24,8 @@ export const appCopy = {
     fareHow:
       "Price from the local charter market, trip type, duration, yacht class, guests, and whether you leave now or later. Paid with Stripe.",
     stripePay: "Pay with Stripe",
+    waitingForCaptain: "Waiting for captain",
+    errCaptain: "A captain has not accepted this trip yet.",
     gratuityHint:
       "Optional 15–20% of the fare, paid directly to the captain. You can enter a custom percent up to 25%.",
     gratuityCustom: "Custom %",
@@ -478,6 +480,8 @@ export const appCopy = {
     fareHow:
       "El precio sale del mercado local de chárter, tipo de viaje, duración, clase de yate, pasajeros y si sales ahora o agendado. Se cobra con Stripe.",
     stripePay: "Pagar con Stripe",
+    waitingForCaptain: "Esperando al capitán",
+    errCaptain: "Un capitán todavía no aceptó este viaje.",
     gratuityHint:
       "Opcional 15–20% de la tarifa, pagada directo al capitán. Puedes ingresar un porcentaje propio hasta 25%.",
     gratuityCustom: "% personalizado",
@@ -932,6 +936,8 @@ export const appCopy = {
     fareHow:
       "Prix selon le marché local du charter, le type de voyage, la durée, la classe du yacht, les passagers et le départ immédiat ou planifié. Paiement Stripe.",
     stripePay: "Payer avec Stripe",
+    waitingForCaptain: "En attente du capitaine",
+    errCaptain: "Un capitaine n'a pas encore accepté ce trajet.",
     gratuityHint:
       "Optionnel 15–20 % du tarif, versé directement au capitaine. Vous pouvez saisir un pourcentage personnalisé jusqu’à 25 %.",
     gratuityCustom: "% personnalisé",
@@ -1386,6 +1392,8 @@ export const appCopy = {
     fareHow:
       "Prezzo dal mercato charter locale, tipo di viaggio, durata, classe dello yacht, passeggeri e se parti ora o in programma. Paghi con Stripe.",
     stripePay: "Paga con Stripe",
+    waitingForCaptain: "In attesa del capitano",
+    errCaptain: "Un capitano non ha ancora accettato questo viaggio.",
     gratuityHint:
       "Opzionale 15–20% della tariffa, versata direttamente al capitano. Puoi inserire una percentuale personalizzata fino al 25%.",
     gratuityCustom: "% personalizzata",
@@ -1840,6 +1848,8 @@ export const appCopy = {
     fareHow:
       "Preço pelo mercado local de charter, tipo de viagem, duração, classe do iate, passageiros e se você sai agora ou agenda. Cobrado com Stripe.",
     stripePay: "Pagar com Stripe",
+    waitingForCaptain: "Aguardando o capitão",
+    errCaptain: "Um capitão ainda não aceitou esta viagem.",
     gratuityHint:
       "Opcional 15–20% da tarifa, paga direto ao capitão. Você pode informar um percentual próprio até 25%.",
     gratuityCustom: "% personalizado",

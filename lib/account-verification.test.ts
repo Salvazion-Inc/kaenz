@@ -165,9 +165,17 @@ test("booking, checkout, and yacht listing gate the three cases", async () => {
     assert.equal(status, 400);
     assert.equal(body.error, "fields");
   });
-  await expectGate(postCheckout, "/api/checkout", (status) => {
-    assert.ok(status === 400 || status === 503);
-  });
+  const previousFlag = process.env.CAPTAIN_AUTO_ACCEPT;
+  delete process.env.CAPTAIN_AUTO_ACCEPT;
+  try {
+    await expectGate(postCheckout, "/api/checkout", (status, body) => {
+      assert.equal(status, 409);
+      assert.equal(body.error, "captain_required");
+    });
+  } finally {
+    if (previousFlag === undefined) delete process.env.CAPTAIN_AUTO_ACCEPT;
+    else process.env.CAPTAIN_AUTO_ACCEPT = previousFlag;
+  }
   await expectGate(postYacht, "/api/yachts", (status, body) => {
     assert.equal(status, 503);
     assert.equal(body.error, "supabase");

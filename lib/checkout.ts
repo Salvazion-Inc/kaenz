@@ -4,6 +4,8 @@ import {
   defaultDestinationId,
   isSeedRealId,
 } from "./bookable-seed";
+import { OFFER_ID } from "./captain-accept";
+import { checkoutCaptainBlock } from "./captain-offers";
 import { parseLocale } from "./locale";
 import {
   appOrigin,
@@ -36,6 +38,9 @@ export type CheckoutBody = {
   phone?: string;
   locale?: string;
   guest?: boolean;
+  /** Supabase trip_offers id. Required unless CAPTAIN_AUTO_ACCEPT=1. */
+  offerId?: string;
+  offer_id?: string;
   /** Ignored. Fare is quoted server-side from yacht/kind/hours. */
   amount?: unknown;
   price?: unknown;
@@ -69,6 +74,14 @@ export async function createTripCheckout(opts: {
   user?: { id: string; email?: string; name?: string } | null;
   guest?: boolean;
 }) {
+  const offerId = String(opts.body.offerId || opts.body.offer_id || "").trim();
+  const captainGate = await checkoutCaptainBlock({
+    offerId,
+    userId: opts.user?.id || "",
+    yachtId: String(opts.body.yachtId || opts.body.yacht_slug || "").trim(),
+  });
+  if (captainGate) return captainGate;
+
   if (!stripeConfigured()) {
     return { error: "stripe_unconfigured" as const, status: 503 };
   }
@@ -171,6 +184,7 @@ export async function createTripCheckout(opts: {
         split: chargeToMetadata(charge),
         guest,
         source: yacht.source || "catalog",
+        offerId: OFFER_ID.test(offerId) ? offerId : undefined,
       }),
       locale,
       status: "checkout",
@@ -240,6 +254,7 @@ export async function createTripCheckout(opts: {
       hours: String(hours),
       guests: String(guests),
       guest: guest ? "1" : "0",
+      ...(OFFER_ID.test(offerId) ? { offer_id: offerId } : {}),
       ...chargeToMetadata(charge),
     },
     payment_intent_data: {
