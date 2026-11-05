@@ -1,11 +1,16 @@
 import {
   acceptanceAllowsCheckout,
   captainAutoAcceptEnabled,
-  isCaptainRole,
   mapOfferRow,
   OFFER_ID,
   type StoredOffer,
 } from "./captain-accept";
+import {
+  decideCaptainOfferAction,
+  isEligibleCaptain,
+  type AssignedYacht,
+  type CaptainEligibility,
+} from "./captain-eligibility";
 import { getSupabase } from "./supabase";
 
 const COLUMNS =
@@ -35,25 +40,49 @@ export async function loadOffer(id: string): Promise<StoredOffer | null> {
   return mapOfferRow(data as Record<string, unknown>);
 }
 
-export async function readProfileRole(
-  userId: string,
-): Promise<{ ok: true; role: string } | { ok: false }> {
+export type LoadedEligibility =
+  | ({ ok: true } & CaptainEligibility)
+  | { ok: false; status: 503 };
+
+/** Server-side only. Does not read profiles.role. */
+export async function loadCaptainEligibility(userId: string): Promise<LoadedEligibility> {
   const supabase = getSupabase();
-  if (!supabase || !userId) return { ok: false };
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", userId)
-    .maybeSingle();
-  if (error) return { ok: false };
-  return { ok: true, role: String(data?.role || "") };
+  if (!supabase || !userId) return { ok: false, status: 503 };
+  try {
+    const profile = await supabase
+      .from("profiles")
+      .select("captain_verified")
+      .eq("id", userId)
+      .maybeSingle();
+    const verified = !profile.error && profile.data?.captain_verified === true;
+    const listings = await supabase
+      .from("yacht_listings")
+      .select("id, slug")
+      .eq("captain_user_id", userId)
+      .eq("status", "listed");
+    const yachts: AssignedYacht[] =
+      listings.error || !listings.data
+        ? []
+        : (listings.data as { id?: string; slug?: string }[])
+            .map((row) => ({
+              id: String(row.id || ""),
+              slug: String(row.slug || ""),
+            }))
+            .filter((row) => row.id || row.slug);
+    return { ok: true, verified, yachts };
+  } catch {
+    return { ok: false, status: 503 };
+  }
 }
 
-export async function userIsCaptain(userId: string) {
-  const role = await readProfileRole(userId);
-  if (!role.ok) return { ok: false as const, status: 503 as const };
-  if (!isCaptainRole(role.role)) return { ok: false as const, status: 403 as const };
-  return { ok: true as const };
+export async function userIsCaptain(
+  userId: string,
+  load: (id: string) => Promise<LoadedEligibility> = loadCaptainEligibility,
+) {
+  const found = await load(userId);
+  if (!found.ok) return { ok: false as const, status: found.status };
+  if (!isEligibleCaptain(found)) return { ok: false as const, status: 403 as const };
+  return { ok: true as const, verified: found.verified, yachts: found.yachts };
 }
 
 export async function createTripOffer(input: {
@@ -93,20 +122,39 @@ export async function createTripOffer(input: {
   return { id: String(data.id), status: "offered" as const };
 }
 
+async function eligibilityFor(
+  userId: string,
+  given?: CaptainEligibility,
+): Promise<LoadedEligibility> {
+  if (given) return { ok: true, ...given };
+  return loadCaptainEligibility(userId);
+}
+
 export async function acceptTripOffer(input: {
   id: string;
   captainId: string;
   yachtId: string;
+  load?: (id: string) => Promise<StoredOffer | null>;
+  eligibility?: CaptainEligibility;
 }) {
-  const existing = await loadOffer(input.id);
+  const existing = await (input.load || loadOffer)(input.id);
   if (!existing) return { error: "offer" as const, status: 404 as const };
-  const yachtId = clip(input.yachtId, 80) || existing.yachtId;
-  if (!yachtId) return { error: "yacht" as const, status: 400 as const };
+  const eligibility = await eligibilityFor(input.captainId, input.eligibility);
+  if (!eligibility.ok) return { error: "offer" as const, status: 503 as const };
+  const decision = decideCaptainOfferAction({
+    captainId: input.captainId,
+    customerId: existing.userId,
+    yachtId: clip(input.yachtId, 80),
+    offerYachtId: existing.yachtId,
+    yachts: eligibility.yachts,
+    kind: "accept",
+  });
+  if (!decision.ok) return { error: decision.error, status: decision.status };
   if (
     existing.status === "accepted" &&
-    existing.acceptedBy &&
-    existing.acceptedAt &&
-    existing.yachtId
+    existing.acceptedBy === input.captainId &&
+    existing.acceptedBy !== existing.userId &&
+    existing.yachtId === decision.yachtId
   ) {
     return { offer: existing };
   }
@@ -122,7 +170,7 @@ export async function acceptTripOffer(input: {
       status: "accepted",
       accepted_by: input.captainId,
       accepted_at: acceptedAt,
-      yacht_id: yachtId,
+      yacht_id: decision.yachtId,
     })
     .eq("id", existing.id)
     .eq("status", "offered")
@@ -130,15 +178,39 @@ export async function acceptTripOffer(input: {
     .maybeSingle();
   if (error || !data) return { error: "offer" as const, status: 409 as const };
   const offer = mapOfferRow(data as Record<string, unknown>);
-  if (!offer || offer.status !== "accepted" || !offer.acceptedBy || !offer.acceptedAt) {
+  if (
+    !offer ||
+    offer.status !== "accepted" ||
+    !offer.acceptedBy ||
+    offer.acceptedBy === offer.userId ||
+    !offer.acceptedAt
+  ) {
     return { error: "offer" as const, status: 409 as const };
   }
   return { offer };
 }
 
-export async function declineTripOffer(id: string) {
-  const existing = await loadOffer(id);
+export async function declineTripOffer(
+  id: string,
+  captainId: string,
+  opts?: {
+    load?: (id: string) => Promise<StoredOffer | null>;
+    eligibility?: CaptainEligibility;
+  },
+) {
+  const existing = await (opts?.load || loadOffer)(id);
   if (!existing) return { error: "offer" as const, status: 404 as const };
+  const eligibility = await eligibilityFor(captainId, opts?.eligibility);
+  if (!eligibility.ok) return { error: "offer" as const, status: 503 as const };
+  const decision = decideCaptainOfferAction({
+    captainId,
+    customerId: existing.userId,
+    yachtId: existing.yachtId,
+    offerYachtId: existing.yachtId,
+    yachts: eligibility.yachts,
+    kind: "decline",
+  });
+  if (!decision.ok) return { error: decision.error, status: decision.status };
   if (existing.status === "declined") return { offer: existing };
   if (existing.status !== "offered") {
     return { error: "offer" as const, status: 409 as const };
@@ -158,9 +230,10 @@ export async function declineTripOffer(id: string) {
   return { offer };
 }
 
-export async function listVisibleOffers(userId: string, captain: boolean) {
+export async function listVisibleOffers(userId: string, yachts: AssignedYacht[] | null) {
   const supabase = getSupabase();
   if (!supabase) return [] as StoredOffer[];
+  const captain = yachts !== null;
   const query = supabase
     .from("trip_offers")
     .select(COLUMNS)
@@ -173,11 +246,18 @@ export async function listVisibleOffers(userId: string, captain: boolean) {
   return (data as Record<string, unknown>[])
     .map((row) => mapOfferRow(row))
     .filter((row): row is StoredOffer => Boolean(row))
-    .filter((row) =>
-      captain
-        ? row.status === "offered" || row.acceptedBy === userId
-        : row.userId === userId,
-    );
+    .filter((row) => {
+      if (!captain || !yachts) return row.userId === userId;
+      if (row.acceptedBy === userId && row.acceptedBy !== row.userId) return true;
+      return decideCaptainOfferAction({
+        captainId: userId,
+        customerId: row.userId,
+        yachtId: row.yachtId,
+        offerYachtId: row.yachtId,
+        yachts,
+        kind: "decline",
+      }).ok;
+    });
 }
 
 export async function checkoutCaptainBlock(input: {

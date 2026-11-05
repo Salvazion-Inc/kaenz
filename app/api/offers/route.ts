@@ -4,6 +4,7 @@ import {
   offerIsAccepted,
   type StoredOffer,
 } from "@/lib/captain-accept";
+import { yachtAssigned } from "@/lib/captain-eligibility";
 import {
   createTripOffer,
   listVisibleOffers,
@@ -42,7 +43,9 @@ export async function GET(req: Request) {
   const id = new URL(req.url).searchParams.get("id")?.trim() || "";
   if (id) {
     const offer = await loadOffer(id);
-    const allowed = Boolean(offer) && (offer?.userId === gate.user.id || captain.ok);
+    const assigned =
+      captain.ok && offer ? yachtAssigned(captain.yachts, offer.yachtId) : false;
+    const allowed = Boolean(offer) && (offer?.userId === gate.user.id || assigned);
     if (!offer || !allowed) return gate.seal(reply({ accepted: false, id }));
     return gate.seal(
       reply({
@@ -54,7 +57,10 @@ export async function GET(req: Request) {
       }),
     );
   }
-  const offers = await listVisibleOffers(gate.user.id, captain.ok);
+  const offers = await listVisibleOffers(
+    gate.user.id,
+    captain.ok ? captain.yachts : null,
+  );
   return gate.seal(
     reply({
       offers: offers.map((row) => publicOffer(row)),

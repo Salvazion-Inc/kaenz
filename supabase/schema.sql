@@ -22,6 +22,9 @@ create table if not exists public.profiles (
   created_at timestamptz not null default now()
 );
 
+-- GOV-FAIL-KNZ26-CODE / DEC-20261105-01. Not writable from /api/profile or /api/join.
+alter table public.profiles add column if not exists captain_verified boolean not null default false;
+
 alter table public.profiles add column if not exists email text;
 alter table public.profiles add column if not exists credit_last4 text;
 alter table public.profiles add column if not exists credit_expiry text;

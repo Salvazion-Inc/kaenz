@@ -61,6 +61,7 @@ export function acceptanceAllowsCheckout(
 ) {
   if (!row) return false;
   if (!payerUserId || row.userId !== payerUserId) return false;
+  if (row.acceptedBy === row.userId) return false;
   if (!offerIsAccepted(row)) return false;
   if (!yachtId || row.yachtId !== yachtId) return false;
   return true;

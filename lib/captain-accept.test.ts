@@ -86,6 +86,10 @@ test("checkout allows only a persisted captain acceptance for that customer and 
   assert.equal(acceptanceAllowsCheckout(row({ yachtId: "" }), "customer-1", "galeon"), false);
   assert.equal(acceptanceAllowsCheckout(accepted, "someone-else", "galeon"), false);
   assert.equal(acceptanceAllowsCheckout(accepted, "customer-1", "other-yacht"), false);
+  assert.equal(
+    acceptanceAllowsCheckout(row({ acceptedBy: "customer-1" }), "customer-1", "galeon"),
+    false,
+  );
   assert.equal(publicErrorCode("captain_required"), "captain_required");
 });
 

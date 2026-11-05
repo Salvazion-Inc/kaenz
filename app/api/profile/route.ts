@@ -14,6 +14,8 @@ import {
   signProfileMap,
 } from "@/lib/profile";
 import { requireSessionUser } from "@/lib/account-verification";
+import { gateProfileRole, isEligibleCaptain } from "@/lib/captain-eligibility";
+import { loadCaptainEligibility } from "@/lib/captain-offers";
 import {
   ACCOUNTS_COOKIE,
   accountsCookie,
@@ -124,7 +126,15 @@ export async function PUT(req: Request) {
     return send({ error: "phone" }, 400);
   }
 
-  const role = parseRole(body.role || current.role);
+  const eligibility = await loadCaptainEligibility(user.id);
+  const eligible = eligibility.ok && isEligibleCaptain(eligibility);
+  const roleGate = gateProfileRole({
+    requested: body.role,
+    current: current.role,
+    eligible,
+  });
+  if (!roleGate.ok) return send({ error: roleGate.error }, roleGate.status);
+  const role = roleGate.role;
   const instagram = parseInstagram(String(body.instagram ?? current.instagram));
   if (instagram === "invalid") {
     return send({ error: "instagram" }, 400);

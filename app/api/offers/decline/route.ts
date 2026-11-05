@@ -17,7 +17,7 @@ export async function POST(req: Request) {
   const captain = await userIsCaptain(gate.user.id);
   if (!captain.ok) return gate.seal(reply({ error: "captain" }, captain.status));
   const body = (await req.json().catch(() => ({}))) as { id?: string };
-  const result = await declineTripOffer(String(body.id || ""));
+  const result = await declineTripOffer(String(body.id || ""), gate.user.id);
   if ("error" in result) {
     return gate.seal(reply({ error: result.error }, result.status));
   }

@@ -1,5 +1,5 @@
 -- DEC-20261105-01 (zona B under DEC-20261021-02).
--- GOV-PASS-DEC20261105-01-plan / GOV-TWIN-20261105-1.
+-- GOV-PASS-DEC20261105-01-plan / GOV-TWIN-20261105-1 / GOV-FAIL-KNZ26-CODE.
 -- Additive captain acceptance for a requested trip. Not applied by the app.
 -- Run in the Supabase SQL editor when this change is deployed.
 -- The table is unused while CAPTAIN_AUTO_ACCEPT=1.
@@ -47,3 +47,7 @@ create index if not exists trip_offers_user_idx
 -- anon and authenticated get nothing. service_role gets DML only, never TRUNCATE or ALL.
 revoke all on table public.trip_offers from anon, authenticated;
 grant select, insert, update, delete on table public.trip_offers to service_role;
+
+-- GOV-FAIL-KNZ26-CODE. The account holder cannot set this column.
+-- /api/profile and /api/join must not write it. Service role only, same grants as profiles.
+alter table public.profiles add column if not exists captain_verified boolean not null default false;
