@@ -51,17 +51,14 @@ export function normalizeHin(value: string) {
 }
 
 /**
- * Accepts a US HIN (12 chars, optional "US" prefix) and the EU Craft
- * Identification Number (CIN, ISO 10087: 2-letter country + 3 maker + 5 serial
- * + month/year + model year = 14 chars, often written "ES-ABC12345D404").
- * Spaces and hyphens are ignored.
+ * A hull ID only: US HIN (12 characters) or EU CIN (ISO 10087, 14 characters,
+ * often written "ES-ABC12345D404"). Spaces, hyphens, dots and slashes are ignored.
+ * A Spanish tax ID / NIF such as ES-25627687Y is not a hull ID.
+ * DEC-20261105-15.
  */
 export function isHin(value: string) {
   const hin = normalizeHin(value);
-  // DEC-20261104: a country prefix (ES, EU, US…) plus any 6–24 alphanumeric
-  // identifier is accepted (US HIN, EU CIN, or the Spanish registration/tax id
-  // owners often use, e.g. "ES-B12345678"). Format is not enforced further.
-  return /^[A-Z0-9]{6,26}$/.test(hin);
+  return /^[A-Z0-9]{12}$/.test(hin) || /^[A-Z0-9]{14}$/.test(hin);
 }
 
 /** "" when empty; the normalized HIN when valid; null when present but invalid. */
@@ -69,6 +66,16 @@ export function optionalHin(value: unknown): string | null {
   const hin = normalizeHin(String(value ?? ""));
   if (!hin) return "";
   return isHin(hin) ? hin : null;
+}
+
+/**
+ * HIN never blocks a draft. Empty stays empty. A tax ID or any other non-hull
+ * value is dropped (warn) so the rest of the listing can still be saved.
+ */
+export function listingHinDecision(value: unknown): { hin: string; warn: boolean } {
+  const stored = optionalHin(value);
+  if (stored === null) return { hin: "", warn: true };
+  return { hin: stored, warn: false };
 }
 
 export function parseTraits(value: unknown): YachtTrait[] {

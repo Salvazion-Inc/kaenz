@@ -1,4 +1,4 @@
-import { optionalHin, optionalWallet, parseLangs, parseTraits } from "./listings";
+import { listingHinDecision, optionalWallet, parseLangs, parseTraits } from "./listings";
 
 /** Per-file cap. Matches the Supabase bucket fileSizeLimit used for listings. */
 export const LISTING_MAX_BYTES = 8 * 1024 * 1024;
@@ -211,7 +211,7 @@ export function parseStoredListingBody(input: unknown) {
   if (!LISTING_ID.test(listingId)) return { ok: false as const, error: "fields" };
   const ownerName = String(body.owner_name || "").trim();
   const name = String(body.name || "").trim();
-  const hinRaw = optionalHin(body.hin);
+  const hinDecision = listingHinDecision(body.hin);
   const guests = Number(body.guests);
   const traits = parseTraits(body.traits);
   const homePort = String(body.home_port || "").trim();
@@ -225,7 +225,7 @@ export function parseStoredListingBody(input: unknown) {
     return { ok: false as const, error: "fields" };
   }
   // A bad HIN never blocks a draft: it is dropped and the listing stays draft.
-  const hin = hinRaw || "";
+  const hin = hinDecision.hin;
   if (!Number.isFinite(guests) || guests < 1 || guests > 50) {
     return { ok: false as const, error: "guests" };
   }
@@ -250,7 +250,7 @@ export function parseStoredListingBody(input: unknown) {
     ownerWallet,
     name,
     hin,
-    hinInvalid: hinRaw === null,
+    hinInvalid: hinDecision.warn,
     guests,
     traits,
     homePort,

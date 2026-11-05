@@ -324,22 +324,68 @@ test("listing uploads are sequential and time out instead of stalling", () => {
   assert.match(direct, /withTimeout\(createImageBitmap/);
 });
 
-test("HIN accepts ES/EU prefixes, spaces and hyphens and is optional (DEC-20261104)", async () => {
-  const { isHin, optionalHin } = await import("./listings");
-  for (const value of ["ES-B12345678", "es b12345678", "ES-ABC12345D404", "EU-ABC12345D404", "US-ABC12345D404", "ABC12345D404", "ES 1234/AB.56"]) {
+test("empty HIN saves and a tax ID does not block the draft (DEC-20261105-15)", async () => {
+  const { isHin, optionalHin, listingHinDecision } = await import("./listings");
+  for (const value of ["ES-ABC12345D404", "EU-ABC12345D404", "US-ABC12345D404", "ABC12345D404", "es-abc12345d404"]) {
     assert.equal(isHin(value), true, value);
   }
+  // Spanish NIF / CIF are tax IDs, not hull IDs.
+  for (const value of ["", "   ", "ES-25627687Y", "ES-B12345678", "es b12345678", "ES 1234/AB.56", "??", "ÑÑ"]) {
+    assert.equal(isHin(value), false, JSON.stringify(value));
+  }
   assert.equal(optionalHin(""), "");
-  assert.equal(optionalHin(" es-b1234 5678 "), "ESB12345678");
-  assert.equal(optionalHin("??"), null);
-  const parsed = parseStoredListingBody({
+  assert.equal(optionalHin("   "), "");
+  assert.equal(optionalHin(" ES-ABC12345D404 "), "ESABC12345D404");
+  assert.equal(optionalHin("ES-25627687Y"), null);
+  assert.deepEqual(listingHinDecision(""), { hin: "", warn: false });
+  assert.deepEqual(listingHinDecision("ES-ABC12345D404"), { hin: "ESABC12345D404", warn: false });
+  assert.deepEqual(listingHinDecision("ES-25627687Y"), { hin: "", warn: true });
+
+  const base = {
     listingId: "11111111-2222-4333-8444-555555555555",
-    owner_name: "O", name: "Y", hin: "ÑÑ", guests: "6", traits: "fast",
-    home_port: "Barcelona", captain_name: "C", languages: "es", captain_region: "Barcelona",
+    owner_name: "O",
+    name: "Sashi",
+    guests: "6",
+    traits: "fast",
+    home_port: "Barcelona",
+    captain_name: "C",
+    languages: "es",
+    captain_region: "Barcelona",
     files: {},
-  });
-  assert.equal(parsed.ok, true);
-  if (parsed.ok) assert.equal(parsed.hinInvalid, true);
+  };
+  const empty = parseStoredListingBody({ ...base, hin: "" });
+  assert.equal(empty.ok, true);
+  if (empty.ok) {
+    assert.equal(empty.hin, "");
+    assert.equal(empty.hinInvalid, false);
+  }
+  const nif = parseStoredListingBody({ ...base, hin: "ES-25627687Y" });
+  assert.equal(nif.ok, true);
+  if (nif.ok) {
+    assert.equal(nif.hin, "");
+    assert.equal(nif.hinInvalid, true);
+    assert.equal(nif.name, "Sashi");
+    assert.equal(nif.homePort, "Barcelona");
+  }
+  const garbled = parseStoredListingBody({ ...base, hin: "ÑÑ" });
+  assert.equal(garbled.ok, true);
+  if (garbled.ok) {
+    assert.equal(garbled.hin, "");
+    assert.equal(garbled.hinInvalid, true);
+  }
+
+  const route = fs.readFileSync(new URL("../app/api/yachts/route.ts", import.meta.url), "utf8");
+  assert.match(route, /isHin\(hin\)/);
+  assert.equal(route.includes('error: "hin"'), false);
+  assert.match(route, /listingHinDecision\(hin\)/);
+  const form = fs.readFileSync(new URL("../components/app/AddYachtForm.tsx", import.meta.url), "utf8");
+  assert.match(form, /listingHinDecision\(/);
+  assert.equal(form.includes("object-cover"), false);
+  assert.match(form, /object-contain/);
+  assert.equal(/setMessage\(c\.needHin\);\s*return/.test(form), false);
+  const yachts = fs.readFileSync(new URL("../components/app/YachtsTab.tsx", import.meta.url), "utf8");
+  assert.match(yachts, /object-contain/);
+  assert.equal(yachts.includes("object-cover"), false);
 });
 
 test("partial uploads: photos only or nothing at all are valid for a draft", () => {
