@@ -235,15 +235,15 @@ export function YachtsTab({ locale }: { locale: Locale }) {
             key={y.id}
             className="overflow-hidden rounded-2xl border border-white/10 bg-white/5"
           >
-            <div className="relative h-40">
+            <div className="relative flex h-72 items-center justify-center bg-navy/40 sm:h-96">
               {y.image ? (
                 y.image.startsWith("http") ? (
-                  <img src={y.image} alt={y.name} className="h-40 w-full object-cover" />
+                  <img src={y.image} alt={y.name} className="h-full w-full object-contain" />
                 ) : (
-                  <Image src={y.image} alt={y.name} fill className="object-cover" />
+                  <Image src={y.image} alt={y.name} fill className="object-contain" />
                 )
               ) : (
-                <div className="h-40 bg-white/10" />
+                <div className="h-full w-full bg-white/10" />
               )}
               {y.captain.verified ? (
                 <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-navy/80 px-2 py-1 text-[10px] font-bold text-kaenz">
@@ -284,7 +284,7 @@ export function YachtsTab({ locale }: { locale: Locale }) {
                       key={src}
                       src={src}
                       alt=""
-                      className="h-14 w-20 rounded-lg object-cover"
+                      className="h-24 w-auto max-w-40 rounded-lg bg-navy/30 object-contain"
                     />
                   ))}
                 </div>

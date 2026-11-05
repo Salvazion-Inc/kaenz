@@ -481,11 +481,11 @@ export function TripTab({ locale }: { locale: Locale }) {
       ) : null}
 
       <section className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-        <div className="relative h-36">
+        <div className="relative h-72 bg-navy/40 sm:h-96">
           {yacht.image.startsWith("http") ? (
-            <img src={yacht.image} alt={yacht.name} className="h-36 w-full object-cover" />
+            <img src={yacht.image} alt={yacht.name} className="h-full w-full object-contain" />
           ) : (
-            <Image src={yacht.image} alt={yacht.name} fill className="object-cover" />
+            <Image src={yacht.image} alt={yacht.name} fill className="object-contain" />
           )}
         </div>
         <div className="p-4">

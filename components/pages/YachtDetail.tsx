@@ -34,12 +34,12 @@ export function YachtDetail({
     <Site locale={locale} viewer={viewer}>
       <section className="mx-auto grid max-w-6xl gap-10 px-5 pb-24 md:grid-cols-2">
         <div>
-          <div className="relative h-80 overflow-hidden rounded-2xl">
+          <div className="relative h-96 overflow-hidden rounded-2xl bg-navy/40 sm:h-[32rem]">
             <Image
               src={yacht.image}
               alt={yacht.name}
               fill
-              className="object-cover"
+              className="object-contain"
               priority
             />
             {bookable ? (

@@ -12,7 +12,7 @@ import {
 import {
   CAPTAIN_LANG_FLAGS,
   CAPTAIN_LANGS,
-  isHin,
+  listingHinDecision,
   YACHT_TRAITS,
   type CaptainLang,
   type YachtTrait,
@@ -43,6 +43,23 @@ function clearIfOversized(form: HTMLFormElement, name: string) {
 function inputValue(form: HTMLFormElement, name: string) {
   const el = form.elements.namedItem(name);
   return el instanceof HTMLInputElement ? el.value : "";
+}
+
+function ListingPhotoPreview({ file }: { file: File }) {
+  const [src, setSrc] = useState("");
+  useEffect(() => {
+    const url = URL.createObjectURL(file);
+    setSrc(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+  if (!src) return null;
+  return (
+    <img
+      src={src}
+      alt={file.name}
+      className="h-56 w-auto max-w-[18rem] rounded-lg bg-navy/5 object-contain"
+    />
+  );
 }
 
 const REGIONS = [
@@ -79,6 +96,7 @@ export function AddYachtForm({
   const [photos, setPhotos] = useState<File[]>([]);
   const [status, setStatus] = useState<"idle" | "sending" | "err">("idle");
   const [message, setMessage] = useState("");
+  const [tone, setTone] = useState<"err" | "ok" | "warn">("err");
 
   function toggleTrait(trait: YachtTrait) {
     setTraits((cur) =>
@@ -124,11 +142,13 @@ export function AddYachtForm({
     setMessage("");
     if (!traits.length) {
       setStatus("err");
+      setTone("err");
       setMessage(c.needTrait);
       return;
     }
     if (!langs.length) {
       setStatus("err");
+      setTone("err");
       setMessage(c.needLanguage);
       return;
     }
@@ -141,6 +161,7 @@ export function AddYachtForm({
     if (oversized) {
       setPhotos((cur) => cur.filter((file) => file.size <= LISTING_MAX_BYTES));
       setStatus("err");
+      setTone("err");
       setMessage(c.fileTooBig);
       return;
     }
@@ -155,14 +176,8 @@ export function AddYachtForm({
       captainPhoto ? "" : c.captainPhoto,
       photos.length ? "" : c.photos,
     ].filter(Boolean);
-    // HIN is optional; a value we cannot read is flagged before any upload so
-    // the owner never re-attaches photos just to hit a HIN error at the end.
-    const hinValue = inputValue(form, "hin");
-    if (hinValue && !isHin(hinValue)) {
-      setStatus("err");
-      setMessage(c.needHin);
-      return;
-    }
+    // A tax ID or other non-hull value is not a HIN. Drop it and keep saving.
+    const hinDecision = listingHinDecision(inputValue(form, "hin"));
     setStatus("sending");
     try {
       // Missing files are fine: the server saves the listing as a draft.
@@ -225,7 +240,7 @@ export function AddYachtForm({
         owner_name: inputValue(form, "owner_name"),
         owner_wallet: inputValue(form, "owner_wallet"),
         name: inputValue(form, "name"),
-        hin: inputValue(form, "hin"),
+        hin: hinDecision.hin,
         guests: inputValue(form, "guests"),
         traits: traits.join(","),
         home_port: inputValue(form, "home_port"),
@@ -251,7 +266,13 @@ export function AddYachtForm({
         setLangs([]);
         setPhotos([]);
         setStatus("idle");
-        setMessage(missing.length ? `${c.savedDraft} ${c.missingDocs} ${missing.join(", ")}.` : c.savedDraft);
+        const hinNote = hinDecision.warn ? ` ${c.hinSoft}` : "";
+        setTone(hinDecision.warn ? "warn" : "ok");
+        setMessage(
+          (missing.length
+            ? `${c.savedDraft} ${c.missingDocs} ${missing.join(", ")}.`
+            : c.savedDraft) + hinNote,
+        );
         onDrafted?.();
         return;
       }
@@ -263,6 +284,7 @@ export function AddYachtForm({
       setStatus("idle");
     } catch (err) {
       setStatus("err");
+      setTone("err");
       const text = err instanceof Error ? err.message : "";
       if (
         text === "upload" ||
@@ -302,6 +324,7 @@ export function AddYachtForm({
       setStatus("idle");
     } catch (err) {
       setStatus("err");
+      setTone("err");
       setMessage(err instanceof Error ? err.message : c.error);
     }
   }
@@ -343,6 +366,7 @@ export function AddYachtForm({
             onChange={(e) => {
               if (clearIfOversized(e.currentTarget.form!, "owner_id")) {
                 setStatus("err");
+                setTone("err");
                 setMessage(c.fileTooBig);
               }
             }}
@@ -378,6 +402,7 @@ export function AddYachtForm({
                 e.target.value = "";
                 setPhotos(picked.filter((file) => file.size <= LISTING_MAX_BYTES));
                 setStatus("err");
+                setTone("err");
                 setMessage(c.fileTooBig);
                 return;
               }
@@ -386,14 +411,9 @@ export function AddYachtForm({
           />
         </label>
         {photos.length ? (
-          <div className="mt-2 flex gap-2 overflow-x-auto">
+          <div className="mt-2 flex items-start gap-2 overflow-x-auto">
             {photos.map((file) => (
-              <img
-                key={file.name + file.size}
-                src={URL.createObjectURL(file)}
-                alt=""
-                className="h-16 w-24 rounded-lg object-cover"
-              />
+              <ListingPhotoPreview key={file.name + file.size + file.lastModified} file={file} />
             ))}
           </div>
         ) : null}
@@ -476,6 +496,7 @@ export function AddYachtForm({
             onChange={(e) => {
               if (clearIfOversized(e.currentTarget.form!, "captain_id")) {
                 setStatus("err");
+                setTone("err");
                 setMessage(c.fileTooBig);
               }
             }}
@@ -491,6 +512,7 @@ export function AddYachtForm({
             onChange={(e) => {
               if (clearIfOversized(e.currentTarget.form!, "captain_mmc")) {
                 setStatus("err");
+                setTone("err");
                 setMessage(c.fileTooBig);
               }
             }}
@@ -506,6 +528,7 @@ export function AddYachtForm({
             onChange={(e) => {
               if (clearIfOversized(e.currentTarget.form!, "captain_photo")) {
                 setStatus("err");
+                setTone("err");
                 setMessage(c.fileTooBig);
               }
             }}
@@ -560,7 +583,16 @@ export function AddYachtForm({
       <PayoutsNotice locale={locale} />
 
       {message ? (
-        <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p
+          role={tone === "err" ? "alert" : "status"}
+          className={`rounded-lg px-3 py-2 text-sm ${
+            tone === "err"
+              ? "bg-red-50 text-red-700"
+              : tone === "warn"
+                ? "bg-amber-50 text-amber-900"
+                : "bg-emerald-50 text-emerald-800"
+          }`}
+        >
           {message}
         </p>
       ) : null}

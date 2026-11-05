@@ -135,12 +135,12 @@ export function FleetGrid({
                 key={y.id}
                 className="overflow-hidden rounded-2xl border border-white/10 bg-white/5"
               >
-                <div className="relative h-64">
+                <div className="relative h-80 bg-navy/40 sm:h-96">
                   <Image
                     src={y.image}
                     alt={y.name}
                     fill
-                    className="object-cover"
+                    className="object-contain"
                   />
                   <span className="absolute left-3 top-3 rounded-full bg-navy/80 px-3 py-1 text-[11px] font-bold uppercase tracking-wide">
                     {bookableCard ? c.bookableNow : c.catalogLabel}

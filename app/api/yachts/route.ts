@@ -17,6 +17,7 @@ import {
 } from "@/lib/listing-files";
 import {
   isHin,
+  listingHinDecision,
   listingToYacht,
   optionalWallet,
   parseLangs,
@@ -216,7 +217,10 @@ export async function POST(req: Request) {
   if (!ownerName || !name || !captainName || !homePort || !captainRegion) {
     return gate.seal(Response.json({ error: "fields" }, { status: 400 }));
   }
-  if (!isHin(hin)) return gate.seal(Response.json({ error: "hin" }, { status: 400 }));
+  // HIN is optional. A tax ID or other non-hull value is stored blank and the
+  // yacht stays a draft; it never rejects the rest of the form. DEC-20261105-15.
+  const hinDecision = listingHinDecision(hin);
+  const storedHin = isHin(hin) ? hinDecision.hin : "";
   if (!Number.isFinite(guests) || guests < 1 || guests > 50) {
     return gate.seal(Response.json({ error: "guests" }, { status: 400 }));
   }
@@ -295,7 +299,7 @@ export async function POST(req: Request) {
       ownerIdUrl,
       ownerWallet,
       name,
-      hin,
+      hin: storedHin,
       guests,
       traits,
       homePort,
@@ -307,9 +311,16 @@ export async function POST(req: Request) {
       captainLanguages,
       captainRegion,
       captainWallet,
+      status: storedHin ? "listed" : "draft",
     });
     logFunnel("listing_submitted", "owner");
-    return gate.seal(Response.json({ yacht: listingToYacht(listing) }));
+    return gate.seal(
+      Response.json({
+        yacht: { ...listingToYacht(listing), bookable: Boolean(storedHin) },
+        status: storedHin ? "listed" : "draft",
+        hin: storedHin ? "ok" : hin ? "invalid" : "empty",
+      }),
+    );
   } catch {
     return gate.seal(Response.json({ error: "save" }, { status: 500 }));
   }
