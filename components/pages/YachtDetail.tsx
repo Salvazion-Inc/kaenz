@@ -10,6 +10,7 @@ import { pathFor, type Locale } from "@/lib/locale";
 import type { NavViewer } from "@/components/Nav";
 import type { BookingContact } from "@/lib/profile";
 import { formatUsd, type Yacht } from "@/lib/yachts";
+import { useTripCheckoutEnabled } from "@/components/TripCheckoutFlag";
 
 export function YachtDetail({
   locale,
@@ -27,6 +28,7 @@ export function YachtDetail({
   contact?: BookingContact | null;
 }) {
   const c = t(locale);
+  const checkoutOpen = useTripCheckoutEnabled();
   const bookable = yacht.bookable === true;
   const kinds = (yacht.kinds || []).map((kind) => tripKindLabel(locale, kind));
 
@@ -105,9 +107,9 @@ export function YachtDetail({
                 >
                   {c.signInToBook}
                 </Link>
-              ) : (
+              ) : checkoutOpen ? (
                 <h2 className="text-2xl font-bold">{c.bookStripe}</h2>
-              )}
+              ) : null}
               <BookGate
                 locale={locale}
                 yacht={yacht}

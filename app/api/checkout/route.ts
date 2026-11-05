@@ -2,12 +2,18 @@ import { requireVerifiedUser } from "@/lib/account-verification";
 import { createTripCheckout, type CheckoutBody } from "@/lib/checkout";
 import { publicErrorCode } from "@/lib/public-error";
 import { getStripe, maskStripeId, stripeConfigured } from "@/lib/stripe";
+import { tripCheckoutEnabled } from "@/lib/trip-checkout";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   const gate = await requireVerifiedUser(req);
   if ("response" in gate) return gate.response;
+  if (!tripCheckoutEnabled()) {
+    return gate.seal(
+      Response.json({ error: "trip_checkout_paused" }, { status: 503 }),
+    );
+  }
   const body = (await req.json().catch(() => ({}))) as CheckoutBody;
   const result = await createTripCheckout({
     req,

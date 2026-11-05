@@ -1,8 +1,10 @@
 import { Analytics } from "@vercel/analytics/next";
 import { Outfit } from "next/font/google";
 import { ConciergeFlag } from "@/components/ConciergeFlag";
+import { TripCheckoutFlag } from "@/components/TripCheckoutFlag";
 import { SiteJsonLd } from "@/components/seo/JsonLd";
 import { conciergeEnabled } from "@/lib/concierge";
+import { tripCheckoutEnabled } from "@/lib/trip-checkout";
 import { LocaleProvider } from "@/lib/locale-context";
 import { LocationProvider } from "@/lib/location";
 import { localeMeta, type Locale } from "@/lib/locale";
@@ -41,7 +43,9 @@ export function DocumentShell({
         <SiteJsonLd />
         <LocaleProvider initialLocale={locale}>
           <ConciergeFlag enabled={conciergeEnabled()}>
-            <LocationProvider>{children}</LocationProvider>
+            <TripCheckoutFlag enabled={tripCheckoutEnabled()}>
+              <LocationProvider>{children}</LocationProvider>
+            </TripCheckoutFlag>
           </ConciergeFlag>
         </LocaleProvider>
         <Analytics />

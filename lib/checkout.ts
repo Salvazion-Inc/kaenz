@@ -14,6 +14,7 @@ import {
   stripeConfigured,
 } from "./stripe";
 import { parseWhenMode, quoteTrip } from "./trip-quote";
+import { tripCheckoutEnabled } from "./trip-checkout";
 
 export type CheckoutBody = {
   yachtId?: string;
@@ -74,6 +75,9 @@ export async function createTripCheckout(opts: {
   user?: { id: string; email?: string; name?: string } | null;
   guest?: boolean;
 }) {
+  if (!tripCheckoutEnabled()) {
+    return { error: "trip_checkout_paused" as const, status: 503 };
+  }
   const offerId = String(opts.body.offerId || opts.body.offer_id || "").trim();
   const captainGate = await checkoutCaptainBlock({
     offerId,

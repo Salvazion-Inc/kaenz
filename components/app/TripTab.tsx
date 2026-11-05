@@ -15,6 +15,10 @@ import { useOperator } from "@/lib/operator-store";
 import { useTripLog } from "@/lib/trip-log";
 import { TRIP_STEPS, useTrip, type TripStatus, type TripStep } from "@/lib/trip-store";
 import { CaptainAvatar } from "@/components/CaptainAvatar";
+import {
+  tripCheckoutPausedNotice,
+  useTripCheckoutEnabled,
+} from "@/components/TripCheckoutFlag";
 import { CaptainDesk } from "./CaptainDesk";
 import { FareCard } from "./FareCard";
 import { GratuityPicker } from "./GratuityPicker";
@@ -23,6 +27,7 @@ import { TripLiveMap } from "./TripLiveMap";
 
 export function TripTab({ locale }: { locale: Locale }) {
   const c = at(locale);
+  const checkoutOpen = useTripCheckoutEnabled();
   const {
     trip,
     setTrip,
@@ -247,7 +252,7 @@ export function TripTab({ locale }: { locale: Locale }) {
     e.preventDefault();
     setError("");
     setNotice("");
-    if (!yacht || !fare || !profile) return;
+    if (!checkoutOpen || !yacht || !fare || !profile) return;
     setBusy(true);
     const when =
       trip.whenMode === "now" ? nowStamp() : { date: trip.date, time: trip.time };
@@ -279,6 +284,10 @@ export function TripTab({ locale }: { locale: Locale }) {
       if (!res.ok) {
         if (data.error === "stripe_unconfigured") {
           setError(c.stripeMissing);
+          return;
+        }
+        if (data.error === "trip_checkout_paused") {
+          setNotice(tripCheckoutPausedNotice(locale));
           return;
         }
         if (data.error === "captain_required" || res.status === 409) {
@@ -529,7 +538,10 @@ export function TripTab({ locale }: { locale: Locale }) {
         />
       </div>
 
-      {showPay ? (
+      {!checkoutOpen && (showPay || awaitingCaptain) ? (
+        <p className="mt-4 text-sm text-white/70">{tripCheckoutPausedNotice(locale)}</p>
+      ) : null}
+      {showPay && checkoutOpen ? (
         <form onSubmit={pay} className="mt-4 rounded-2xl border border-white/10 p-4">
           <h3 className="font-bold">{c.pay}</h3>
           <p className="mt-1 text-xs text-white/50">{c.payAfterQuote}</p>
