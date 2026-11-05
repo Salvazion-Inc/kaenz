@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { t, tripKindLabel } from "@/lib/copy";
 import { defaultDestinationId, seedRealPlaces } from "@/lib/bookable-seed";
 import type { Locale } from "@/lib/locale";
@@ -13,6 +13,7 @@ import {
   type TripKind,
 } from "@/lib/pricing";
 import type { BookingContact } from "@/lib/profile";
+import { fetchOfferGate, postTripOffer } from "@/lib/offer-client";
 import { formatUsd, type Yacht } from "@/lib/yachts";
 
 const KINDS: TripKind[] = ["commute", "tour", "special"];
@@ -51,7 +52,44 @@ export function GuestBookForm({
     "idle" | "sending" | "redirect" | "err"
   >("idle");
   const [message, setMessage] = useState("");
+  const [gateReady, setGateReady] = useState(false);
+  const [autoAccept, setAutoAccept] = useState(false);
+  const [offerId, setOfferId] = useState("");
+  const [acceptedYachtId, setAcceptedYachtId] = useState("");
+  const [accepted, setAccepted] = useState(false);
   const inflight = useRef(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchOfferGate().then((gate) => {
+      if (cancelled) return;
+      setAutoAccept(gate.autoAccept);
+      setGateReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!offerId || accepted || autoAccept) return;
+    let cancelled = false;
+    async function poll() {
+      const gate = await fetchOfferGate(offerId);
+      if (cancelled) return;
+      if (gate.autoAccept) setAutoAccept(true);
+      if (gate.accepted) {
+        setAccepted(true);
+        if (gate.yachtId) setAcceptedYachtId(gate.yachtId);
+      }
+    }
+    poll();
+    const timer = window.setInterval(poll, 4000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [offerId, accepted, autoAccept]);
 
   const origin = hubs.find((p) => p.id === originId) || placeById(originId);
   const destination =
@@ -100,12 +138,43 @@ export function GuestBookForm({
     setStatus("sending");
     setMessage("");
     const form = new FormData(e.currentTarget);
+    let activeOfferId = offerId;
     try {
+      if (!autoAccept && !accepted) {
+        if (offerId) {
+          inflight.current = false;
+          setStatus("idle");
+          return;
+        }
+        const created = await postTripOffer({
+          yachtId: yacht.id,
+          kind,
+          hours,
+          guests,
+          originName: origin?.name || yacht.marina,
+          destName: destination?.name || yacht.marina,
+        });
+        if (!created.ok) {
+          if (!created.autoAccept) {
+            if (created.status === 401 || created.error === "unverified") {
+              throw new Error(c.verifyTitle);
+            }
+            throw new Error(c.errCaptain);
+          }
+          setAutoAccept(true);
+        } else {
+          setOfferId(created.id);
+          setStatus("idle");
+          setMessage("");
+          inflight.current = false;
+          return;
+        }
+      }
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          yachtId: yacht.id,
+          yachtId: acceptedYachtId || yacht.id,
           kind,
           hours,
           guests,
@@ -119,6 +188,7 @@ export function GuestBookForm({
           email: email.trim(),
           phone: phone.trim(),
           locale,
+          offerId: activeOfferId || offerId,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -134,6 +204,9 @@ export function GuestBookForm({
         }
         if (data.error === "yacht") {
           throw new Error(c.formError);
+        }
+        if (data.error === "captain_required" || res.status === 409) {
+          throw new Error(c.errCaptain);
         }
         if (data.error === "rate") {
           throw new Error(c.formError);
@@ -305,15 +378,33 @@ export function GuestBookForm({
       <p className="text-xs font-semibold uppercase tracking-wide text-white/50">
         {c.stripeTrust}
       </p>
-      <button
-        type="submit"
-        disabled={busy}
-        className="btn-kaenz btn-book w-full text-sm disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {status === "sending" || status === "redirect"
-          ? c.stripeRedirect
-          : c.payStripe}
-      </button>
+      {gateReady && !autoAccept && offerId && !accepted ? (
+        <p className="text-sm font-semibold" role="status">
+          {c.waitingForCaptain}
+        </p>
+      ) : gateReady && (autoAccept || accepted) ? (
+        <button
+          type="submit"
+          disabled={busy}
+          className="btn-kaenz btn-book w-full text-sm disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {status === "sending" || status === "redirect"
+            ? c.stripeRedirect
+            : c.payStripe}
+        </button>
+      ) : gateReady ? (
+        <button
+          type="submit"
+          disabled={busy}
+          className="btn-kaenz btn-book w-full text-sm disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {c.requestTrip}
+        </button>
+      ) : (
+        <p className="text-sm font-semibold" role="status">
+          {c.waitingForCaptain}
+        </p>
+      )}
       {message ? <p className="text-sm text-red-300">{message}</p> : null}
     </form>
   );

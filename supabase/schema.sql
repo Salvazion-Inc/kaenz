@@ -274,6 +274,44 @@ create table if not exists public.funnel_events (
 revoke all on table public.funnel_events from anon, authenticated;
 grant select, insert on table public.funnel_events to service_role;
 
+-- DEC-20261105-01 under DEC-20261021-02. See supabase/migrations/20261105_trip_offers.sql.
+-- Not applied by the app. Captain acceptance lives here; checkout reads it with the service role.
+create table if not exists public.trip_offers (
+  id uuid primary key default gen_random_uuid(),
+  user_id text not null,
+  customer_name text not null default '',
+  yacht_id text,
+  origin_name text not null default '',
+  dest_name text not null default '',
+  guests int,
+  kind text,
+  hours numeric,
+  status text not null default 'offered'
+    check (status in ('offered', 'accepted', 'declined')),
+  accepted_by text,
+  accepted_at timestamptz,
+  created_at timestamptz not null default now(),
+  constraint trip_offers_accepted_fields check (
+    (
+      status = 'accepted'
+      and accepted_by is not null
+      and accepted_at is not null
+    )
+    or (
+      status <> 'accepted'
+      and accepted_by is null
+      and accepted_at is null
+    )
+  )
+);
+alter table public.trip_offers enable row level security;
+create index if not exists trip_offers_open_idx
+  on public.trip_offers (status, created_at desc);
+create index if not exists trip_offers_user_idx
+  on public.trip_offers (user_id, created_at desc);
+revoke all on table public.trip_offers from anon, authenticated;
+grant select, insert, update, delete on table public.trip_offers to service_role;
+
 -- seed-real bookable inventory (Miami Beach–FLL–Hollywood–Palm Beach).
 -- Evidence: origin catalog slugs already published on /fleet at public marinas.
 insert into public.yachts (

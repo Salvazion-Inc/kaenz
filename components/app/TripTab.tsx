@@ -3,15 +3,17 @@
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { at } from "@/lib/app-copy";
+import { OFFER_ID } from "@/lib/captain-accept";
 import { crew } from "@/lib/crew";
 import { type Locale } from "@/lib/locale";
+import { fetchOfferGate } from "@/lib/offer-client";
 import { nowStamp, settleCharge } from "@/lib/pricing";
 import { formatUsd } from "@/lib/yachts";
 import { useProfile } from "@/lib/profile-store";
 import { useDispatch } from "@/lib/dispatch-store";
 import { useOperator } from "@/lib/operator-store";
 import { useTripLog } from "@/lib/trip-log";
-import { TRIP_STEPS, useTrip, type TripStep } from "@/lib/trip-store";
+import { TRIP_STEPS, useTrip, type TripStatus, type TripStep } from "@/lib/trip-store";
 import { CaptainAvatar } from "@/components/CaptainAvatar";
 import { CaptainDesk } from "./CaptainDesk";
 import { FareCard } from "./FareCard";
@@ -41,6 +43,9 @@ export function TripTab({ locale }: { locale: Locale }) {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  const [autoAccept, setAutoAccept] = useState(false);
+  const [serverAccepted, setServerAccepted] = useState(false);
+  const [acceptanceReady, setAcceptanceReady] = useState(false);
 
   useEffect(() => {
     if (!profile) return;
@@ -84,6 +89,59 @@ export function TripTab({ locale }: { locale: Locale }) {
   }, [c.errConfirm, c.paidWithStripe, c.stripeCancel, setTrip, trip.bookingId]);
 
   useEffect(() => {
+    let cancelled = false;
+    async function poll() {
+      const id = OFFER_ID.test(trip.bookingId || "") ? trip.bookingId || "" : "";
+      const gate = await fetchOfferGate(id);
+      if (cancelled) return;
+      setAutoAccept(gate.autoAccept);
+      setServerAccepted(gate.accepted);
+      setAcceptanceReady(true);
+      if (gate.autoAccept) return;
+      if (
+        trip.bookingId &&
+        !OFFER_ID.test(trip.bookingId) &&
+        trip.paymentStatus !== "paid" &&
+        trip.status !== "draft"
+      ) {
+        setTrip({
+          status: "draft",
+          bookingId: undefined,
+          paymentStatus: "unpaid",
+          tripProgress: 0,
+        });
+        return;
+      }
+      if (gate.accepted) {
+        const yachtId = gate.yachtId || trip.yachtId;
+        if (trip.status === "requested" || (yachtId && trip.yachtId !== yachtId)) {
+          setTrip({
+            status: trip.status === "requested" ? "approved" : trip.status,
+            yachtId,
+          });
+        }
+        return;
+      }
+      if (
+        trip.paymentStatus !== "paid" &&
+        trip.status !== "draft" &&
+        trip.status !== "requested" &&
+        trip.status !== "paid" &&
+        trip.status !== "rated"
+      ) {
+        setTrip({ status: "requested", tripProgress: 0 });
+      }
+    }
+    poll();
+    const timer = window.setInterval(poll, 4000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [trip.bookingId, trip.status, trip.paymentStatus, trip.yachtId, setTrip]);
+
+  useEffect(() => {
+    if (!acceptanceReady || !autoAccept) return;
     if (trip.status !== "requested") return;
     const offer = offers.find((item) => item.id === trip.bookingId);
     if (offer?.status === "accepted") {
@@ -102,9 +160,21 @@ export function TripTab({ locale }: { locale: Locale }) {
       setTrip({ status: "approved", yachtId: yid });
     }, 8000);
     return () => window.clearTimeout(id);
-  }, [trip.status, trip.bookingId, offers, captain, available, accept, setTrip]);
+  }, [
+    acceptanceReady,
+    autoAccept,
+    trip.status,
+    trip.bookingId,
+    offers,
+    captain,
+    available,
+    accept,
+    setTrip,
+  ]);
 
   useEffect(() => {
+    if (!acceptanceReady) return;
+    if (!autoAccept && !serverAccepted) return;
     if (trip.status === "approved") {
       const id = window.setTimeout(
         () => setTrip({ status: "waiting" }),
@@ -127,7 +197,7 @@ export function TripTab({ locale }: { locale: Locale }) {
       );
       return () => window.clearTimeout(timer);
     }
-  }, [trip.status, trip.guests, setTrip]);
+  }, [acceptanceReady, autoAccept, serverAccepted, trip.status, trip.guests, setTrip]);
 
   useEffect(() => {
     const arrivedNow =
@@ -146,15 +216,31 @@ export function TripTab({ locale }: { locale: Locale }) {
 
   const complete =
     yacht && fare && (trip.whenMode === "now" || (trip.date && trip.time));
-  const step =
-    trip.status === "draft" ? null : (trip.status as TripStep);
-  const arrived = trip.status === "underway" && (trip.tripProgress || 0) >= 1;
+  const acceptanceBlocksProgress =
+    trip.status !== "draft" &&
+    trip.paymentStatus !== "paid" &&
+    trip.status !== "paid" &&
+    trip.status !== "rated";
+  const shown: TripStatus =
+    trip.status === "draft"
+      ? "draft"
+      : !acceptanceBlocksProgress
+        ? trip.status
+        : !acceptanceReady || (!autoAccept && !serverAccepted)
+          ? "requested"
+          : trip.status;
+  const step = shown === "draft" ? null : (shown as TripStep);
+  const arrived = shown === "underway" && (trip.tripProgress || 0) >= 1;
   const paid = trip.paymentStatus === "paid" || trip.status === "paid";
+  const awaitingCaptain =
+    shown === "requested" && acceptanceBlocksProgress && !autoAccept;
   const showPay =
     Boolean(complete) &&
-    trip.status !== "draft" &&
-    trip.status !== "rated" &&
-    !paid;
+    acceptanceReady &&
+    !paid &&
+    shown !== "draft" &&
+    shown !== "rated" &&
+    (autoAccept || (serverAccepted && !awaitingCaptain));
   const showRate = trip.status === "paid" || (arrived && paid);
 
   async function pay(e: React.FormEvent) {
@@ -186,12 +272,17 @@ export function TripTab({ locale }: { locale: Locale }) {
           whenMode: trip.whenMode,
           gratuityPct: trip.gratuityPct || 0,
           locale,
+          offerId: trip.bookingId || "",
         }),
       });
       const data = await res.json();
       if (!res.ok) {
         if (data.error === "stripe_unconfigured") {
           setError(c.stripeMissing);
+          return;
+        }
+        if (data.error === "captain_required" || res.status === 409) {
+          setError(c.errCaptain);
           return;
         }
         throw new Error(data.error || "Error");
@@ -248,9 +339,11 @@ export function TripTab({ locale }: { locale: Locale }) {
       <p className="mt-1 text-sm text-white/70">{c.tripLead}</p>
       {profile?.role === "captain" ? <CaptainDesk locale={locale} /> : null}
 
-      {trip.status === "requested" ? (
+      {shown === "requested" ? (
         <section className="mt-4 rounded-2xl border border-kaenz/30 bg-kaenz/10 p-4">
-          <p className="text-sm font-bold text-kaenz">{ops.matching}</p>
+          <p className="text-sm font-bold text-kaenz">
+            {awaitingCaptain ? c.waitingForCaptain : ops.matching}
+          </p>
           <p className="mt-1 text-xs text-white/65">
             {ops.offeredTo.replace("{n}", String(myOffer?.ranked.length || 0))}
           </p>
@@ -272,8 +365,12 @@ export function TripTab({ locale }: { locale: Locale }) {
 
       {step ? (
         <section className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p className="text-sm font-bold text-kaenz">{c.tripSteps[step]}</p>
-          <p className="mt-1 text-xs text-white/65">{c.tripStepLead[step]}</p>
+          <p className="text-sm font-bold text-kaenz">
+            {awaitingCaptain ? c.waitingForCaptain : c.tripSteps[step]}
+          </p>
+          <p className="mt-1 text-xs text-white/65">
+            {awaitingCaptain ? c.errCaptain : c.tripStepLead[step]}
+          </p>
           <ol className="mt-4 space-y-2">
             {TRIP_STEPS.map((id, i) => {
               const done = currentIdx > i;
@@ -314,7 +411,7 @@ export function TripTab({ locale }: { locale: Locale }) {
         </section>
       ) : null}
 
-      {trip.status === "underway" &&
+      {shown === "underway" &&
       originPlace &&
       destinationPlace &&
       Number.isFinite(originPlace.lat) &&
@@ -333,9 +430,9 @@ export function TripTab({ locale }: { locale: Locale }) {
         </section>
       ) : null}
 
-      {(trip.status === "underway" ||
-        trip.status === "paid" ||
-        trip.status === "rated") &&
+      {(shown === "underway" ||
+        shown === "paid" ||
+        shown === "rated") &&
       (yacht || onboard.length) ? (
         <section className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
           <h3 className="text-sm font-bold uppercase tracking-wide text-kaenz">
@@ -459,6 +556,10 @@ export function TripTab({ locale }: { locale: Locale }) {
               : `${c.stripePay} · ${formatUsd(settleCharge(fare, trip.gratuityPct || 0).total)}`}
           </button>
         </form>
+      ) : awaitingCaptain && complete ? (
+        <p className="mt-4 text-sm text-white/70" role="status">
+          {c.waitingForCaptain}
+        </p>
       ) : notice && paid ? (
         <p className="mt-4 text-sm text-kaenz">{notice}</p>
       ) : null}

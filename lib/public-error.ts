@@ -10,6 +10,7 @@ const PUBLIC_CODES = new Set([
   "auth",
   "unverified",
   "guest",
+  "captain_required",
 ]);
 
 const SECRETISH =
