@@ -93,10 +93,27 @@ test("checkout allows only a persisted captain acceptance for that customer and 
   assert.equal(publicErrorCode("captain_required"), "captain_required");
 });
 
-test("E2E: checkout returns 409 until a captain acceptance exists", async () => {
+test("E2E: checkout pauses before the captain gate, then returns 409", async () => {
   await withEnv(
-    { CAPTAIN_AUTO_ACCEPT: undefined, STRIPE_SECRET_KEY: undefined },
+    {
+      CAPTAIN_AUTO_ACCEPT: undefined,
+      STRIPE_SECRET_KEY: "sk_test_unit_not_used",
+      TRIP_CHECKOUT_ENABLED: undefined,
+    },
     async () => {
+      const paused = await createTripCheckout({
+        req: new Request("https://kaenz.com/api/checkout", { method: "POST" }),
+        body: {
+          yachtId: "galeon",
+          email: "ada@example.com",
+          full_name: "Ada Lovelace",
+          offerId: OFFER,
+        },
+        user: { id: "customer-1", email: "ada@example.com", name: "Ada Lovelace" },
+      });
+      assert.equal(paused.status, 503);
+      assert.equal("error" in paused && paused.error, "trip_checkout_paused");
+
       const blocked = await checkoutCaptainBlock({
         offerId: OFFER,
         userId: "customer-1",
@@ -113,7 +130,16 @@ test("E2E: checkout returns 409 until a captain acceptance exists", async () => 
         load: async () => row(),
       });
       assert.equal(allowed, null);
+    },
+  );
 
+  await withEnv(
+    {
+      CAPTAIN_AUTO_ACCEPT: undefined,
+      STRIPE_SECRET_KEY: "sk_test_unit_not_used",
+      TRIP_CHECKOUT_ENABLED: "1",
+    },
+    async () => {
       const result = await createTripCheckout({
         req: new Request("https://kaenz.com/api/checkout", { method: "POST" }),
         body: {
@@ -132,7 +158,11 @@ test("E2E: checkout returns 409 until a captain acceptance exists", async () => 
 
 test("CAPTAIN_AUTO_ACCEPT=1 restores checkout past the captain gate", async () => {
   await withEnv(
-    { CAPTAIN_AUTO_ACCEPT: "1", STRIPE_SECRET_KEY: undefined },
+    {
+      CAPTAIN_AUTO_ACCEPT: "1",
+      STRIPE_SECRET_KEY: undefined,
+      TRIP_CHECKOUT_ENABLED: undefined,
+    },
     async () => {
       const skipped = await checkoutCaptainBlock({
         offerId: "",
@@ -141,6 +171,23 @@ test("CAPTAIN_AUTO_ACCEPT=1 restores checkout past the captain gate", async () =
         load: async () => null,
       });
       assert.equal(skipped, null);
+      const paused = await createTripCheckout({
+        req: new Request("https://kaenz.com/api/checkout", { method: "POST" }),
+        body: { yachtId: "galeon" },
+        user: { id: "customer-1", email: "ada@example.com", name: "Ada" },
+      });
+      assert.equal(paused.status, 503);
+      assert.equal("error" in paused && paused.error, "trip_checkout_paused");
+    },
+  );
+
+  await withEnv(
+    {
+      CAPTAIN_AUTO_ACCEPT: "1",
+      STRIPE_SECRET_KEY: undefined,
+      TRIP_CHECKOUT_ENABLED: "1",
+    },
+    async () => {
       const result = await createTripCheckout({
         req: new Request("https://kaenz.com/api/checkout", { method: "POST" }),
         body: { yachtId: "galeon" },
@@ -171,7 +218,11 @@ test("trip pay stays behind a server acceptance and the migration is minimal", (
   assert.match(form, /autoAccept \|\| accepted/);
   assert.match(form, /waitingForCaptain/);
   assert.match(form, /offerId/);
-  assert.ok(checkout.indexOf("checkoutCaptainBlock") < checkout.indexOf("stripeConfigured"));
+  const pauseAt = checkout.indexOf("if (!tripCheckoutEnabled())");
+  const captainAt = checkout.indexOf("await checkoutCaptainBlock");
+  const stripeAt = checkout.indexOf("if (!stripeConfigured())");
+  const chargeAt = checkout.indexOf("checkout.sessions.create");
+  assert.ok(pauseAt > 0 && pauseAt < captainAt && captainAt < stripeAt && stripeAt < chargeAt);
   assert.match(acceptRoute, /userIsCaptain/);
   assert.match(acceptRoute, /requireVerifiedUser/);
   assert.match(sql, /DEC-20261105-01/);

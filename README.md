@@ -52,6 +52,7 @@ Add to Home Screen on iOS/Android for the standalone mobile shell.
 | `SUPABASE_SERVICE_ROLE_KEY` | Optional server writes |
 | `STRIPE_SECRET_KEY` | Stripe Checkout (server) |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signature |
+| `TRIP_CHECKOUT_ENABLED` | Server-only. Leave unset. `POST /api/checkout` stays closed until #26 has code and production PASS. Not a `NEXT_PUBLIC_` variable. |
 | `AUTH_SECRET` | Signs Kaenz sessions. Required in production (the server throws if it is missing). Payout onboarding stays disabled without it. |
 
 Signup, join, resend, password reset, and funnel rate limits are in-memory and per instance. Vercel KV and Upstash are not configured, and no rate-limit table is added, so the limits are not shared across instances and reset when an instance stops.
@@ -61,6 +62,8 @@ Without Supabase, booking and join requests still succeed locally (no persistenc
 After a request, the client pays the algorithm fare plus optional captain gratuity with Stripe Checkout. The fare splits **owner 38% / captain 30% / Kaenz 25% / pickup marina 3.5% / dropoff marina 3.5%**. Gratuity is on top and goes only to the captain. Each partner connects their own Stripe account from **Account → Receive your earnings** (Accounts v2, Express dashboard, recipient configuration). After payment the webhook at `/api/stripe/webhook` transfers each share to that partner's own account (separate charges and transfers, `transfer_group` + `source_transaction`). A share whose partner has not connected yet stays on the Kaenz platform balance in `pending_payouts` and is released automatically once that partner's account is active. There is no fixed fallback account.
 
 A verified account books from `/fleet/{id}` (bookable yachts) → `POST /api/checkout` → Stripe Checkout. Success lands on `/book/confirmed`. `POST /api/checkout/guest` is closed (410). Owners and captains still list boats from `/join`. There is no demo pay path.
+
+Trip checkout is fail-closed (DEC-20261105-02, under DEC-20261021-02). `POST /api/checkout` returns `503 {"error":"trip_checkout_paused"}` before any Stripe call unless the server env `TRIP_CHECKOUT_ENABLED` is exactly `1` or `true`. Unset is the production state. After that flag is open, checkout still returns `409 {"error":"captain_required"}` until a captain accepts (#26). The Pay control stays behind both states: “Waiting for captain”, then “Payment is not open yet.” Stripe Connect, webhooks, and non-trip routes are unchanged. Rollback of the pause is git revert, or setting that server env to the exact open value. Do not put the open value in production until #26 has production PASS.
 
 ## Supabase
 

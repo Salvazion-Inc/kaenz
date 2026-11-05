@@ -15,6 +15,10 @@ import {
 import type { BookingContact } from "@/lib/profile";
 import { fetchOfferGate, postTripOffer } from "@/lib/offer-client";
 import { formatUsd, type Yacht } from "@/lib/yachts";
+import {
+  tripCheckoutPausedNotice,
+  useTripCheckoutEnabled,
+} from "@/components/TripCheckoutFlag";
 
 const KINDS: TripKind[] = ["commute", "tour", "special"];
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -31,6 +35,7 @@ export function GuestBookForm({
   contact?: BookingContact | null;
 }) {
   const c = t(locale);
+  const checkoutOpen = useTripCheckoutEnabled();
   const hubs: Place[] =
     places.length > 0
       ? places
@@ -170,6 +175,12 @@ export function GuestBookForm({
           return;
         }
       }
+      if (!checkoutOpen) {
+        inflight.current = false;
+        setStatus("idle");
+        setMessage(tripCheckoutPausedNotice(locale));
+        return;
+      }
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -198,6 +209,9 @@ export function GuestBookForm({
         }
         if (data.error === "stripe_unconfigured") {
           throw new Error(c.stripeMissing);
+        }
+        if (data.error === "trip_checkout_paused") {
+          throw new Error(tripCheckoutPausedNotice(locale));
         }
         if (data.error === "profile") {
           throw new Error(c.invalidEmail);
@@ -375,14 +389,18 @@ export function GuestBookForm({
         {c.from} {formatUsd(quote.total)} · {tripKindLabel(locale, kind)} ·{" "}
         {hours}h
       </p>
-      <p className="text-xs font-semibold uppercase tracking-wide text-white/50">
-        {c.stripeTrust}
-      </p>
+      {checkoutOpen ? (
+        <p className="text-xs font-semibold uppercase tracking-wide text-white/50">
+          {c.stripeTrust}
+        </p>
+      ) : (
+        <p className="text-sm text-white/70">{tripCheckoutPausedNotice(locale)}</p>
+      )}
       {gateReady && !autoAccept && offerId && !accepted ? (
         <p className="text-sm font-semibold" role="status">
           {c.waitingForCaptain}
         </p>
-      ) : gateReady && (autoAccept || accepted) ? (
+      ) : gateReady && (autoAccept || accepted) && checkoutOpen ? (
         <button
           type="submit"
           disabled={busy}
@@ -392,7 +410,7 @@ export function GuestBookForm({
             ? c.stripeRedirect
             : c.payStripe}
         </button>
-      ) : gateReady ? (
+      ) : gateReady && !(autoAccept || accepted) ? (
         <button
           type="submit"
           disabled={busy}
@@ -400,7 +418,7 @@ export function GuestBookForm({
         >
           {c.requestTrip}
         </button>
-      ) : (
+      ) : gateReady ? null : (
         <p className="text-sm font-semibold" role="status">
           {c.waitingForCaptain}
         </p>

@@ -3,6 +3,7 @@ const PUBLIC_CODES = new Set([
   "kind",
   "profile",
   "stripe_unconfigured",
+  "trip_checkout_paused",
   "rate",
   "checkout",
   "session",
