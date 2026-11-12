@@ -18,6 +18,10 @@ export const VERCEL_FUNCTION_BODY_LIMIT = Math.floor(4.5 * 1024 * 1024);
 
 const LISTING_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+export function isListingId(value: string) {
+  return LISTING_ID.test(value);
+}
+
 export type ListingFileKind = "photo" | "doc";
 
 export type PreparedListingFile = {
@@ -283,12 +287,42 @@ export function assertListingPaths(
   if ((!opts.partial && files.yacht_photos.length < 1) || files.yacht_photos.length > 5) {
     return { ok: false as const, error: "photos" };
   }
-  for (let index = 0; index < files.yacht_photos.length; index += 1) {
-    if (!isOwnedListingPath(userId, listingId, files.yacht_photos[index], `yacht-${index}`, false)) {
+  // New photos may use a higher yacht-N so they do not overwrite yacht-0.. already stored.
+  const seenPhoto = new Set<string>();
+  for (const path of files.yacht_photos) {
+    const base = /\/(yacht-[0-4])\.(?:jpg|png|webp)$/.exec(path)?.[1];
+    if (!base || seenPhoto.has(base) || !isOwnedListingPath(userId, listingId, path, base, false)) {
       return { ok: false as const, error: "photos" };
     }
+    seenPhoto.add(base);
   }
   return { ok: true as const };
+}
+
+/**
+ * Move new yacht photos past the ones already stored on this draft.
+ * A client that always starts at yacht_0 must not replace yacht-0.jpg.
+ */
+export function remapYachtPhotoSlots(files: PreparedListingFile[], nextIndex: number) {
+  let cursor = nextIndex;
+  const used = new Set<number>();
+  const next: PreparedListingFile[] = [];
+  for (const file of files) {
+    if (!file.slot.startsWith("yacht_")) {
+      next.push(file);
+      continue;
+    }
+    const requested = Number(file.slot.slice("yacht_".length));
+    let index = Number.isFinite(requested) && requested >= nextIndex ? requested : cursor++;
+    while (used.has(index)) index += 1;
+    if (index > 4) return { ok: false as const, error: "photos" as const };
+    used.add(index);
+    cursor = Math.max(cursor, index + 1);
+    // Keep the client's slot name so it can match the file it still holds.
+    // Only the storage base moves, which is what would overwrite yacht-0.jpg.
+    next.push({ ...file, base: `yacht-${index}` });
+  }
+  return { ok: true as const, files: next };
 }
 
 export type SignedListingUpload = {
@@ -389,6 +423,10 @@ export function classifyListingResponse(status: number, body: string) {
       status: typeof json.status === "string" ? json.status : "",
       listingId: typeof json.listingId === "string" ? json.listingId : "",
       uploads: Array.isArray(json.uploads) ? json.uploads : [],
+      missing: Array.isArray(json.missing)
+        ? json.missing.filter((item): item is string => typeof item === "string")
+        : [],
+      hin: json.hin === "invalid" || json.hin === "ok" || json.hin === "empty" ? json.hin : "",
     };
   } catch {
     return { error: "http" };

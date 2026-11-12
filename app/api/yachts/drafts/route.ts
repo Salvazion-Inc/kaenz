@@ -1,4 +1,5 @@
 import { requireVerifiedUser } from "@/lib/account-verification";
+import { toYachtDraftResume } from "@/lib/listing-draft";
 import { deleteOwnYachtDraft, listOwnYachtDrafts } from "@/lib/listing-store";
 
 export const runtime = "nodejs";
@@ -9,14 +10,7 @@ export async function GET(req: Request) {
   const drafts = await listOwnYachtDrafts(gate.user.id);
   return gate.seal(
     Response.json({
-      drafts: drafts.map((row) => ({
-        id: row.id,
-        name: row.name,
-        homePort: row.homePort,
-        ownerName: row.ownerName,
-        captainName: row.captainName,
-        status: "draft" as const,
-      })),
+      drafts: drafts.map(toYachtDraftResume),
     }),
   );
 }

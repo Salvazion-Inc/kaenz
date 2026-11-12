@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { at } from "@/lib/app-copy";
+import type { YachtDraftResume } from "@/lib/listing-draft";
 import { etaFromKm, haversineKm } from "@/lib/geo";
 import {
   CAPTAIN_LANG_FLAGS,
@@ -36,15 +37,9 @@ export function YachtsTab({ locale }: { locale: Locale }) {
   const [intent, setIntent] = useState({ name: "", yacht: "", marina: "", role: "" as "" | "owner" | "captain" | "marina" });
   const [listings, setListings] = useState<Yacht[]>([]);
   const [notice, setNotice] = useState("");
-  const [drafts, setDrafts] = useState<
-    Array<{ id: string; name: string; homePort: string; ownerName: string; captainName: string }>
-  >([]);
-  const [resume, setResume] = useState<{
-    name: string;
-    homePort: string;
-    ownerName: string;
-    captainName: string;
-  } | null>(null);
+  const [drafts, setDrafts] = useState<YachtDraftResume[]>([]);
+  const [resume, setResume] = useState<YachtDraftResume | null>(null);
+  const [noticeTone, setNoticeTone] = useState<"ok" | "warn">("ok");
   const [klass, setKlass] = useState<"all" | YachtTrait>("all");
 
   useEffect(() => {
@@ -117,7 +112,10 @@ export function YachtsTab({ locale }: { locale: Locale }) {
         </button>
         <button
           type="button"
-          onClick={() => setAdding((open) => !open)}
+          onClick={() => {
+            setResume(null);
+            setAdding((open) => !open);
+          }}
           className="btn-kaenz !px-4 !py-1.5 text-xs"
         >
           {c.addYacht.cta}
@@ -126,22 +124,26 @@ export function YachtsTab({ locale }: { locale: Locale }) {
 
       {adding ? (
         <AddYachtForm
+          key={resume?.id || "new"}
           locale={locale}
           role={intent.role === "captain" ? "captain" : "owner"}
-          initial={{
-            name: resume?.name || intent.yacht,
-            homePort: resume?.homePort || intent.marina,
-            ownerName: resume?.ownerName || (intent.role === "captain" ? "" : intent.name),
-            captainName: resume?.captainName || (intent.role === "captain" ? intent.name : ""),
-          }}
+          initial={
+            resume || {
+              name: intent.yacht,
+              homePort: intent.marina,
+              ownerName: intent.role === "captain" ? "" : intent.name,
+              captainName: intent.role === "captain" ? intent.name : "",
+            }
+          }
           onCancel={() => {
             setAdding(false);
             setResume(null);
           }}
-          onDrafted={() => {
+          onDrafted={(info) => {
             setAdding(false);
             setResume(null);
-            setNotice(c.addYacht.draftSaved);
+            setNotice(info?.message || c.addYacht.draftSaved);
+            setNoticeTone(info?.tone || "ok");
             loadDrafts();
           }}
           onListed={(yacht) => {
@@ -155,13 +157,22 @@ export function YachtsTab({ locale }: { locale: Locale }) {
             });
             enrollCaptain();
             setAdding(false);
+            setResume(null);
             setNotice(c.addYacht.listed);
+            setNoticeTone("ok");
           }}
         />
       ) : null}
 
       {notice ? (
-        <p className="mt-3 rounded-xl border border-kaenz/40 bg-kaenz/10 px-3 py-2 text-sm text-kaenz">
+        <p
+          role={noticeTone === "warn" ? "alert" : "status"}
+          className={`mt-3 rounded-xl border px-3 py-2 text-sm ${
+            noticeTone === "warn"
+              ? "border-amber-300/60 bg-amber-100 text-amber-950"
+              : "border-kaenz/40 bg-kaenz/10 text-kaenz"
+          }`}
+        >
           {notice}
         </p>
       ) : null}

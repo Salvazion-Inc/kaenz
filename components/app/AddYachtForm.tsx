@@ -9,6 +9,7 @@ import {
   LISTING_MAX_BYTES,
   validateListingFileSet,
 } from "@/lib/listing-files";
+import type { YachtDraftResume } from "@/lib/listing-draft";
 import {
   CAPTAIN_LANG_FLAGS,
   CAPTAIN_LANGS,
@@ -82,8 +83,8 @@ export function AddYachtForm({
   locale: Locale;
   onCancel: () => void;
   onListed: (yacht: Yacht) => void;
-  onDrafted?: () => void;
-  initial?: { name?: string; homePort?: string; ownerName?: string; captainName?: string };
+  onDrafted?: (notice: { message: string; tone: "ok" | "warn" }) => void;
+  initial?: Partial<YachtDraftResume>;
   role?: "owner" | "captain";
 }) {
   const c = at(locale).addYacht;
@@ -91,12 +92,15 @@ export function AddYachtForm({
   useEffect(() => {
     trackFunnel("listing_started", role);
   }, [role]);
-  const [traits, setTraits] = useState<YachtTrait[]>([]);
-  const [langs, setLangs] = useState<CaptainLang[]>([]);
+  const [listingId, setListingId] = useState(initial?.id || "");
+  const [traits, setTraits] = useState<YachtTrait[]>(initial?.traits || []);
+  const [langs, setLangs] = useState<CaptainLang[]>(initial?.captainLanguages || []);
   const [photos, setPhotos] = useState<File[]>([]);
   const [status, setStatus] = useState<"idle" | "sending" | "err">("idle");
   const [message, setMessage] = useState("");
   const [tone, setTone] = useState<"err" | "ok" | "warn">("err");
+  const existingPhotos = (initial?.photos || []).filter((src) => /^https?:\/\//i.test(src));
+  const docs = initial?.documents;
 
   function toggleTrait(trait: YachtTrait) {
     setTraits((cur) =>
@@ -136,17 +140,32 @@ export function AddYachtForm({
     return map[code] || c.badResponse;
   }
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = e.currentTarget;
+  function draftNotice(hinInvalid: boolean, missing: string[]) {
+    const labels: Record<string, string> = {
+      owner_id: c.ownerId,
+      captain_id: c.captainId,
+      captain_mmc: c.mmc,
+      captain_photo: c.captainPhoto,
+      yacht_0: c.photos,
+    };
+    const parts: string[] = [c.draftSaved];
+    if (missing.length) {
+      const names = missing.map((slot) => labels[slot] || slot);
+      parts.push(`${c.missingDocs} ${names.join(", ")}.`);
+    }
+    if (hinInvalid) parts.push(c.hinSoft);
+    return parts.join(" ");
+  }
+
+  async function persist(form: HTMLFormElement, publish: boolean) {
     setMessage("");
-    if (!traits.length) {
+    if (publish && !traits.length) {
       setStatus("err");
       setTone("err");
       setMessage(c.needTrait);
       return;
     }
-    if (!langs.length) {
+    if (publish && !langs.length) {
       setStatus("err");
       setTone("err");
       setMessage(c.needLanguage);
@@ -169,15 +188,10 @@ export function AddYachtForm({
     const captainId = inputFile(form, "captain_id");
     const captainMmc = inputFile(form, "captain_mmc");
     const captainPhoto = inputFile(form, "captain_photo");
-    const missing = [
-      ownerId ? "" : c.ownerId,
-      captainId ? "" : c.captainId,
-      captainMmc ? "" : c.mmc,
-      captainPhoto ? "" : c.captainPhoto,
-      photos.length ? "" : c.photos,
-    ].filter(Boolean);
-    // A tax ID or other non-hull value is not a HIN. Drop it and keep saving.
-    const hinDecision = listingHinDecision(inputValue(form, "hin"));
+    // A tax ID or other non-hull value is not a HIN. The server drops it and
+    // the notice below tells the owner. DEC-20261105-15.
+    const hinRaw = inputValue(form, "hin");
+    const hinDecision = listingHinDecision(hinRaw);
     setStatus("sending");
     try {
       // Missing files are fine: the server saves the listing as a draft.
@@ -204,7 +218,8 @@ export function AddYachtForm({
       }
       // One photo at a time: decoding several phone photos in parallel can
       // exhaust mobile memory and freeze the tab while "sending".
-      for (const [index, file] of photos.entries()) {
+      const room = Math.max(0, 5 - existingPhotos.length);
+      for (const [index, file] of photos.slice(0, room).entries()) {
         prepared.push({ slot: `yacht_${index}`, file: await compressListingImage(file) });
       }
       const descriptors = prepared.map(({ slot, file }) => ({
@@ -219,10 +234,11 @@ export function AddYachtForm({
       const signRes = await fetch("/api/yachts/uploads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ files: descriptors, partial: true }),
+        body: JSON.stringify({ files: descriptors, partial: true, listingId }),
       });
       const signed = classifyListingResponse(signRes.status, await signRes.text());
       if (!signRes.ok || signed.error) throw new Error(messageFor(signed.error));
+      const activeId = signed.listingId || listingId;
       const uploads = (signed.uploads || []) as Array<{
         slot?: string;
         path?: string;
@@ -230,17 +246,17 @@ export function AddYachtForm({
       }>;
       const bySlot = new Map(prepared.map((item) => [item.slot, item.file]));
       for (const upload of uploads) {
-        const file = upload.slot ? bySlot.get(upload.slot) : undefined;
+        const file = bySlot.get(String(upload.slot || ""));
         if (!file || !upload.signedUrl || !upload.path) throw new Error(c.uploadFailed);
         await uploadSignedListingFile(upload.signedUrl, file);
       }
 
       const payload = directListingPayload({
-        listingId: signed.listingId || "",
+        listingId: activeId,
         owner_name: inputValue(form, "owner_name"),
         owner_wallet: inputValue(form, "owner_wallet"),
         name: inputValue(form, "name"),
-        hin: hinDecision.hin,
+        hin: hinRaw,
         guests: inputValue(form, "guests"),
         traits: traits.join(","),
         home_port: inputValue(form, "home_port"),
@@ -256,24 +272,25 @@ export function AddYachtForm({
       const res = await fetch("/api/yachts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(publish ? payload : { ...payload, draft: true, role }),
       });
       const json = classifyListingResponse(res.status, await res.text());
       if (!res.ok || json.error) throw new Error(messageFor(json.error));
-      if (json.status === "draft") {
+      if (activeId) setListingId(activeId);
+      const reportedMissing = "missing" in json ? json.missing || [] : [];
+      const reportedHin = "hin" in json ? json.hin : "";
+      if (!publish || json.status === "draft") {
+        const missing = publish ? reportedMissing : [];
+        const hinInvalid = reportedHin === "invalid" || hinDecision.warn;
         form.reset();
         setTraits([]);
         setLangs([]);
         setPhotos([]);
         setStatus("idle");
-        const hinNote = hinDecision.warn ? ` ${c.hinSoft}` : "";
-        setTone(hinDecision.warn ? "warn" : "ok");
-        setMessage(
-          (missing.length
-            ? `${c.savedDraft} ${c.missingDocs} ${missing.join(", ")}.`
-            : c.savedDraft) + hinNote,
-        );
-        onDrafted?.();
+        onDrafted?.({
+          message: draftNotice(hinInvalid, missing),
+          tone: hinInvalid || missing.length ? "warn" : "ok",
+        });
         return;
       }
       onListed(json.yacht as Yacht);
@@ -300,33 +317,15 @@ export function AddYachtForm({
     }
   }
 
-  async function saveDraft() {
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    void persist(e.currentTarget, true);
+  }
+
+  function saveDraft() {
     const form = formRef.current;
     if (!form) return;
-    setMessage("");
-    setStatus("sending");
-    try {
-      const res = await fetch("/api/yachts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          draft: true,
-          role,
-          name: inputValue(form, "name"),
-          home_port: inputValue(form, "home_port"),
-          owner_name: inputValue(form, "owner_name"),
-          captain_name: inputValue(form, "captain_name"),
-        }),
-      });
-      const json = classifyListingResponse(res.status, await res.text());
-      if (!res.ok || json.error) throw new Error(messageFor(json.error || "save"));
-      onDrafted?.();
-      setStatus("idle");
-    } catch (err) {
-      setStatus("err");
-      setTone("err");
-      setMessage(err instanceof Error ? err.message : c.error);
-    }
+    void persist(form, false);
   }
 
   return (
@@ -371,6 +370,7 @@ export function AddYachtForm({
               }
             }}
           />
+          {docs?.ownerId ? <span className="mt-1 block text-xs font-semibold text-emerald-700">{c.docOnFile}</span> : null}
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.ownerWallet}
@@ -379,6 +379,7 @@ export function AddYachtForm({
             name="owner_wallet"
             autoComplete="off"
             placeholder={c.walletOptional}
+            defaultValue={initial?.ownerWallet || ""}
           />
         </label>
       </section>
@@ -397,7 +398,8 @@ export function AddYachtForm({
             accept="image/*"
             multiple
             onChange={(e) => {
-              const picked = Array.from(e.target.files || []).slice(0, 5);
+              const room = Math.max(0, 5 - existingPhotos.length);
+              const picked = Array.from(e.target.files || []).slice(0, room);
               if (picked.some((file) => file.size > LISTING_MAX_BYTES)) {
                 e.target.value = "";
                 setPhotos(picked.filter((file) => file.size <= LISTING_MAX_BYTES));
@@ -410,6 +412,18 @@ export function AddYachtForm({
             }}
           />
         </label>
+        {existingPhotos.length ? (
+          <div className="mt-2 flex items-start gap-2 overflow-x-auto">
+            {existingPhotos.map((src) => (
+              <img
+                key={src}
+                src={src}
+                alt=""
+                className="h-56 w-auto max-w-[18rem] rounded-lg bg-navy/5 object-contain"
+              />
+            ))}
+          </div>
+        ) : null}
         {photos.length ? (
           <div className="mt-2 flex items-start gap-2 overflow-x-auto">
             {photos.map((file) => (
@@ -424,6 +438,7 @@ export function AddYachtForm({
             name="hin"
             maxLength={40}
             placeholder={c.hinPlaceholder}
+            defaultValue={initial?.hin || ""}
           />
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
@@ -435,7 +450,7 @@ export function AddYachtForm({
             min={1}
             max={50}
             required
-            defaultValue={8}
+            defaultValue={initial?.guests && initial.guests > 0 ? initial.guests : 8}
           />
         </label>
         <p className="mt-3 text-xs font-bold uppercase tracking-wide text-navy/60">
@@ -501,6 +516,7 @@ export function AddYachtForm({
               }
             }}
           />
+          {docs?.captainId ? <span className="mt-1 block text-xs font-semibold text-emerald-700">{c.docOnFile}</span> : null}
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.mmc}
@@ -517,6 +533,7 @@ export function AddYachtForm({
               }
             }}
           />
+          {docs?.captainMmc ? <span className="mt-1 block text-xs font-semibold text-emerald-700">{c.docOnFile}</span> : null}
         </label>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.captainPhoto}
@@ -533,6 +550,14 @@ export function AddYachtForm({
               }
             }}
           />
+          {docs?.captainPhoto ? <span className="mt-1 block text-xs font-semibold text-emerald-700">{c.docOnFile}</span> : null}
+          {initial?.captainPhoto ? (
+            <img
+              src={initial.captainPhoto}
+              alt=""
+              className="mt-2 h-24 w-24 rounded-full object-contain"
+            />
+          ) : null}
         </label>
         <p className="mt-3 text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.languages}
@@ -562,7 +587,13 @@ export function AddYachtForm({
         </div>
         <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-navy/60">
           {c.region}
-          <input className={field} name="captain_region" required list="kaenz-regions" />
+          <input
+            className={field}
+            name="captain_region"
+            required
+            list="kaenz-regions"
+            defaultValue={initial?.captainRegion || ""}
+          />
           <datalist id="kaenz-regions">
             {REGIONS.map((region) => (
               <option key={region} value={region} />
@@ -576,6 +607,7 @@ export function AddYachtForm({
             name="captain_wallet"
             autoComplete="off"
             placeholder={c.walletOptional}
+            defaultValue={initial?.captainWallet || ""}
           />
         </label>
       </section>

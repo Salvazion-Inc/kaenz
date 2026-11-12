@@ -438,6 +438,7 @@ export const appCopy = {
       confirmDeleteDraft: "Delete this draft? This cannot be undone.",
       missingDocs: "Add these documents before publishing:",
       savedDraft: "Saved as a draft. You can finish it later.",
+      docOnFile: "On file",
     },
     payouts: {
       title: "Receive your earnings",
@@ -895,6 +896,7 @@ export const appCopy = {
       confirmDeleteDraft: "¿Eliminar este borrador? No se puede deshacer.",
       missingDocs: "Faltan estos documentos para publicar:",
       savedDraft: "Guardado como borrador. Puedes completarlo después.",
+      docOnFile: "En archivo",
     },
     payouts: {
       title: "Recibe tus ganancias",
@@ -1352,6 +1354,7 @@ export const appCopy = {
       confirmDeleteDraft: "Supprimer ce brouillon ? Cette action est définitive.",
       missingDocs: "Ajoutez ces documents avant de publier :",
       savedDraft: "Enregistré comme brouillon. Vous pourrez le compléter plus tard.",
+      docOnFile: "Déjà fourni",
     },
     payouts: {
       title: "Recevez vos gains",
@@ -1809,6 +1812,7 @@ export const appCopy = {
       confirmDeleteDraft: "Eliminare questa bozza? L'azione è definitiva.",
       missingDocs: "Aggiungi questi documenti prima di pubblicare:",
       savedDraft: "Salvato come bozza. Puoi completarlo più tardi.",
+      docOnFile: "Già presente",
     },
     payouts: {
       title: "Ricevi i tuoi guadagni",
@@ -2266,6 +2270,7 @@ export const appCopy = {
       confirmDeleteDraft: "Excluir este rascunho? Esta ação não pode ser desfeita.",
       missingDocs: "Adicione estes documentos antes de publicar:",
       savedDraft: "Salvo como rascunho. Você pode concluir depois.",
+      docOnFile: "Já enviado",
     },
     payouts: {
       title: "Receba seus ganhos",

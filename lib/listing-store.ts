@@ -5,7 +5,13 @@ import {
   mimeMatchesExt,
   type PreparedListingFile,
 } from "./listing-files";
-import { draftDeleteDecision } from "./listing-draft";
+import {
+  draftDeleteDecision,
+  draftUpdateDecision,
+  listingInsertStatus,
+  nextYachtPhotoIndex,
+  type YachtDraftRecord,
+} from "./listing-draft";
 import {
   parseLangs,
   parseTraits,
@@ -245,7 +251,7 @@ export async function insertYachtListing(row: {
     .replace(/^-|-$/g, "")
     .slice(0, 40);
   const slug = `${slugBase || "yacht"}-${id.slice(0, 8)}`;
-  const status = row.status === "draft" ? "draft" : "listed";
+  const status = listingInsertStatus(row.status);
   const listing: YachtListing = {
     id,
     slug,
@@ -296,34 +302,196 @@ export async function insertYachtListing(row: {
     ...listing,
     ownerWallet: row.ownerWallet,
     captainWallet: row.captainWallet,
-  });
+    ownerIdUrl: row.ownerIdUrl,
+    captainIdUrl: row.captainIdUrl,
+    captainMmcUrl: row.captainMmcUrl,
+  } as YachtListing);
   await writeCatalog(catalog);
   return publicListing(listing);
 }
 
 const DRAFT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export async function listOwnYachtDrafts(userId: string): Promise<YachtListing[]> {
+const DRAFT_COLUMNS =
+  "id, slug, created_by, status, owner_name, owner_id_url, owner_wallet, name, hin, guests, traits, home_port, photo_urls, captain_name, captain_id_url, captain_mmc_url, captain_photo_url, captain_languages, captain_region, captain_wallet, created_at";
+
+type DraftDbRow = DbRow & {
+  owner_id_url: string | null;
+  captain_id_url: string | null;
+  captain_mmc_url: string | null;
+};
+
+function fromDraftRow(row: DraftDbRow): YachtDraftRecord {
+  return {
+    ...fromRow(row),
+    ownerIdUrl: row.owner_id_url || "",
+    captainIdUrl: row.captain_id_url || "",
+    captainMmcUrl: row.captain_mmc_url || "",
+  };
+}
+
+function fromCatalogDraft(row: YachtListing): YachtDraftRecord {
+  const extra = row as YachtListing & {
+    ownerIdUrl?: string;
+    captainIdUrl?: string;
+    captainMmcUrl?: string;
+  };
+  return {
+    ...fromRow({
+      id: row.id,
+      slug: row.slug,
+      created_by: row.createdBy,
+      status: row.status,
+      owner_name: row.ownerName,
+      owner_wallet: row.ownerWallet,
+      name: row.name,
+      hin: row.hin,
+      guests: row.guests,
+      traits: row.traits,
+      home_port: row.homePort,
+      photo_urls: row.photos,
+      captain_name: row.captainName,
+      captain_photo_url: row.captainPhoto,
+      captain_languages: row.captainLanguages,
+      captain_region: row.captainRegion,
+      captain_wallet: row.captainWallet,
+      created_at: row.createdAt,
+    }),
+    ownerIdUrl: extra.ownerIdUrl || "",
+    captainIdUrl: extra.captainIdUrl || "",
+    captainMmcUrl: extra.captainMmcUrl || "",
+  };
+}
+
+export async function readYachtDraftRow(id: string): Promise<YachtDraftRecord | null> {
+  if (!DRAFT_ID.test(id)) return null;
+  const admin = getSupabaseAdmin();
+  if (!admin) throw new Error("supabase");
+  const { data, error } = await admin
+    .from("yacht_listings")
+    .select(DRAFT_COLUMNS)
+    .eq("id", id)
+    .maybeSingle();
+  if (!error && data) return fromDraftRow(data as DraftDbRow);
+  if (!error) return null;
+  if (error.code === "PGRST205") {
+    const catalog = await readCatalog();
+    const row = catalog.find((item) => item.id === id);
+    return row ? fromCatalogDraft(row) : null;
+  }
+  throw new Error("supabase");
+}
+
+export async function listOwnYachtDrafts(userId: string): Promise<YachtDraftRecord[]> {
   if (!userId) return [];
   const admin = getSupabaseAdmin();
   if (!admin) return [];
   try {
     const { data, error } = await admin
       .from("yacht_listings")
-      .select(
-        "id, slug, created_by, status, owner_name, owner_wallet, name, hin, guests, traits, home_port, photo_urls, captain_name, captain_photo_url, captain_languages, captain_region, captain_wallet, created_at",
-      )
+      .select(DRAFT_COLUMNS)
       .eq("created_by", userId)
       .eq("status", "draft")
       .order("created_at", { ascending: false });
-    if (!error && data) return (data as DbRow[]).map(fromRow);
+    if (!error && data) return (data as DraftDbRow[]).map(fromDraftRow);
     const catalog = await readCatalog();
-    return catalog.filter(
-      (row) => row.status === "draft" && row.createdBy === userId,
-    );
+    return catalog
+      .filter((row) => row.status === "draft" && row.createdBy === userId)
+      .map(fromCatalogDraft);
   } catch {
     return [];
   }
+}
+
+/**
+ * Reuse a draft id the caller already owns. A new id is minted when none is
+ * given. Someone else's row, or a yacht that is already listed, is refused.
+ */
+export async function claimDraftUpload(userId: string, requested: string) {
+  const admin = getSupabaseAdmin();
+  if (!admin) return { ok: false as const, error: "supabase" as const };
+  const listingId = requested.trim();
+  if (!listingId) {
+    return { ok: true as const, listingId: crypto.randomUUID(), nextPhotoIndex: 0 };
+  }
+  if (!DRAFT_ID.test(listingId)) return { ok: false as const, error: "fields" as const };
+  const existing = await readYachtDraftRow(listingId);
+  if (!existing) return { ok: true as const, listingId, nextPhotoIndex: 0 };
+  const decision = draftUpdateDecision(existing, userId);
+  if (decision !== "update") return { ok: false as const, error: decision };
+  return {
+    ok: true as const,
+    listingId,
+    nextPhotoIndex: nextYachtPhotoIndex(existing.photos),
+  };
+}
+
+export async function updateOwnYachtDraft(userId: string, next: YachtDraftRecord) {
+  const admin = getSupabaseAdmin();
+  if (!admin) return { ok: false as const, error: "supabase" as const };
+  if (!DRAFT_ID.test(next.id)) return { ok: false as const, error: "missing" as const };
+  const existing = await readYachtDraftRow(next.id);
+  if (!existing) return { ok: false as const, error: "missing" as const };
+  const decision = draftUpdateDecision(existing, userId);
+  if (decision !== "update") return { ok: false as const, error: decision };
+  const patch = {
+    status: next.status,
+    owner_name: next.ownerName,
+    owner_id_url: next.ownerIdUrl,
+    owner_wallet: next.ownerWallet,
+    name: next.name,
+    hin: next.hin,
+    guests: next.guests,
+    traits: next.traits,
+    home_port: next.homePort,
+    photo_urls: next.photos,
+    captain_name: next.captainName,
+    captain_id_url: next.captainIdUrl,
+    captain_mmc_url: next.captainMmcUrl,
+    captain_photo_url: next.captainPhoto,
+    captain_languages: next.captainLanguages,
+    captain_region: next.captainRegion,
+    captain_wallet: next.captainWallet,
+  };
+  const updated = await admin
+    .from("yacht_listings")
+    .update(patch)
+    .eq("id", next.id)
+    .eq("created_by", userId)
+    .eq("status", "draft")
+    .select("id");
+  if (!updated.error && updated.data?.length) {
+    return {
+      ok: true as const,
+      listing: publicListing({
+        ...next,
+        createdBy: existing.createdBy,
+        slug: existing.slug,
+        createdAt: existing.createdAt,
+      }),
+    };
+  }
+  if (updated.error?.code === "PGRST205") {
+    const catalog = await readCatalog();
+    const index = catalog.findIndex((item) => item.id === next.id);
+    if (index < 0) return { ok: false as const, error: "missing" as const };
+    const row = fromCatalogDraft(catalog[index]);
+    if (draftUpdateDecision(row, userId) !== "update") {
+      return { ok: false as const, error: "forbidden" as const };
+    }
+    catalog[index] = {
+      ...next,
+      createdBy: row.createdBy,
+      slug: row.slug,
+      createdAt: row.createdAt,
+      ownerWallet: next.ownerWallet,
+      captainWallet: next.captainWallet,
+    };
+    await writeCatalog(catalog);
+    return { ok: true as const, listing: publicListing(catalog[index]) };
+  }
+  if (updated.error) throw new Error("save");
+  return { ok: false as const, error: "forbidden" as const };
 }
 
 export async function deleteOwnYachtDraft(userId: string, id: string) {
