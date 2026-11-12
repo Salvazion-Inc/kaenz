@@ -1,18 +1,27 @@
 import { requireVerifiedUser } from "@/lib/account-verification";
 import { logFunnel } from "@/lib/funnel";
-import { buildYachtDraft } from "@/lib/listing-draft";
+import {
+  draftUpdateDecision,
+  listingPublishDecision,
+  mergeYachtDraft,
+  missingDraftSlots,
+  parseYachtDraftSave,
+  type YachtDraftRecord,
+} from "@/lib/listing-draft";
 import { listBookableYachts } from "@/lib/inventory";
 import {
   assertUploadedListingFile,
   insertYachtListing,
+  readYachtDraftRow,
+  updateOwnYachtDraft,
   uploadListingFile,
 } from "@/lib/listing-store";
 import {
   assertListingPaths,
   FILE_TOO_BIG_MESSAGE,
   isListingClientError,
+  isListingId,
   listingFileTooBig,
-  missingStoredFiles,
   parseStoredListingBody,
 } from "@/lib/listing-files";
 import {
@@ -22,6 +31,8 @@ import {
   optionalWallet,
   parseLangs,
   parseTraits,
+  type CaptainLang,
+  type YachtTrait,
 } from "@/lib/listings";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { yachts as catalogYachts } from "@/lib/yachts";
@@ -64,50 +75,171 @@ function listingErrorResponse(err: unknown) {
   const code = err instanceof Error ? err.message : "save";
   if (code === "supabase") return Response.json({ error: "supabase" }, { status: 503 });
   if (code === "file_too_big") return fileTooBigResponse();
+  if (code === "forbidden") return Response.json({ error: "forbidden" }, { status: 403 });
+  if (code === "missing") return Response.json({ error: "missing" }, { status: 404 });
   if (isListingClientError(code)) return Response.json({ error: code }, { status: 400 });
   return Response.json({ error: "save" }, { status: 500 });
 }
 
-async function postYachtDraft(
-  body: unknown,
-  user: { id: string; name: string },
-) {
-  const record = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
-  const draft = buildYachtDraft({
-    name: record.name,
-    homePort: record.home_port,
-    ownerName: record.owner_name || user.name,
-    captainName: record.captain_name,
+function accessResponse(error: "forbidden" | "missing") {
+  return Response.json({ error }, { status: error === "forbidden" ? 403 : 404 });
+}
+
+/**
+ * Insert a new listing or update the caller's own draft. New photos are
+ * appended. Private documents already on the draft stay when the form does
+ * not upload a replacement. Incomplete papers or a dropped HIN stay draft
+ * (DEC-20261104-03, DEC-20261105-15).
+ */
+async function saveOwnedListing(opts: {
+  userId: string;
+  role: "owner" | "captain";
+  publish: boolean;
+  listingId: string;
+  ownerName: string;
+  ownerWallet: string;
+  name: string;
+  hin: string;
+  hinInvalid: boolean;
+  guests: number | null;
+  traits: YachtTrait[];
+  homePort: string;
+  captainName: string;
+  captainLanguages: CaptainLang[];
+  captainRegion: string;
+  captainWallet: string;
+  files: {
+    owner_id: string;
+    captain_id: string;
+    captain_mmc: string;
+    captain_photo: string;
+    yacht_photos: string[];
+  };
+}) {
+  if (!isListingId(opts.listingId)) return Response.json({ error: "fields" }, { status: 400 });
+  const paths = assertListingPaths(opts.userId, opts.listingId, opts.files, { partial: true });
+  if (!paths.ok) return Response.json({ error: paths.error }, { status: 400 });
+  const existing = await readYachtDraftRow(opts.listingId);
+  if (existing) {
+    const decision = draftUpdateDecision(existing, opts.userId);
+    if (decision !== "update") return accessResponse(decision);
+  }
+  const check = (path: string, kind: "photo" | "doc", error: string) =>
+    path ? assertUploadedListingFile({ path, kind, error }) : Promise.resolve("");
+  const [ownerIdUrl, captainIdUrl, captainMmcUrl, captainPhotoUrl, ...photos] = await Promise.all([
+    check(opts.files.owner_id, "doc", "owner_id"),
+    check(opts.files.captain_id, "doc", "captain_id"),
+    check(opts.files.captain_mmc, "doc", "mmc"),
+    check(opts.files.captain_photo, "photo", "captain_photo"),
+    ...opts.files.yacht_photos.map((path) =>
+      assertUploadedListingFile({ path, kind: "photo", error: "photos" }),
+    ),
+  ]);
+  const merged = mergeYachtDraft(
+    existing,
+    {
+      ownerName: opts.ownerName,
+      ownerWallet: opts.ownerWallet,
+      name: opts.name,
+      hin: opts.hin,
+      guests: opts.guests,
+      traits: opts.traits,
+      homePort: opts.homePort,
+      captainName: opts.captainName,
+      captainLanguages: opts.captainLanguages,
+      captainRegion: opts.captainRegion,
+      captainWallet: opts.captainWallet,
+      ownerIdUrl,
+      captainIdUrl,
+      captainMmcUrl,
+      captainPhoto: captainPhotoUrl,
+      photos,
+      status: "draft",
+    },
+    opts.listingId,
+    opts.userId,
+  );
+  const missing = missingDraftSlots(merged);
+  // Missing documents/photos or an unreadable HIN never block saving.
+  const status = listingPublishDecision({
+    publish: opts.publish,
+    missing,
+    hinInvalid: opts.hinInvalid,
+    hin: opts.hin,
   });
-  if (!draft.ok) return Response.json({ error: draft.error }, { status: 400 });
+  const listed = status === "listed";
+  const next: YachtDraftRecord = { ...merged, status };
+  const written = existing
+    ? await updateOwnYachtDraft(opts.userId, next)
+    : {
+        ok: true as const,
+        listing: await insertYachtListing({
+          id: next.id,
+          createdBy: opts.userId,
+          ownerName: next.ownerName,
+          ownerIdUrl: next.ownerIdUrl,
+          ownerWallet: next.ownerWallet,
+          name: next.name,
+          hin: next.hin,
+          guests: next.guests,
+          traits: next.traits,
+          homePort: next.homePort,
+          photos: next.photos,
+          captainName: next.captainName,
+          captainIdUrl: next.captainIdUrl,
+          captainMmcUrl: next.captainMmcUrl,
+          captainPhoto: next.captainPhoto,
+          captainLanguages: next.captainLanguages,
+          captainRegion: next.captainRegion,
+          captainWallet: next.captainWallet,
+          status: next.status,
+        }),
+      };
+  if (!written.ok) {
+    if (written.error === "supabase") return Response.json({ error: "supabase" }, { status: 503 });
+    return accessResponse(written.error);
+  }
+  logFunnel("listing_submitted", opts.role);
+  const hin = opts.hinInvalid ? "invalid" : opts.hin ? "ok" : "empty";
+  if (!listed) {
+    return Response.json({
+      yacht: { ...listingToYacht(written.listing), bookable: false },
+      status: "draft",
+      missing,
+      hin,
+      ...(missing.length ? { documents: "pending" } : { documents: "complete" }),
+    });
+  }
+  return Response.json({ yacht: listingToYacht(written.listing), status: "listed", missing: [], hin });
+}
+
+async function postYachtDraft(body: unknown, user: { id: string; name: string }) {
+  const record = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  const parsed = parseYachtDraftSave({
+    ...record,
+    owner_name: record.owner_name || user.name,
+  });
+  if (!parsed.ok) return Response.json({ error: parsed.error }, { status: 400 });
   const role = record.role === "captain" ? "captain" : "owner";
   try {
-    const listing = await insertYachtListing({
-      id: crypto.randomUUID(),
-      createdBy: user.id,
-      ownerName: draft.ownerName,
-      ownerIdUrl: "",
-      ownerWallet: "",
-      name: draft.name,
-      hin: "",
-      guests: 1,
-      traits: [],
-      homePort: draft.homePort,
-      photos: [],
-      captainName: draft.captainName,
-      captainIdUrl: "",
-      captainMmcUrl: "",
-      captainPhoto: "",
-      captainLanguages: [],
-      captainRegion: "",
-      captainWallet: "",
-      status: "draft",
-    });
-    logFunnel("listing_submitted", role);
-    return Response.json({
-      yacht: { ...listingToYacht(listing), bookable: false },
-      documents: "pending",
-      status: "draft",
+    return await saveOwnedListing({
+      userId: user.id,
+      role,
+      publish: false,
+      listingId: parsed.listingId || crypto.randomUUID(),
+      ownerName: parsed.ownerName,
+      ownerWallet: parsed.ownerWallet,
+      name: parsed.name,
+      hin: parsed.hin,
+      hinInvalid: parsed.hinInvalid,
+      guests: parsed.guests,
+      traits: parsed.traits,
+      homePort: parsed.homePort,
+      captainName: parsed.captainName,
+      captainLanguages: parsed.captainLanguages,
+      captainRegion: parsed.captainRegion,
+      captainWallet: parsed.captainWallet,
+      files: parsed.files,
     });
   } catch (err) {
     return listingErrorResponse(err);
@@ -117,56 +249,26 @@ async function postYachtDraft(
 async function postStoredListing(body: unknown, userId: string) {
   const parsed = parseStoredListingBody(body);
   if (!parsed.ok) return Response.json({ error: parsed.error }, { status: 400 });
-  const paths = assertListingPaths(userId, parsed.listingId, parsed.files, { partial: true });
-  if (!paths.ok) return Response.json({ error: paths.error }, { status: 400 });
-  const missing = missingStoredFiles(parsed.files);
-  // Missing documents/photos or an unreadable HIN never block saving: the
-  // listing is stored as a draft and can be completed later.
-  const draft = missing.length > 0 || parsed.hinInvalid || !parsed.hin;
-  const check = (path: string, kind: "photo" | "doc", error: string) =>
-    path ? assertUploadedListingFile({ path, kind, error }) : Promise.resolve("");
   try {
-    const [ownerIdUrl, captainIdUrl, captainMmcUrl, captainPhotoUrl, ...photos] =
-      await Promise.all([
-        check(parsed.files.owner_id, "doc", "owner_id"),
-        check(parsed.files.captain_id, "doc", "captain_id"),
-        check(parsed.files.captain_mmc, "doc", "mmc"),
-        check(parsed.files.captain_photo, "photo", "captain_photo"),
-        ...parsed.files.yacht_photos.map((path) =>
-          assertUploadedListingFile({ path, kind: "photo", error: "photos" }),
-        ),
-      ]);
-    const listing = await insertYachtListing({
-      id: parsed.listingId,
-      createdBy: userId,
+    return await saveOwnedListing({
+      userId,
+      role: "owner",
+      publish: true,
+      listingId: parsed.listingId,
       ownerName: parsed.ownerName,
-      ownerIdUrl,
       ownerWallet: parsed.ownerWallet,
       name: parsed.name,
       hin: parsed.hin,
+      hinInvalid: parsed.hinInvalid,
       guests: parsed.guests,
       traits: parsed.traits,
       homePort: parsed.homePort,
-      photos,
       captainName: parsed.captainName,
-      captainIdUrl,
-      captainMmcUrl,
-      captainPhoto: captainPhotoUrl,
       captainLanguages: parsed.captainLanguages,
       captainRegion: parsed.captainRegion,
       captainWallet: parsed.captainWallet,
-      status: draft ? "draft" : "listed",
+      files: parsed.files,
     });
-    logFunnel("listing_submitted", "owner");
-    if (draft) {
-      return Response.json({
-        yacht: { ...listingToYacht(listing), bookable: false },
-        status: "draft",
-        missing,
-        hin: parsed.hinInvalid ? "invalid" : parsed.hin ? "ok" : "empty",
-      });
-    }
-    return Response.json({ yacht: listingToYacht(listing), status: "listed" });
   } catch (err) {
     return listingErrorResponse(err);
   }
